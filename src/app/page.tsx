@@ -1,4 +1,4 @@
-import { ScanDashboard } from "@/components/scan-dashboard";
+import { ScanDashboard } from "@/components/scan/ScanDashboard";
 
 export default function Home() {
   return (
