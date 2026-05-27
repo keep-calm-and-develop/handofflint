@@ -1,5 +1,6 @@
 import type { ScanResultViewModel } from "@/hooks/use-scan-result";
 
+import { FigmaApiJson } from "./FigmaApiJson";
 import { FindingsEmptyState } from "./FindingsEmptyState";
 import { FindingsTable } from "./FindingsTable";
 import { ReadinessScoreCard } from "./ReadinessScoreCard";
@@ -22,6 +23,10 @@ export function ScanResults({ viewModel }: ScanResultsProps) {
       ) : (
         <FindingsEmptyState />
       )}
+      <FigmaApiJson
+        figma={viewModel.figma}
+        skippedReason={viewModel.figmaSkippedReason}
+      />
     </section>
   );
 }

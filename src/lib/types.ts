@@ -18,12 +18,23 @@ export interface Finding {
   figmaUrl: string;
 }
 
+export type FigmaApiEndpoint = "nodes" | "file";
+
+export interface FigmaApiPayload {
+  endpoint: FigmaApiEndpoint;
+  fileKey: string;
+  nodeId: string | null;
+  data: unknown;
+}
+
 export interface ScanResponse {
   readinessScore: number;
   findings: Finding[];
   fileKey: string;
   nodeId: string | null;
   scannedAt: string;
+  figma: FigmaApiPayload | null;
+  figmaSkippedReason?: string;
   /** Present while audits are mocked (Week 1 stub). */
   mock?: boolean;
 }

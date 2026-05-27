@@ -6,7 +6,7 @@ import {
   formatFindingCount,
   getScoreColorClass,
 } from "@/lib/scan-display";
-import type { Finding, ScanResponse } from "@/lib/types";
+import type { FigmaApiPayload, Finding, ScanResponse } from "@/lib/types";
 
 export interface ScanResultViewModel {
   readinessScore: number;
@@ -15,6 +15,8 @@ export interface ScanResultViewModel {
   findings: Finding[];
   hasFindings: boolean;
   isMock: boolean;
+  figma: FigmaApiPayload | null;
+  figmaSkippedReason?: string;
 }
 
 export function useScanResult(
@@ -30,6 +32,8 @@ export function useScanResult(
       findings: result.findings,
       hasFindings: result.findings.length > 0,
       isMock: Boolean(result.mock),
+      figma: result.figma,
+      figmaSkippedReason: result.figmaSkippedReason,
     };
   }, [result]);
 }

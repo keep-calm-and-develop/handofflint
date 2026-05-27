@@ -10,9 +10,9 @@ First, run the development server:
 pnpm dev
 ```
 
-Copy `.env.example` to `.env.local` when you wire Figma and OpenRouter (not needed for the mock scan).
+Copy `.env.example` to `.env.local`. Optionally set `FIGMA_ACCESS_TOKEN` to log real Figma JSON in the server terminal on each scan; without it, the scan still runs with mock findings.
 
-**Try a scan:** paste any valid Figma design URL, e.g. `https://www.figma.com/design/AbCdEfGhIjKl/Example?node-id=1-2`
+**Try a scan:** paste a Figma URL you can access with that token, e.g. `https://www.figma.com/design/YOUR_FILE_KEY/Example?node-id=1-2`
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

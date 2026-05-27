@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 
+import { FigmaApiError, fetchFigmaTree } from "@/lib/figma/client";
 import { parseFigmaUrl } from "@/lib/figma/url";
 import { getMockFindings } from "@/lib/mock-findings";
 import {
   computeReadinessScore,
   sortFindingsBySeverity,
 } from "@/lib/readiness-score";
-import type { ScanErrorResponse, ScanResponse } from "@/lib/types";
+import type { FigmaApiEndpoint, ScanErrorResponse, ScanResponse } from "@/lib/types";
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -42,6 +43,33 @@ export async function POST(request: Request) {
     );
   }
 
+  const endpoint: FigmaApiEndpoint = parsed.nodeId ? "nodes" : "file";
+  let figma: ScanResponse["figma"] = null;
+  let figmaSkippedReason: string | undefined;
+
+  try {
+    const figmaData = await fetchFigmaTree(parsed.fileKey, parsed.nodeId);
+
+    if (figmaData !== null) {
+      figma = {
+        endpoint,
+        fileKey: parsed.fileKey,
+        nodeId: parsed.nodeId,
+        data: figmaData,
+      };
+    } else {
+      figmaSkippedReason = "FIGMA_ACCESS_TOKEN is not set";
+    }
+  } catch (err) {
+    if (err instanceof FigmaApiError) {
+      return NextResponse.json<ScanErrorResponse>(
+        { error: err.message },
+        { status: err.status },
+      );
+    }
+    throw err;
+  }
+
   const findings = sortFindingsBySeverity(getMockFindings(parsed.fileKey));
   const readinessScore = computeReadinessScore(findings);
 
@@ -51,6 +79,8 @@ export async function POST(request: Request) {
     fileKey: parsed.fileKey,
     nodeId: parsed.nodeId,
     scannedAt: new Date().toISOString(),
+    figma,
+    figmaSkippedReason,
     mock: true,
   });
 }
