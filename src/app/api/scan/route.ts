@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
+import { runAllAudits } from "@/lib/audit/run-audits";
 import { FigmaApiError, fetchFigmaTree } from "@/lib/figma/client";
+import { countFigmaNodes, extractFigmaDocuments } from "@/lib/figma/tree";
 import { parseFigmaUrl } from "@/lib/figma/url";
-import { getMockFindings } from "@/lib/mock-findings";
 import {
   computeReadinessScore,
   sortFindingsBySeverity,
@@ -47,15 +48,18 @@ export async function POST(request: Request) {
   let figma: ScanResponse["figma"] = null;
   let figmaSkippedReason: string | undefined;
 
-  try {
-    const figmaData = await fetchFigmaTree(parsed.fileKey, parsed.nodeId);
+  let dataSource: "api" | "fixture" = "api";
 
-    if (figmaData !== null) {
+  try {
+    const figmaResult = await fetchFigmaTree(parsed.fileKey, parsed.nodeId);
+
+    if (figmaResult !== null) {
+      dataSource = figmaResult.source;
       figma = {
         endpoint,
         fileKey: parsed.fileKey,
         nodeId: parsed.nodeId,
-        data: figmaData,
+        data: figmaResult.data,
       };
     } else {
       figmaSkippedReason = "FIGMA_ACCESS_TOKEN is not set";
@@ -70,7 +74,22 @@ export async function POST(request: Request) {
     throw err;
   }
 
-  const findings = sortFindingsBySeverity(getMockFindings(parsed.fileKey));
+  let findings: ScanResponse["findings"] = [];
+  let auditSummary: ScanResponse["auditSummary"];
+
+  if (figma?.data != null) {
+    const roots = extractFigmaDocuments(figma.data);
+    const nodesScanned = countFigmaNodes(roots);
+    findings = sortFindingsBySeverity(
+      runAllAudits(roots, { fileKey: parsed.fileKey }),
+    );
+    auditSummary = {
+      nodesScanned,
+      toolsRun: ["naming"],
+      dataSource,
+    };
+  }
+
   const readinessScore = computeReadinessScore(findings);
 
   return NextResponse.json<ScanResponse>({
@@ -81,6 +100,6 @@ export async function POST(request: Request) {
     scannedAt: new Date().toISOString(),
     figma,
     figmaSkippedReason,
-    mock: true,
+    auditSummary,
   });
 }

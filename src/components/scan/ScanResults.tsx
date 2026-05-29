@@ -16,12 +16,17 @@ export function ScanResults({ viewModel }: ScanResultsProps) {
         score={viewModel.readinessScore}
         scoreColorClass={viewModel.scoreColorClass}
         findingCountLabel={viewModel.findingCountLabel}
-        isMock={viewModel.isMock}
+        auditsSkipped={viewModel.auditsSkipped}
+        auditStatusLabel={viewModel.auditStatusLabel}
+        figmaSkippedReason={viewModel.figmaSkippedReason}
       />
       {viewModel.hasFindings ? (
         <FindingsTable findings={viewModel.findings} />
       ) : (
-        <FindingsEmptyState />
+        <FindingsEmptyState
+          auditsSkipped={viewModel.auditsSkipped}
+          auditStatusLabel={viewModel.auditStatusLabel}
+        />
       )}
       <FigmaApiJson
         figma={viewModel.figma}

@@ -14,9 +14,27 @@ export interface ScanResultViewModel {
   findingCountLabel: string;
   findings: Finding[];
   hasFindings: boolean;
-  isMock: boolean;
+  auditsSkipped: boolean;
+  auditStatusLabel: string | null;
   figma: FigmaApiPayload | null;
   figmaSkippedReason?: string;
+}
+
+function buildAuditStatusLabel(result: ScanResponse): string | null {
+  if (result.figma === null) {
+    return null;
+  }
+
+  const { auditSummary } = result;
+  if (!auditSummary || auditSummary.nodesScanned === 0) {
+    return "Figma tree could not be parsed — no audits ran.";
+  }
+
+  const tools = auditSummary.toolsRun.join(", ");
+  const issueWord = result.findings.length === 1 ? "issue" : "issues";
+  const sourceLabel =
+    auditSummary.dataSource === "fixture" ? "example.json" : "Figma API";
+  return `Scanned ${auditSummary.nodesScanned} layers · ${sourceLabel} · ${tools} audit · ${result.findings.length} naming ${issueWord}`;
 }
 
 export function useScanResult(
@@ -31,7 +49,8 @@ export function useScanResult(
       findingCountLabel: formatFindingCount(result.findings.length),
       findings: result.findings,
       hasFindings: result.findings.length > 0,
-      isMock: Boolean(result.mock),
+      auditsSkipped: result.figma === null,
+      auditStatusLabel: buildAuditStatusLabel(result),
       figma: result.figma,
       figmaSkippedReason: result.figmaSkippedReason,
     };

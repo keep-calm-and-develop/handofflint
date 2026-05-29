@@ -1,3 +1,6 @@
+import { isFigmaFixtureEnabled, loadFigmaFixture } from "@/lib/figma/fixture";
+import type { FigmaDataSource } from "@/lib/types";
+
 const FIGMA_API_BASE = "https://api.figma.com/v1";
 
 export class FigmaApiError extends Error {
@@ -16,10 +19,19 @@ export class FigmaApiError extends Error {
  * @see https://www.figma.com/developers/api#get-file-nodes-endpoint
  * @see https://www.figma.com/developers/api#get-files-endpoint
  */
+export interface FetchFigmaTreeResult {
+  data: unknown;
+  source: FigmaDataSource;
+}
+
 export async function fetchFigmaTree(
   fileKey: string,
   nodeId: string | null,
-): Promise<unknown | null> {
+): Promise<FetchFigmaTreeResult | null> {
+  if (isFigmaFixtureEnabled()) {
+    return { data: loadFigmaFixture(), source: "fixture" };
+  }
+
   const token = process.env.FIGMA_ACCESS_TOKEN?.trim();
   if (!token) {
     return null;
@@ -51,5 +63,5 @@ export async function fetchFigmaTree(
     );
   }
 
-  return res.json();
+  return { data: await res.json(), source: "api" };
 }

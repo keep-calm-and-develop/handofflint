@@ -27,6 +27,14 @@ export interface FigmaApiPayload {
   data: unknown;
 }
 
+export type FigmaDataSource = "api" | "fixture";
+
+export interface AuditSummary {
+  nodesScanned: number;
+  toolsRun: AuditTool[];
+  dataSource: FigmaDataSource;
+}
+
 export interface ScanResponse {
   readinessScore: number;
   findings: Finding[];
@@ -35,8 +43,8 @@ export interface ScanResponse {
   scannedAt: string;
   figma: FigmaApiPayload | null;
   figmaSkippedReason?: string;
-  /** Present while audits are mocked (Week 1 stub). */
-  mock?: boolean;
+  /** Set when Figma data was fetched and deterministic audits ran. */
+  auditSummary?: AuditSummary;
 }
 
 export interface ScanErrorResponse {

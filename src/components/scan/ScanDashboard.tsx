@@ -11,7 +11,9 @@ import { ScanHeader } from "./ScanHeader";
 import { ScanResults } from "./ScanResults";
 
 export function ScanDashboard() {
-  const figmaUrl = useFigmaUrl();
+  const figmaUrl = useFigmaUrl(
+    "https://www.figma.com/design/kvT3qcauDE67CW76Kb56Qw/vaxin?node-id=2-28&t=8wS4VeFLBfj0FD4F-0",
+  );
   const scan = useScan();
   const { handleSubmit, isSubmitDisabled } = useScanForm({ figmaUrl, scan });
   const resultViewModel = useScanResult(scan.result);

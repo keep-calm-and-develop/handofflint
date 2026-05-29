@@ -1,6 +1,6 @@
 # HandOffLint
 
-Paste a Figma URL to get a **Readiness Score** and severity-sorted lint findings before dev handoff. Week 1 uses mock audit data via `POST /api/scan`; real Figma + audit tools come next.
+Paste a Figma URL to get a **Readiness Score** and severity-sorted lint findings before dev handoff. `POST /api/scan` runs deterministic audit tools against the Figma tree (naming audit implemented; more audits added over time).
 
 ## Getting Started
 
@@ -10,7 +10,7 @@ First, run the development server:
 pnpm dev
 ```
 
-Copy `.env.example` to `.env.local`. Optionally set `FIGMA_ACCESS_TOKEN` to log real Figma JSON in the server terminal on each scan; without it, the scan still runs with mock findings.
+Copy `.env.example` to `.env.local`. By default in development, scans use `example.json` (no Figma API calls). Set `FIGMA_USE_FIXTURE=false` and `FIGMA_ACCESS_TOKEN` to hit the live API.
 
 **Try a scan:** paste a Figma URL you can access with that token, e.g. `https://www.figma.com/design/YOUR_FILE_KEY/Example?node-id=1-2`
 
