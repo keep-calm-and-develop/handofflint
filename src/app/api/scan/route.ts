@@ -8,7 +8,13 @@ import {
   computeReadinessScore,
   sortFindingsBySeverity,
 } from "@/lib/readiness-score";
-import type { FigmaApiEndpoint, ScanErrorResponse, ScanResponse } from "@/lib/types";
+import type {
+  FigmaApiEndpoint,
+  FigmaDataSource,
+  FigmaFetchSummary,
+  ScanErrorResponse,
+  ScanResponse,
+} from "@/lib/types";
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -48,13 +54,20 @@ export async function POST(request: Request) {
   let figma: ScanResponse["figma"] = null;
   let figmaSkippedReason: string | undefined;
 
-  let dataSource: "api" | "fixture" = "api";
+  let dataSource: FigmaDataSource = "api";
+  let figmaFetch: FigmaFetchSummary | undefined;
 
   try {
     const figmaResult = await fetchFigmaTree(parsed.fileKey, parsed.nodeId);
 
     if (figmaResult !== null) {
       dataSource = figmaResult.source;
+      if (figmaResult.cache) {
+        figmaFetch = {
+          cacheHit: figmaResult.cache.hit,
+          treeFetchedAt: figmaResult.cache.fetchedAt,
+        };
+      }
       figma = {
         endpoint,
         fileKey: parsed.fileKey,
@@ -87,6 +100,7 @@ export async function POST(request: Request) {
       nodesScanned,
       toolsRun: ["naming"],
       dataSource,
+      ...(figmaFetch ? { figmaFetch } : {}),
     };
   }
 

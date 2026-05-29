@@ -33,7 +33,9 @@ function buildAuditStatusLabel(result: ScanResponse): string | null {
   const tools = auditSummary.toolsRun.join(", ");
   const issueWord = result.findings.length === 1 ? "issue" : "issues";
   const sourceLabel =
-    auditSummary.dataSource === "fixture" ? "example.json" : "Figma API";
+    auditSummary.dataSource === "cache"
+      ? "Figma API (cached)"
+      : "Figma API";
   return `Scanned ${auditSummary.nodesScanned} layers · ${sourceLabel} · ${tools} audit · ${result.findings.length} naming ${issueWord}`;
 }
 

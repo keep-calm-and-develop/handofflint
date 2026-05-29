@@ -27,12 +27,18 @@ export interface FigmaApiPayload {
   data: unknown;
 }
 
-export type FigmaDataSource = "api" | "fixture";
+export type FigmaDataSource = "api" | "cache";
+
+export interface FigmaFetchSummary {
+  cacheHit: boolean;
+  treeFetchedAt?: string;
+}
 
 export interface AuditSummary {
   nodesScanned: number;
   toolsRun: AuditTool[];
   dataSource: FigmaDataSource;
+  figmaFetch?: FigmaFetchSummary;
 }
 
 export interface ScanResponse {

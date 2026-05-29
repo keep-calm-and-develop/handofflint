@@ -10,7 +10,7 @@ First, run the development server:
 pnpm dev
 ```
 
-Copy `.env.example` to `.env.local`. By default in development, scans use `example.json` (no Figma API calls). Set `FIGMA_USE_FIXTURE=false` and `FIGMA_ACCESS_TOKEN` to hit the live API.
+Copy `.env.example` to `.env.local` and set `FIGMA_ACCESS_TOKEN` to a [Figma personal access token](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens) with `file_content:read` (and `file_metadata:read` for cache validation).
 
 **Try a scan:** paste a Figma URL you can access with that token, e.g. `https://www.figma.com/design/YOUR_FILE_KEY/Example?node-id=1-2`
 
