@@ -4,18 +4,28 @@ const globalForMsw = globalThis as typeof globalThis & {
   __mswListening?: boolean;
 };
 
-/** Starts the Node MSW server once (server-side only — no browser service worker). */
+/**
+ * Starts (or re-starts) the Node MSW server.
+ * On Turbopack HMR the instrumentation `register()` hook fires again while
+ * the previous interceptors may have been invalidated. Closing and
+ * re-listening ensures MSW re-patches fetch/http on every cycle.
+ */
 export async function ensureFigmaMockServer(): Promise<void> {
-  if (!isFigmaApiMockEnabled() || globalForMsw.__mswListening) {
-    return;
-  }
+  if (!isFigmaApiMockEnabled()) return;
 
   const { figmaMockServer } = await import("@/mocks/server");
+
+  const isRestart = globalForMsw.__mswListening;
+  if (isRestart) {
+    figmaMockServer.close();
+  }
 
   figmaMockServer.listen({ onUnhandledRequest: "bypass" });
   globalForMsw.__mswListening = true;
 
-  console.warn(
-    "[handofflint] FIGMA_API_MOCK enabled — Figma REST API mocked via MSW (example.json).",
-  );
+  if (!isRestart) {
+    console.warn(
+      "[handofflint] FIGMA_API_MOCK enabled — Figma REST API mocked via MSW (example.json).",
+    );
+  }
 }
