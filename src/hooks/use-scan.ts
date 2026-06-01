@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 
-import { ScanApiError, postScan } from "@/lib/api/scan";
+import { ScanApiError, postScan, type ScanRequestOptions } from "@/lib/api/scan";
 import type { ScanResponse } from "@/lib/types";
 
 const NETWORK_ERROR = "Network error — try again.";
@@ -11,7 +11,7 @@ export interface UseScanReturn {
   loading: boolean;
   error: string | null;
   result: ScanResponse | null;
-  scan: (figmaUrl: string) => Promise<void>;
+  scan: (figmaUrl: string, options?: ScanRequestOptions) => Promise<void>;
   reset: () => void;
 }
 
@@ -26,13 +26,13 @@ export function useScan(): UseScanReturn {
     setResult(null);
   }, []);
 
-  const scan = useCallback(async (figmaUrl: string) => {
+  const scan = useCallback(async (figmaUrl: string, options?: ScanRequestOptions) => {
     setLoading(true);
     setError(null);
     setResult(null);
 
     try {
-      const data = await postScan(figmaUrl);
+      const data = await postScan(figmaUrl, options);
       setResult(data);
     } catch (err) {
       setError(

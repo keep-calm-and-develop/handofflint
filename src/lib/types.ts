@@ -1,5 +1,20 @@
 export type Severity = "critical" | "high" | "medium" | "low";
 
+/** User-facing layout strictness — how strictly to flag missing auto-layout. */
+export type LayoutHandoffProfile =
+  | "fixed-size"
+  | "separate-screens"
+  | "flexible-layout";
+
+export const DEFAULT_LAYOUT_HANDOFF_PROFILE: LayoutHandoffProfile =
+  "separate-screens";
+
+export const LAYOUT_HANDOFF_PROFILES: LayoutHandoffProfile[] = [
+  "fixed-size",
+  "separate-screens",
+  "flexible-layout",
+];
+
 export type AuditTool =
   | "layout"
   | "naming"
@@ -39,6 +54,8 @@ export interface AuditSummary {
   toolsRun: AuditTool[];
   dataSource: FigmaDataSource;
   figmaFetch?: FigmaFetchSummary;
+  /** Layout audit strictness chosen for this scan. */
+  layoutHandoffProfile?: LayoutHandoffProfile;
   /** True when FIGMA_API_MOCK served the tree from example.json. */
   figmaMock?: boolean;
 }

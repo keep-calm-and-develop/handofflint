@@ -1,4 +1,4 @@
-import type { AuditTool, Severity } from "@/lib/types";
+import type { AuditTool, LayoutHandoffProfile, Severity } from "@/lib/types";
 
 export const SEVERITY_STYLES: Record<Severity, string> = {
   critical: "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200",
@@ -31,4 +31,40 @@ export function getAuditLabel(tool: AuditTool): string {
 
 export function getSeverityStyle(severity: Severity): string {
   return SEVERITY_STYLES[severity];
+}
+
+export interface LayoutHandoffOption {
+  id: LayoutHandoffProfile;
+  label: string;
+  description: string;
+  hint: string;
+}
+
+/** Plain-language layout check modes shown in the scan form. */
+export const LAYOUT_HANDOFF_OPTIONS: LayoutHandoffOption[] = [
+  {
+    id: "fixed-size",
+    label: "One screen size",
+    description: "Built for a single device or fixed width.",
+    hint: "Layout tips only — missing auto-layout is a low-priority suggestion.",
+  },
+  {
+    id: "separate-screens",
+    label: "Separate frame per device",
+    description: "Mobile and desktop are different frames in the file.",
+    hint: "Checks the frame you scan; inner sections get lighter warnings.",
+  },
+  {
+    id: "flexible-layout",
+    label: "One frame that resizes",
+    description: "The same frame should adapt when the screen gets wider or narrower.",
+    hint: "Strictest — missing auto-layout on multi-layer frames is flagged as important.",
+  },
+];
+
+export function getLayoutHandoffLabel(profile: LayoutHandoffProfile): string {
+  return (
+    LAYOUT_HANDOFF_OPTIONS.find((option) => option.id === profile)?.label ??
+    profile
+  );
 }

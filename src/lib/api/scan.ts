@@ -1,4 +1,4 @@
-import type { ScanErrorResponse, ScanResponse } from "@/lib/types";
+import type { LayoutHandoffProfile, ScanErrorResponse, ScanResponse } from "@/lib/types";
 
 export class ScanApiError extends Error {
   constructor(
@@ -10,11 +10,21 @@ export class ScanApiError extends Error {
   }
 }
 
-export async function postScan(figmaUrl: string): Promise<ScanResponse> {
+export interface ScanRequestOptions {
+  layoutHandoffProfile?: LayoutHandoffProfile;
+}
+
+export async function postScan(
+  figmaUrl: string,
+  options?: ScanRequestOptions,
+): Promise<ScanResponse> {
   const res = await fetch("/api/scan", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url: figmaUrl }),
+    body: JSON.stringify({
+      url: figmaUrl,
+      layoutHandoffProfile: options?.layoutHandoffProfile,
+    }),
   });
 
   const data: ScanResponse | ScanErrorResponse = await res.json();

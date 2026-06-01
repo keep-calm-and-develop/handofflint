@@ -4,6 +4,7 @@ import { useMemo } from "react";
 
 import {
   formatFindingCount,
+  getLayoutHandoffLabel,
   getScoreColorClass,
 } from "@/lib/scan-display";
 import type { FigmaApiPayload, Finding, ScanResponse } from "@/lib/types";
@@ -36,7 +37,11 @@ function buildAuditStatusLabel(result: ScanResponse): string | null {
     auditSummary.dataSource === "cache"
       ? "Figma API (cached)"
       : "Figma API";
-  return `Scanned ${auditSummary.nodesScanned} layers · ${sourceLabel} · ${tools} audit · ${result.findings.length} naming ${issueWord}`;
+  const layoutLabel = auditSummary.layoutHandoffProfile
+    ? getLayoutHandoffLabel(auditSummary.layoutHandoffProfile)
+    : null;
+  const layoutSuffix = layoutLabel ? ` · layout: ${layoutLabel}` : "";
+  return `Scanned ${auditSummary.nodesScanned} layers · ${sourceLabel} · ${tools} audits · ${result.findings.length} ${issueWord}${layoutSuffix}`;
 }
 
 export function useScanResult(

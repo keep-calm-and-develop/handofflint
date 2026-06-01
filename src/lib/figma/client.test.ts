@@ -229,7 +229,7 @@ describe("fetchFigmaTree", () => {
 
     await expect(fetchFigmaTree(FILE_KEY, null)).rejects.toMatchObject({
       status: 429,
-      message: expect.stringContaining("try again in 30 seconds"),
+      message: expect.stringContaining("Try again in 30 seconds"),
     });
   });
 

@@ -4,4 +4,6 @@ export interface FigmaNode {
   name: string;
   type: string;
   children?: FigmaNode[];
+  /** HORIZONTAL | VERTICAL when auto-layout is on; NONE or absent when manual. */
+  layoutMode?: string;
 }

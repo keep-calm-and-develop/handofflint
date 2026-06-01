@@ -70,7 +70,7 @@ export function isSemanticLayerName(name: string): boolean {
   return true;
 }
 
-function isInsideSemanticContainer(ancestors: FigmaNode[]): boolean {
+export function isInsideSemanticContainer(ancestors: FigmaNode[]): boolean {
   return ancestors.some(
     (ancestor) =>
       SEMANTIC_CONTAINER_TYPES.has(ancestor.type) &&

@@ -4,6 +4,10 @@ import { fetchFigmaTree } from "@/lib/figma/client";
 import { isFigmaApiMockEnabled } from "@/lib/figma/mock-enabled";
 import { figmaMockServer } from "@/mocks/server";
 
+const globalForMsw = globalThis as typeof globalThis & {
+  __mswListening?: boolean;
+};
+
 describe("isFigmaApiMockEnabled", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -25,6 +29,7 @@ describe("figma MSW handlers", () => {
     figmaMockServer.listen({ onUnhandledRequest: "error" });
     vi.stubEnv("FIGMA_ACCESS_TOKEN", "test-token");
     vi.stubEnv("FIGMA_CACHE_ENABLED", "false");
+    vi.stubEnv("FIGMA_API_MOCK", "false");
   });
 
   afterEach(() => {
@@ -55,5 +60,34 @@ describe("figma MSW handlers", () => {
       document: expect.objectContaining({ id: "1:4" }),
     });
     expect(result?.data).not.toHaveProperty("nodes");
+  });
+});
+
+describe("fetchFigmaTree with FIGMA_API_MOCK", () => {
+  beforeEach(() => {
+    globalForMsw.__mswListening = false;
+    vi.stubEnv("FIGMA_ACCESS_TOKEN", "test-token");
+    vi.stubEnv("FIGMA_API_MOCK", "true");
+    vi.stubEnv("FIGMA_CACHE_ENABLED", "false");
+  });
+
+  afterEach(() => {
+    figmaMockServer.close();
+    globalForMsw.__mswListening = false;
+    vi.unstubAllEnvs();
+  });
+
+  it("starts MSW via ensureFigmaMockServer and returns handler data", async () => {
+    const result = await fetchFigmaTree("any-file-key", "1:4");
+
+    expect(result?.source).toBe("api");
+    expect(result?.data).toMatchObject({
+      name: "vaxin",
+      nodes: expect.objectContaining({
+        "1:4": expect.objectContaining({
+          document: expect.objectContaining({ id: "1:4" }),
+        }),
+      }),
+    });
   });
 });

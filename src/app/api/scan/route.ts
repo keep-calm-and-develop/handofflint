@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { parseLayoutHandoffProfile } from "@/lib/audit/layout-profile";
 import { runAllAudits } from "@/lib/audit/run-audits";
 import { FigmaApiError, fetchFigmaTree } from "@/lib/figma/client";
 import { isFigmaApiMockEnabled } from "@/lib/figma/mock-enabled";
@@ -35,6 +36,12 @@ export async function POST(request: Request) {
     typeof (body as { url: unknown }).url === "string"
       ? (body as { url: string }).url.trim()
       : "";
+
+  const layoutHandoffProfile = parseLayoutHandoffProfile(
+    typeof body === "object" && body !== null && "layoutHandoffProfile" in body
+      ? (body as { layoutHandoffProfile: unknown }).layoutHandoffProfile
+      : undefined,
+  );
 
   if (!url) {
     return NextResponse.json<ScanErrorResponse>(
@@ -95,11 +102,15 @@ export async function POST(request: Request) {
     const roots = extractFigmaDocuments(figma.data);
     const nodesScanned = countFigmaNodes(roots);
     findings = sortFindingsBySeverity(
-      runAllAudits(roots, { fileKey: parsed.fileKey }),
+      runAllAudits(roots, {
+        fileKey: parsed.fileKey,
+        layoutHandoffProfile,
+      }),
     );
     auditSummary = {
       nodesScanned,
-      toolsRun: ["naming"],
+      toolsRun: ["naming", "layout"],
+      layoutHandoffProfile,
       dataSource,
       ...(isFigmaApiMockEnabled() ? { figmaMock: true } : {}),
       ...(figmaFetch ? { figmaFetch } : {}),
