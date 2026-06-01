@@ -7,6 +7,7 @@ import {
   setFigmaTreeCache,
   type FigmaTreeCacheEntry,
 } from "@/lib/figma/cache";
+import { ensureFigmaMockServer } from "@/mocks/ensure-server";
 import {
   buildRateLimitMessage,
   parseRetryAfterSeconds,
@@ -215,6 +216,8 @@ export async function fetchFigmaTree(
   nodeId: string | null,
   options: FetchFigmaTreeOptions = {},
 ): Promise<FetchFigmaTreeResult | null> {
+  await ensureFigmaMockServer();
+
   const token = process.env.FIGMA_ACCESS_TOKEN?.trim();
   if (!token) {
     return null;

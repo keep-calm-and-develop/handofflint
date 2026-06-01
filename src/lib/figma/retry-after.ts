@@ -53,8 +53,8 @@ export function buildRateLimitMessage(
   const limitType = headers?.limitType?.toLowerCase();
 
   if (limitType === "low") {
-    return `Figma rate limit reached — try again in ${wait}. View/Collab seats are limited to about 6 file fetches per month on many plans. A Dev or Full seat raises this limit.`;
+    return `Figma rate limit reached. Try again in ${wait}. View/Collab seats are limited to about 6 file fetches per month on many plans. A Dev or Full seat raises this limit.`;
   }
 
-  return `Figma rate limit reached — try again in ${wait}.`;
+  return `Figma rate limit reached. Try again in ${wait}.`;
 }

@@ -1,3 +1,5 @@
+import { isFigmaApiMockEnabled } from "@/lib/figma/mock-enabled";
+
 export interface FigmaTreeCacheEntry {
   fileKey: string;
   nodeId: string | null;
@@ -23,6 +25,10 @@ export function buildFigmaCacheKey(
 
 /** When false, every scan hits the Figma REST API. Default: true. */
 export function isFigmaCacheEnabled(): boolean {
+  if (isFigmaApiMockEnabled()) {
+    return false;
+  }
+
   const flag = process.env.FIGMA_CACHE_ENABLED?.trim().toLowerCase();
   if (flag === "false" || flag === "0") {
     return false;

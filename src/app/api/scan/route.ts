@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { runAllAudits } from "@/lib/audit/run-audits";
 import { FigmaApiError, fetchFigmaTree } from "@/lib/figma/client";
+import { isFigmaApiMockEnabled } from "@/lib/figma/mock-enabled";
 import { countFigmaNodes, extractFigmaDocuments } from "@/lib/figma/tree";
 import { parseFigmaUrl } from "@/lib/figma/url";
 import {
@@ -100,6 +101,7 @@ export async function POST(request: Request) {
       nodesScanned,
       toolsRun: ["naming"],
       dataSource,
+      ...(isFigmaApiMockEnabled() ? { figmaMock: true } : {}),
       ...(figmaFetch ? { figmaFetch } : {}),
     };
   }

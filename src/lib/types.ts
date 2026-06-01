@@ -39,6 +39,8 @@ export interface AuditSummary {
   toolsRun: AuditTool[];
   dataSource: FigmaDataSource;
   figmaFetch?: FigmaFetchSummary;
+  /** True when FIGMA_API_MOCK served the tree from example.json. */
+  figmaMock?: boolean;
 }
 
 export interface ScanResponse {
