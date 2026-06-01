@@ -1,3 +1,4 @@
+import { runHiddenAudit } from "@/lib/audit/hidden";
 import { runLayoutAudit } from "@/lib/audit/layout";
 import { runNamingAudit } from "@/lib/audit/naming";
 import type { FigmaNode } from "@/lib/figma/node";
@@ -23,5 +24,6 @@ export function runAllAudits(
       fileKey: options.fileKey,
       layoutHandoffProfile: layoutProfile,
     }),
+    ...runHiddenAudit(roots, options),
   ];
 }
