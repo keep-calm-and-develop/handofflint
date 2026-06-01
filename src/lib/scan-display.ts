@@ -1,4 +1,4 @@
-import type { AuditTool, LayoutHandoffProfile, Severity } from "@/lib/types";
+import type { AuditTool, ContrastLevel, LayoutHandoffProfile, Severity } from "@/lib/types";
 
 export const SEVERITY_STYLES: Record<Severity, string> = {
   critical: "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200",
@@ -66,5 +66,41 @@ export function getLayoutHandoffLabel(profile: LayoutHandoffProfile): string {
   return (
     LAYOUT_HANDOFF_OPTIONS.find((option) => option.id === profile)?.label ??
     profile
+  );
+}
+
+export interface ContrastLevelOption {
+  id: ContrastLevel;
+  label: string;
+  description: string;
+  hint: string;
+}
+
+/** Plain-language contrast check modes shown in the scan form. */
+export const CONTRAST_LEVEL_OPTIONS: ContrastLevelOption[] = [
+  {
+    id: "standard",
+    label: "Basic readability",
+    description: "Catches only severe contrast issues (3:1 minimum).",
+    hint: "Flags text that is nearly unreadable — fewer findings, lower severity.",
+  },
+  {
+    id: "aa",
+    label: "Accessible (AA)",
+    description: "WCAG AA — the industry standard for web accessibility.",
+    hint: "4.5:1 for body text, 3:1 for large text. Recommended for most projects.",
+  },
+  {
+    id: "aaa",
+    label: "Enhanced (AAA)",
+    description: "WCAG AAA — the strictest level of contrast compliance.",
+    hint: "7:1 for body text, 4.5:1 for large text. Best for high-stakes or government projects.",
+  },
+];
+
+export function getContrastLevelLabel(level: ContrastLevel): string {
+  return (
+    CONTRAST_LEVEL_OPTIONS.find((option) => option.id === level)?.label ??
+    level
   );
 }

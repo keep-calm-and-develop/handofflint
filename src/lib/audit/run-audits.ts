@@ -1,15 +1,17 @@
+import { runContrastAudit } from "@/lib/audit/contrast";
 import { runHiddenAudit } from "@/lib/audit/hidden";
 import { runLayoutAudit } from "@/lib/audit/layout";
 import { runNamingAudit } from "@/lib/audit/naming";
 import { runSpacingAudit } from "@/lib/audit/spacing";
 import type { FigmaNode } from "@/lib/figma/node";
-import type { Finding, LayoutHandoffProfile } from "@/lib/types";
+import type { ContrastLevel, Finding, LayoutHandoffProfile } from "@/lib/types";
 import { DEFAULT_LAYOUT_HANDOFF_PROFILE } from "@/lib/types";
 
 export interface RunAuditsOptions {
   fileKey: string;
   layoutHandoffProfile?: LayoutHandoffProfile;
   gridBase?: number;
+  contrastLevel?: ContrastLevel;
 }
 
 /** Runs all implemented deterministic audits against the Figma document roots. */
@@ -30,6 +32,10 @@ export function runAllAudits(
     ...runSpacingAudit(roots, {
       fileKey: options.fileKey,
       gridBase: options.gridBase,
+    }),
+    ...runContrastAudit(roots, {
+      fileKey: options.fileKey,
+      contrastLevel: options.contrastLevel,
     }),
   ];
 }

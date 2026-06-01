@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { parseContrastLevel } from "@/lib/audit/contrast-level";
 import { parseLayoutHandoffProfile } from "@/lib/audit/layout-profile";
 import { runAllAudits } from "@/lib/audit/run-audits";
 import { FigmaApiError, fetchFigmaTree } from "@/lib/figma/client";
@@ -40,6 +41,12 @@ export async function POST(request: Request) {
   const layoutHandoffProfile = parseLayoutHandoffProfile(
     typeof body === "object" && body !== null && "layoutHandoffProfile" in body
       ? (body as { layoutHandoffProfile: unknown }).layoutHandoffProfile
+      : undefined,
+  );
+
+  const contrastLevel = parseContrastLevel(
+    typeof body === "object" && body !== null && "contrastLevel" in body
+      ? (body as { contrastLevel: unknown }).contrastLevel
       : undefined,
   );
 
@@ -118,11 +125,12 @@ export async function POST(request: Request) {
         fileKey: parsed.fileKey,
         layoutHandoffProfile,
         gridBase,
+        contrastLevel,
       }),
     );
     auditSummary = {
       nodesScanned,
-      toolsRun: ["naming", "layout", "hidden", "spacing"],
+      toolsRun: ["naming", "layout", "hidden", "spacing", "contrast"],
       layoutHandoffProfile,
       dataSource,
       ...(isFigmaApiMockEnabled() ? { figmaMock: true } : {}),

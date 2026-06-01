@@ -22,6 +22,13 @@ export type AuditTool =
   | "spacing"
   | "contrast";
 
+/** User-facing contrast strictness — how strictly to check WCAG contrast. */
+export type ContrastLevel = "standard" | "aa" | "aaa";
+
+export const DEFAULT_CONTRAST_LEVEL: ContrastLevel = "aa";
+
+export const CONTRAST_LEVELS: ContrastLevel[] = ["standard", "aa", "aaa"];
+
 export interface Finding {
   id: string;
   nodeId: string;

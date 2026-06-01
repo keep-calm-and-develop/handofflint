@@ -1,4 +1,4 @@
-import type { LayoutHandoffProfile, ScanErrorResponse, ScanResponse } from "@/lib/types";
+import type { ContrastLevel, LayoutHandoffProfile, ScanErrorResponse, ScanResponse } from "@/lib/types";
 
 export class ScanApiError extends Error {
   constructor(
@@ -13,6 +13,7 @@ export class ScanApiError extends Error {
 export interface ScanRequestOptions {
   layoutHandoffProfile?: LayoutHandoffProfile;
   gridBase?: number;
+  contrastLevel?: ContrastLevel;
 }
 
 export async function postScan(
@@ -26,6 +27,7 @@ export async function postScan(
       url: figmaUrl,
       layoutHandoffProfile: options?.layoutHandoffProfile,
       gridBase: options?.gridBase,
+      contrastLevel: options?.contrastLevel,
     }),
   });
 
