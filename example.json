@@ -17,7 +17,13 @@
           {
             "id": "2:36",
             "name": "Quick Search Section",
-            "type": "GROUP",
+            "type": "FRAME",
+            "layoutMode": "VERTICAL",
+            "itemSpacing": 13,
+            "paddingLeft": 7,
+            "paddingRight": 15,
+            "paddingTop": 10,
+            "paddingBottom": 22,
             "locked": true,
             "scrollBehavior": "SCROLLS",
             "children": [
@@ -1886,7 +1892,13 @@
           {
             "id": "4:24",
             "name": "About Vaxin Section",
-            "type": "GROUP",
+            "type": "FRAME",
+            "layoutMode": "HORIZONTAL",
+            "itemSpacing": 0,
+            "paddingLeft": 16,
+            "paddingRight": 16,
+            "paddingTop": 12,
+            "paddingBottom": 12,
             "locked": true,
             "scrollBehavior": "SCROLLS",
             "children": [

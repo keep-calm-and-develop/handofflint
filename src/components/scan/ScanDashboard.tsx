@@ -1,6 +1,7 @@
 "use client";
 
 import { useFigmaUrl } from "@/hooks/use-figma-url";
+import { useGridBase } from "@/hooks/use-grid-base";
 import { useLayoutHandoffProfile } from "@/hooks/use-layout-handoff-profile";
 import { useScan } from "@/hooks/use-scan";
 import { useScanForm } from "@/hooks/use-scan-form";
@@ -16,10 +17,12 @@ export function ScanDashboard() {
     "https://www.figma.com/design/kvT3qcauDE67CW76Kb56Qw/vaxin?node-id=2-28&t=8wS4VeFLBfj0FD4F-0",
   );
   const layoutHandoff = useLayoutHandoffProfile();
+  const gridBase = useGridBase();
   const scan = useScan();
   const { handleSubmit, isSubmitDisabled } = useScanForm({
     figmaUrl,
     layoutHandoff,
+    gridBase,
     scan,
   });
   const resultViewModel = useScanResult(scan.result);
@@ -35,6 +38,8 @@ export function ScanDashboard() {
         onUrlChange={figmaUrl.setUrl}
         layoutHandoffProfile={layoutHandoff.profile}
         onLayoutHandoffProfileChange={layoutHandoff.setProfile}
+        gridBase={gridBase.gridBase}
+        onGridBaseChange={gridBase.setGridBase}
         onSubmit={handleSubmit}
         loading={scan.loading}
         disabled={isSubmitDisabled}

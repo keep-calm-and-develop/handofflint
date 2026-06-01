@@ -1,5 +1,6 @@
 import type { LayoutHandoffProfile } from "@/lib/types";
 
+import { GridBasePicker } from "./GridBasePicker";
 import { LayoutHandoffPicker } from "./LayoutHandoffPicker";
 
 interface ScanFormProps {
@@ -7,6 +8,8 @@ interface ScanFormProps {
   onUrlChange: (value: string) => void;
   layoutHandoffProfile: LayoutHandoffProfile;
   onLayoutHandoffProfileChange: (profile: LayoutHandoffProfile) => void;
+  gridBase: number;
+  onGridBaseChange: (gridBase: number) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   loading: boolean;
   disabled: boolean;
@@ -18,6 +21,8 @@ export function ScanForm({
   onUrlChange,
   layoutHandoffProfile,
   onLayoutHandoffProfileChange,
+  gridBase,
+  onGridBaseChange,
   onSubmit,
   loading,
   disabled,
@@ -61,6 +66,11 @@ export function ScanForm({
       <LayoutHandoffPicker
         value={layoutHandoffProfile}
         onChange={onLayoutHandoffProfileChange}
+        disabled={loading}
+      />
+      <GridBasePicker
+        value={gridBase}
+        onChange={onGridBaseChange}
         disabled={loading}
       />
     </form>

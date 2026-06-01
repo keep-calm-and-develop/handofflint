@@ -8,4 +8,11 @@ export interface FigmaNode {
   layoutMode?: string;
   /** False when the layer is hidden in Figma; absent means visible. */
   visible?: boolean;
+  /** Gap between children in auto-layout frames. */
+  itemSpacing?: number;
+  /** Internal padding (auto-layout frames). */
+  paddingLeft?: number;
+  paddingRight?: number;
+  paddingTop?: number;
+  paddingBottom?: number;
 }

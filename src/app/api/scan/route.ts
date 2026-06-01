@@ -43,6 +43,18 @@ export async function POST(request: Request) {
       : undefined,
   );
 
+  const rawGridBase =
+    typeof body === "object" &&
+    body !== null &&
+    "gridBase" in body &&
+    typeof (body as { gridBase: unknown }).gridBase === "number"
+      ? (body as { gridBase: number }).gridBase
+      : undefined;
+  const gridBase =
+    rawGridBase !== undefined && rawGridBase >= 1 && rawGridBase <= 5
+      ? rawGridBase
+      : undefined;
+
   if (!url) {
     return NextResponse.json<ScanErrorResponse>(
       { error: "Missing Figma URL" },
@@ -105,11 +117,12 @@ export async function POST(request: Request) {
       runAllAudits(roots, {
         fileKey: parsed.fileKey,
         layoutHandoffProfile,
+        gridBase,
       }),
     );
     auditSummary = {
       nodesScanned,
-      toolsRun: ["naming", "layout"],
+      toolsRun: ["naming", "layout", "hidden", "spacing"],
       layoutHandoffProfile,
       dataSource,
       ...(isFigmaApiMockEnabled() ? { figmaMock: true } : {}),

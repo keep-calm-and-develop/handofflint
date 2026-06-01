@@ -12,6 +12,7 @@ export class ScanApiError extends Error {
 
 export interface ScanRequestOptions {
   layoutHandoffProfile?: LayoutHandoffProfile;
+  gridBase?: number;
 }
 
 export async function postScan(
@@ -24,6 +25,7 @@ export async function postScan(
     body: JSON.stringify({
       url: figmaUrl,
       layoutHandoffProfile: options?.layoutHandoffProfile,
+      gridBase: options?.gridBase,
     }),
   });
 
