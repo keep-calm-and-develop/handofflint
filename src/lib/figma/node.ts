@@ -1,3 +1,19 @@
+/** Figma constraint axis values for a node inside a frame. */
+export interface FigmaConstraints {
+  horizontal: "LEFT" | "RIGHT" | "CENTER" | "LEFT_RIGHT" | "SCALE";
+  vertical: "TOP" | "BOTTOM" | "CENTER" | "TOP_BOTTOM" | "SCALE";
+}
+
+/** A single export-settings entry attached to a node. */
+export interface FigmaExportSetting {
+  format: "PNG" | "JPG" | "SVG" | "PDF";
+  suffix?: string;
+  constraint?: {
+    type: "SCALE" | "WIDTH" | "HEIGHT";
+    value: number;
+  };
+}
+
 /** Figma REST color in 0–1 RGBA range. */
 export interface FigmaColor {
   r: number;
@@ -46,4 +62,10 @@ export interface FigmaNode {
   style?: FigmaTypeStyle;
   /** Raw text content (only on TEXT nodes). */
   characters?: string;
+  /** How this node is pinned/scaled relative to its parent frame. */
+  constraints?: FigmaConstraints;
+  /** Export configurations attached to this node in Figma. */
+  exportSettings?: FigmaExportSetting[];
+  /** Component master ID — present on INSTANCE nodes. */
+  componentId?: string;
 }

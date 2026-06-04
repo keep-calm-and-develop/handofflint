@@ -1,6 +1,7 @@
-import type { ContrastLevel, LayoutHandoffProfile } from "@/lib/types";
+import type { ContrastLevel, ExportQuality, LayoutHandoffProfile } from "@/lib/types";
 
 import { ContrastLevelPicker } from "./ContrastLevelPicker";
+import { ExportQualityPicker } from "./ExportQualityPicker";
 import { GridBasePicker } from "./GridBasePicker";
 import { LayoutHandoffPicker } from "./LayoutHandoffPicker";
 
@@ -13,6 +14,8 @@ interface ScanFormProps {
   onGridBaseChange: (gridBase: number) => void;
   contrastLevel: ContrastLevel;
   onContrastLevelChange: (level: ContrastLevel) => void;
+  exportQuality: ExportQuality;
+  onExportQualityChange: (quality: ExportQuality) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   loading: boolean;
   disabled: boolean;
@@ -28,6 +31,8 @@ export function ScanForm({
   onGridBaseChange,
   contrastLevel,
   onContrastLevelChange,
+  exportQuality,
+  onExportQualityChange,
   onSubmit,
   loading,
   disabled,
@@ -81,6 +86,11 @@ export function ScanForm({
       <ContrastLevelPicker
         value={contrastLevel}
         onChange={onContrastLevelChange}
+        disabled={loading}
+      />
+      <ExportQualityPicker
+        value={exportQuality}
+        onChange={onExportQualityChange}
         disabled={loading}
       />
     </form>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useContrastLevel } from "@/hooks/use-contrast-level";
+import { useExportQuality } from "@/hooks/use-export-quality";
 import { useFigmaUrl } from "@/hooks/use-figma-url";
 import { useGridBase } from "@/hooks/use-grid-base";
 import { useLayoutHandoffProfile } from "@/hooks/use-layout-handoff-profile";
@@ -20,12 +21,14 @@ export function ScanDashboard() {
   const layoutHandoff = useLayoutHandoffProfile();
   const gridBase = useGridBase();
   const contrastLevel = useContrastLevel();
+  const exportQuality = useExportQuality();
   const scan = useScan();
   const { handleSubmit, isSubmitDisabled } = useScanForm({
     figmaUrl,
     layoutHandoff,
     gridBase,
     contrastLevel,
+    exportQuality,
     scan,
   });
   const resultViewModel = useScanResult(scan.result);
@@ -45,6 +48,8 @@ export function ScanDashboard() {
         onGridBaseChange={gridBase.setGridBase}
         contrastLevel={contrastLevel.contrastLevel}
         onContrastLevelChange={contrastLevel.setContrastLevel}
+        exportQuality={exportQuality.exportQuality}
+        onExportQualityChange={exportQuality.setExportQuality}
         onSubmit={handleSubmit}
         loading={scan.loading}
         disabled={isSubmitDisabled}

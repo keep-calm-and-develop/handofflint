@@ -3,6 +3,7 @@
 import { useCallback, type FormEvent } from "react";
 
 import type { UseContrastLevelReturn } from "@/hooks/use-contrast-level";
+import type { UseExportQualityReturn } from "@/hooks/use-export-quality";
 import type { UseFigmaUrlReturn } from "@/hooks/use-figma-url";
 import type { UseGridBaseReturn } from "@/hooks/use-grid-base";
 import type { UseLayoutHandoffProfileReturn } from "@/hooks/use-layout-handoff-profile";
@@ -14,6 +15,7 @@ export interface UseScanFormOptions {
   layoutHandoff?: Pick<UseLayoutHandoffProfileReturn, "profile">;
   gridBase?: Pick<UseGridBaseReturn, "gridBase">;
   contrastLevel?: Pick<UseContrastLevelReturn, "contrastLevel">;
+  exportQuality?: Pick<UseExportQualityReturn, "exportQuality">;
   scan: Pick<UseScanReturn, "scan" | "loading">;
 }
 
@@ -27,6 +29,7 @@ export function useScanForm({
   layoutHandoff,
   gridBase: gridBaseOption,
   contrastLevel: contrastLevelOption,
+  exportQuality: exportQualityOption,
   scan,
 }: UseScanFormOptions): UseScanFormReturn {
   const { trimmedUrl, canSubmit } = figmaUrl;
@@ -34,15 +37,16 @@ export function useScanForm({
     layoutHandoff?.profile ?? DEFAULT_LAYOUT_HANDOFF_PROFILE;
   const gridBase = gridBaseOption?.gridBase;
   const contrastLevel = contrastLevelOption?.contrastLevel;
+  const exportQuality = exportQualityOption?.exportQuality;
   const { scan: runScan, loading } = scan;
 
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!canSubmit || loading) return;
-      void runScan(trimmedUrl, { layoutHandoffProfile, gridBase, contrastLevel });
+      void runScan(trimmedUrl, { layoutHandoffProfile, gridBase, contrastLevel, exportQuality });
     },
-    [canSubmit, contrastLevel, gridBase, layoutHandoffProfile, loading, runScan, trimmedUrl],
+    [canSubmit, contrastLevel, exportQuality, gridBase, layoutHandoffProfile, loading, runScan, trimmedUrl],
   );
 
   return {

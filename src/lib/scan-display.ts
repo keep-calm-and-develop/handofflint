@@ -1,4 +1,4 @@
-import type { AuditTool, ContrastLevel, LayoutHandoffProfile, Severity } from "@/lib/types";
+import type { AuditTool, ContrastLevel, ExportQuality, LayoutHandoffProfile, Severity } from "@/lib/types";
 
 export const SEVERITY_STYLES: Record<Severity, string> = {
   critical: "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200",
@@ -13,6 +13,9 @@ export const AUDIT_LABELS: Record<AuditTool, string> = {
   hidden: "Hidden layers",
   spacing: "Spacing",
   contrast: "Contrast",
+  svg: "SVG scaling",
+  export: "Export settings",
+  reuse: "Component reuse",
 };
 
 export function getScoreColorClass(score: number): string {
@@ -102,5 +105,41 @@ export function getContrastLevelLabel(level: ContrastLevel): string {
   return (
     CONTRAST_LEVEL_OPTIONS.find((option) => option.id === level)?.label ??
     level
+  );
+}
+
+export interface ExportQualityOption {
+  id: ExportQuality;
+  label: string;
+  description: string;
+  hint: string;
+}
+
+/** Plain-language image export sharpness modes shown in the scan form. */
+export const EXPORT_QUALITY_OPTIONS: ExportQualityOption[] = [
+  {
+    id: 1,
+    label: "Standard (1×)",
+    description: "One pixel in the file = one screen pixel.",
+    hint: "Fine for internal prototypes. Will look blurry on modern phones and laptops.",
+  },
+  {
+    id: 2,
+    label: "Retina (2×) — recommended",
+    description: "Doubled pixels so images look crisp on Retina and HiDPI screens.",
+    hint: "Catches PNG/JPG exports missing the @2× scale required for modern devices.",
+  },
+  {
+    id: 3,
+    label: "Ultra HD (3×)",
+    description: "Triple pixels for the sharpest results on high-density phone screens.",
+    hint: "Strictest — use when targeting iOS @3× devices or very high-DPI assets.",
+  },
+];
+
+export function getExportQualityLabel(quality: ExportQuality): string {
+  return (
+    EXPORT_QUALITY_OPTIONS.find((option) => option.id === quality)?.label ??
+    String(quality)
   );
 }

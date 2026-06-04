@@ -11,12 +11,15 @@ import {
   computeReadinessScore,
   sortFindingsBySeverity,
 } from "@/lib/readiness-score";
-import type {
-  FigmaApiEndpoint,
-  FigmaDataSource,
-  FigmaFetchSummary,
-  ScanErrorResponse,
-  ScanResponse,
+import {
+  DEFAULT_EXPORT_QUALITY,
+  EXPORT_QUALITY_VALUES,
+  type ExportQuality,
+  type FigmaApiEndpoint,
+  type FigmaDataSource,
+  type FigmaFetchSummary,
+  type ScanErrorResponse,
+  type ScanResponse,
 } from "@/lib/types";
 
 export async function POST(request: Request) {
@@ -61,6 +64,19 @@ export async function POST(request: Request) {
     rawGridBase !== undefined && rawGridBase >= 1 && rawGridBase <= 5
       ? rawGridBase
       : undefined;
+
+  const rawExportQuality =
+    typeof body === "object" &&
+    body !== null &&
+    "exportQuality" in body &&
+    typeof (body as { exportQuality: unknown }).exportQuality === "number"
+      ? (body as { exportQuality: number }).exportQuality
+      : undefined;
+  const exportQuality: ExportQuality =
+    rawExportQuality !== undefined &&
+    EXPORT_QUALITY_VALUES.includes(rawExportQuality as ExportQuality)
+      ? (rawExportQuality as ExportQuality)
+      : DEFAULT_EXPORT_QUALITY;
 
   if (!url) {
     return NextResponse.json<ScanErrorResponse>(
@@ -126,11 +142,12 @@ export async function POST(request: Request) {
         layoutHandoffProfile,
         gridBase,
         contrastLevel,
+        minRasterScale: exportQuality,
       }),
     );
     auditSummary = {
       nodesScanned,
-      toolsRun: ["naming", "layout", "hidden", "spacing", "contrast"],
+      toolsRun: ["naming", "layout", "hidden", "spacing", "contrast", "svg", "export", "reuse"],
       layoutHandoffProfile,
       dataSource,
       ...(isFigmaApiMockEnabled() ? { figmaMock: true } : {}),

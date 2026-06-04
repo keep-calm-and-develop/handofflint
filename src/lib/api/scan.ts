@@ -1,4 +1,4 @@
-import type { ContrastLevel, LayoutHandoffProfile, ScanErrorResponse, ScanResponse } from "@/lib/types";
+import type { ContrastLevel, ExportQuality, LayoutHandoffProfile, ScanErrorResponse, ScanResponse } from "@/lib/types";
 
 export class ScanApiError extends Error {
   constructor(
@@ -14,6 +14,7 @@ export interface ScanRequestOptions {
   layoutHandoffProfile?: LayoutHandoffProfile;
   gridBase?: number;
   contrastLevel?: ContrastLevel;
+  exportQuality?: ExportQuality;
 }
 
 export async function postScan(
@@ -28,6 +29,7 @@ export async function postScan(
       layoutHandoffProfile: options?.layoutHandoffProfile,
       gridBase: options?.gridBase,
       contrastLevel: options?.contrastLevel,
+      exportQuality: options?.exportQuality,
     }),
   });
 

@@ -20,7 +20,17 @@ export type AuditTool =
   | "naming"
   | "hidden"
   | "spacing"
-  | "contrast";
+  | "contrast"
+  | "svg"
+  | "export"
+  | "reuse";
+
+/** User-facing image export sharpness — minimum scale required for PNG/JPG exports. */
+export type ExportQuality = 1 | 2 | 3;
+
+export const DEFAULT_EXPORT_QUALITY: ExportQuality = 2;
+
+export const EXPORT_QUALITY_VALUES: ExportQuality[] = [1, 2, 3];
 
 /** User-facing contrast strictness — how strictly to check WCAG contrast. */
 export type ContrastLevel = "standard" | "aa" | "aaa";
