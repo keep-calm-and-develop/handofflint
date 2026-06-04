@@ -9,22 +9,15 @@ import {
 } from "@/lib/figma/cache";
 import { ensureFigmaMockServer } from "@/mocks/ensure-server";
 import {
-  buildRateLimitMessage,
-  parseRetryAfterSeconds,
-} from "@/lib/figma/retry-after";
+  FigmaApiError,
+  figmaFetch,
+  parseFigmaResponse,
+} from "@/lib/figma/fetch";
 import type { FigmaDataSource } from "@/lib/types";
 
-const FIGMA_API_BASE = "https://api.figma.com/v1";
+export { FigmaApiError } from "@/lib/figma/fetch";
 
-export class FigmaApiError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-  ) {
-    super(message);
-    this.name = "FigmaApiError";
-  }
-}
+const FIGMA_API_BASE = "https://api.figma.com/v1";
 
 /**
  * Fetches a node subtree when `nodeId` is set; otherwise file metadata + shallow tree.
@@ -79,47 +72,6 @@ function buildFigmaTreeUrl(fileKey: string, nodeId: string | null): string {
   return nodeId
     ? `${FIGMA_API_BASE}/files/${fileKey}/nodes?ids=${encodeURIComponent(nodeId)}`
     : `${FIGMA_API_BASE}/files/${fileKey}?depth=2`;
-}
-
-async function figmaFetch(url: string, token: string): Promise<Response> {
-  const res = await fetch(url, {
-    headers: { "X-Figma-Token": token },
-    cache: "no-store",
-  });
-
-  if (res.status === 429) {
-    const retryAfterSec = parseRetryAfterSeconds(res.headers.get("Retry-After"));
-    throw new FigmaApiError(
-      buildRateLimitMessage(retryAfterSec, {
-        planTier: res.headers.get("X-Figma-Plan-Tier"),
-        limitType: res.headers.get("X-Figma-Rate-Limit-Type"),
-      }),
-      429,
-    );
-  }
-
-  return res;
-}
-
-async function parseFigmaResponse(res: Response): Promise<unknown> {
-  if (res.status === 403 || res.status === 404) {
-    throw new FigmaApiError(
-      "Cannot access file — check permissions",
-      res.status,
-    );
-  }
-
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new FigmaApiError(
-      body
-        ? `Figma API error (${res.status}): ${body.slice(0, 200)}`
-        : `Figma API error (${res.status})`,
-      res.status,
-    );
-  }
-
-  return res.json();
 }
 
 async function fetchFigmaFileMeta(

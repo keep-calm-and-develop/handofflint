@@ -1,0 +1,23 @@
+--- Parsed URL ---
+  fileKey: kvT3qcauDE67CW76Kb56Qw
+  nodeId:  1:4
+
+--- Fetching ---
+  GET https://api.figma.com/v1/images/kvT3qcauDE67CW76Kb56Qw?ids=1%3A4&format=png&scale=2
+
+--- Response ---
+  Status: 200 OK
+  Headers:
+    content-type: application/json; charset=utf-8
+    x-figma-rest-api-request-id: fe1c364d-acce-445d-9079-d5c7628640f8
+
+--- Raw JSON Response (copy for mock data) ---
+{
+  "err": null,
+  "images": {
+    "1:4": "https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/33f30ad2-8de0-4e29-a22e-d47ecf272e67"
+  }
+}
+--- Result ---
+
+https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/33f30ad2-8de0-4e29-a22e-d47ecf272e67
