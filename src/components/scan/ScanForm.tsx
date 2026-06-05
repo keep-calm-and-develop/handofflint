@@ -1,4 +1,12 @@
-import type { ContrastLevel, ExportQuality, LayoutHandoffProfile } from "@/lib/types";
+"use client";
+
+import { useState } from "react";
+
+import type {
+  ContrastLevel,
+  ExportQuality,
+  LayoutHandoffProfile,
+} from "@/lib/types";
 
 import { ContrastLevelPicker } from "./ContrastLevelPicker";
 import { ExportQualityPicker } from "./ExportQualityPicker";
@@ -38,8 +46,10 @@ export function ScanForm({
   disabled,
   hint,
 }: ScanFormProps) {
+  const [configOpen, setConfigOpen] = useState(false);
+
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-3">
         <label htmlFor="figma-url" className="sr-only">
           Figma URL
@@ -73,26 +83,55 @@ export function ScanForm({
           </p>
         )}
       </div>
-      <LayoutHandoffPicker
-        value={layoutHandoffProfile}
-        onChange={onLayoutHandoffProfileChange}
-        disabled={loading}
-      />
-      <GridBasePicker
-        value={gridBase}
-        onChange={onGridBaseChange}
-        disabled={loading}
-      />
-      <ContrastLevelPicker
-        value={contrastLevel}
-        onChange={onContrastLevelChange}
-        disabled={loading}
-      />
-      <ExportQualityPicker
-        value={exportQuality}
-        onChange={onExportQualityChange}
-        disabled={loading}
-      />
+
+      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800">
+        <button
+          type="button"
+          onClick={() => setConfigOpen((prev) => !prev)}
+          className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
+          aria-expanded={configOpen}
+        >
+          <span>Scan Configuration</span>
+          <svg
+            className={`h-4 w-4 transition-transform duration-200 ${configOpen ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+
+        {configOpen && (
+          <div className="space-y-5 border-t border-zinc-200 dark:border-zinc-800 px-4 py-4">
+            <LayoutHandoffPicker
+              value={layoutHandoffProfile}
+              onChange={onLayoutHandoffProfileChange}
+              disabled={loading}
+            />
+            <GridBasePicker
+              value={gridBase}
+              onChange={onGridBaseChange}
+              disabled={loading}
+            />
+            <ContrastLevelPicker
+              value={contrastLevel}
+              onChange={onContrastLevelChange}
+              disabled={loading}
+            />
+            <ExportQualityPicker
+              value={exportQuality}
+              onChange={onExportQualityChange}
+              disabled={loading}
+            />
+          </div>
+        )}
+      </div>
     </form>
   );
 }

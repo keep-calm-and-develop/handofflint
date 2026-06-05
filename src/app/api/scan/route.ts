@@ -5,7 +5,11 @@ import { parseLayoutHandoffProfile } from "@/lib/audit/layout-profile";
 import { runAllAudits } from "@/lib/audit/run-audits";
 import { FigmaApiError, fetchFigmaTree } from "@/lib/figma/client";
 import { isFigmaApiMockEnabled } from "@/lib/figma/mock-enabled";
-import { countFigmaNodes, extractFigmaDocuments } from "@/lib/figma/tree";
+import {
+  countFigmaNodes,
+  extractFigmaDocuments,
+  walkFigmaTree,
+} from "@/lib/figma/tree";
 import { parseFigmaUrl } from "@/lib/figma/url";
 import {
   computeReadinessScore,
@@ -20,8 +24,12 @@ import {
   type FigmaFetchSummary,
   type ScanErrorResponse,
   type ScanResponse,
+  type AIEnrichmentItem,
 } from "@/lib/types";
 import { executeRenderFrame } from "@/lib/agent/tools/render-frame";
+import { analyzeVisualFrame } from "@/lib/agent/vision";
+import { verifyGroundedness, crossModalFilter } from "@/lib/agent/guardrails";
+import { FigmaNode } from "@/lib/figma/node";
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -133,6 +141,7 @@ export async function POST(request: Request) {
 
   let findings: ScanResponse["findings"] = [];
   let auditSummary: ScanResponse["auditSummary"];
+  let finalEnrichments: AIEnrichmentItem[] | null = null;
 
   if (figma?.data != null) {
     const roots = extractFigmaDocuments(figma.data);
@@ -146,16 +155,56 @@ export async function POST(request: Request) {
         minRasterScale: exportQuality,
       }),
     );
-    if (parsed.nodeId) {
-      const renderResult = await executeRenderFrame(parsed.fileKey, {
-        nodeId: parsed.nodeId,
-        scale: 1,
-        format: "png",
-      });
+    const targetNodeId = parsed.nodeId || (roots[0] ? roots[0].id : null);
+    const googleApiKeySet = !!process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (targetNodeId && googleApiKeySet) {
+      try {
+        const renderResult = await executeRenderFrame(parsed.fileKey, {
+          nodeId: targetNodeId,
+          scale: 1,
+          format: "png",
+        });
 
-      if (renderResult.status === "ok") {
-        void renderResult.url;
-        // call Gemini Vision API to get suggestions
+        if (renderResult.status === "ok") {
+          const validNodeIdsInTree = new Set<string>();
+          const figmaNodesMap = new Map<string, FigmaNode>();
+
+          for (const root of roots) {
+            walkFigmaTree(root, (node) => {
+              validNodeIdsInTree.add(node.id);
+              figmaNodesMap.set(node.id, node);
+            });
+          }
+
+          // Build a shallow textual description string of the tree metadata context for Gemini
+          const contextSnapshotString = JSON.stringify(
+            findings
+              .slice(0, 10)
+              .map((f) => ({ node: f.nodeName, id: f.nodeId, rule: f.rule })),
+          );
+
+          // Invoke your single-turn Gemini vision module wrapper cleanly
+          const aiResponse = await analyzeVisualFrame({
+            imageUrl: renderResult.url,
+            figmaNodeContext: contextSnapshotString,
+          });
+
+          if (aiResponse.status === "success" && aiResponse.enrichments) {
+            // Apply Guardrail Step 1: Groundedness check (Drop ghost element citations)
+            const groundedItems = verifyGroundedness(
+              aiResponse.enrichments,
+              validNodeIdsInTree,
+            );
+
+            // Apply Guardrail Step 2: Cross-modal check (Match assertions against JSON rules)
+            finalEnrichments = crossModalFilter(groundedItems, figmaNodesMap);
+          }
+        }
+      } catch (visionError) {
+        console.error(
+          "[Vision Step Error]: Layer degradation activated.",
+          visionError,
+        );
       }
     }
     auditSummary = {
@@ -188,5 +237,6 @@ export async function POST(request: Request) {
     figma,
     figmaSkippedReason,
     auditSummary,
+    aiEnrichment: finalEnrichments,
   });
 }

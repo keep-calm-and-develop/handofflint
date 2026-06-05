@@ -7,7 +7,12 @@ import {
   getLayoutHandoffLabel,
   getScoreColorClass,
 } from "@/lib/scan-display";
-import type { FigmaApiPayload, Finding, ScanResponse } from "@/lib/types";
+import type {
+  AIEnrichmentItem,
+  FigmaApiPayload,
+  Finding,
+  ScanResponse,
+} from "@/lib/types";
 
 export interface ScanResultViewModel {
   readinessScore: number;
@@ -19,6 +24,8 @@ export interface ScanResultViewModel {
   auditStatusLabel: string | null;
   figma: FigmaApiPayload | null;
   figmaSkippedReason?: string;
+  fileKey: string;
+  aiEnrichment: AIEnrichmentItem[] | null;
 }
 
 function buildAuditStatusLabel(result: ScanResponse): string | null {
@@ -60,6 +67,8 @@ export function useScanResult(
       auditStatusLabel: buildAuditStatusLabel(result),
       figma: result.figma,
       figmaSkippedReason: result.figmaSkippedReason,
+      fileKey: result.fileKey,
+      aiEnrichment: result.aiEnrichment ?? null,
     };
   }, [result]);
 }
