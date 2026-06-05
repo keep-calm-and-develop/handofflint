@@ -77,6 +77,18 @@ export interface AuditSummary {
   figmaMock?: boolean;
 }
 
+export interface AIEnrichmentItem {
+  nodeId: string;
+  violationCategory:
+    | "hierarchy_clash"
+    | "typography_anomaly"
+    | "visual_clipping"
+    | "palette_pollution"
+    | "symmetry_break";
+  perceptualFlawDescription: string;
+  codegenPromptSuggestion: string;
+}
+
 export interface ScanResponse {
   readinessScore: number;
   findings: Finding[];
@@ -85,8 +97,8 @@ export interface ScanResponse {
   scannedAt: string;
   figma: FigmaApiPayload | null;
   figmaSkippedReason?: string;
-  /** Set when Figma data was fetched and deterministic audits ran. */
   auditSummary?: AuditSummary;
+  aiEnrichment?: AIEnrichmentItem[] | null;
 }
 
 export interface ScanErrorResponse {

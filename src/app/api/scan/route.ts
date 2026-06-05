@@ -21,6 +21,7 @@ import {
   type ScanErrorResponse,
   type ScanResponse,
 } from "@/lib/types";
+import { executeRenderFrame } from "@/lib/agent/tools/render-frame";
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -145,9 +146,30 @@ export async function POST(request: Request) {
         minRasterScale: exportQuality,
       }),
     );
+    if (parsed.nodeId) {
+      const renderResult = await executeRenderFrame(parsed.fileKey, {
+        nodeId: parsed.nodeId,
+        scale: 1,
+        format: "png",
+      });
+
+      if (renderResult.status === "ok") {
+        void renderResult.url;
+        // call Gemini Vision API to get suggestions
+      }
+    }
     auditSummary = {
       nodesScanned,
-      toolsRun: ["naming", "layout", "hidden", "spacing", "contrast", "svg", "export", "reuse"],
+      toolsRun: [
+        "naming",
+        "layout",
+        "hidden",
+        "spacing",
+        "contrast",
+        "svg",
+        "export",
+        "reuse",
+      ],
       layoutHandoffProfile,
       dataSource,
       ...(isFigmaApiMockEnabled() ? { figmaMock: true } : {}),

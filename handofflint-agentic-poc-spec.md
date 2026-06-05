@@ -100,7 +100,7 @@ Dashboard Display: Core Violations + Clear Code-Gen Suggestions
 - [x] **1.1** `fetchFigmaImages` integration handling API interaction, 429 safety paths, and null image results
 - [x] **1.2** Vercel AI SDK compliant schema implementation for frame evaluation
 
-### Phase 2 — Golden Snapshot Evals (BUILD BY HAND)
+### Phase 2 — Golden Snapshot Evals (BUILD BY HAND) (COMPLETED)
 
 _Goal: Secure your deterministic test parameters before connecting LLM operations._
 

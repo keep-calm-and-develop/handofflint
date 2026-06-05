@@ -74,7 +74,62 @@ const renderFrameInputSchema = z.object({
     .describe("Image encoding. Use png for crisp UI; jpg for photos."),
 });
 
-type RenderFrameInput = z.infer<typeof renderFrameInputSchema>;
+export type RenderFrameInput = z.infer<typeof renderFrameInputSchema>;
+
+export async function executeRenderFrame(
+  fileKey: string,
+  input: RenderFrameInput,
+): Promise<RenderFrameOutput> {
+  const { nodeId, scale, format } = input;
+
+  let result;
+  try {
+    result = await fetchFigmaImages(fileKey, [nodeId], { scale, format });
+  } catch (err) {
+    if (err instanceof FigmaApiError) {
+      return {
+        status: "error",
+        nodeId,
+        message: err.message,
+        code: err.status,
+      };
+    }
+    return {
+      status: "error",
+      nodeId,
+      message: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+
+  if (!result) {
+    return {
+      status: "error",
+      nodeId,
+      message: "FIGMA_ACCESS_TOKEN is not configured — cannot render frame.",
+    };
+  }
+
+  const url = result.images[nodeId];
+
+  if (url === null || url === undefined) {
+    return {
+      status: "null_render",
+      nodeId,
+      reason:
+        "Figma returned null for this node — it is likely invisible, has 0% opacity, " +
+        "or lies outside the canvas. No visual critique is possible.",
+    };
+  }
+
+  return {
+    status: "ok",
+    nodeId,
+    url,
+    scale,
+    format,
+    source: result.source,
+  };
+}
 
 export function makeRenderFrameTool(fileKey: string) {
   return tool({
@@ -84,59 +139,7 @@ export function makeRenderFrameTool(fileKey: string) {
       "(broken hierarchy, overlap, crowding, misalignment). " +
       "Returns null_render when the node produces no visible pixels — skip vision critique in that case.",
     inputSchema: renderFrameInputSchema,
-    execute: async (
-      input: RenderFrameInput,
-    ): Promise<RenderFrameOutput> => {
-      const { nodeId, scale, format } = input;
-
-      let result;
-      try {
-        result = await fetchFigmaImages(fileKey, [nodeId], { scale, format });
-      } catch (err) {
-        if (err instanceof FigmaApiError) {
-          return {
-            status: "error",
-            nodeId,
-            message: err.message,
-            code: err.status,
-          };
-        }
-        return {
-          status: "error",
-          nodeId,
-          message: err instanceof Error ? err.message : "Unknown error",
-        };
-      }
-
-      if (!result) {
-        return {
-          status: "error",
-          nodeId,
-          message:
-            "FIGMA_ACCESS_TOKEN is not configured — cannot render frame.",
-        };
-      }
-
-      const url = result.images[nodeId];
-
-      if (url === null || url === undefined) {
-        return {
-          status: "null_render",
-          nodeId,
-          reason:
-            "Figma returned null for this node — it is likely invisible, has 0% opacity, " +
-            "or lies outside the canvas. No visual critique is possible.",
-        };
-      }
-
-      return {
-        status: "ok",
-        nodeId,
-        url,
-        scale,
-        format,
-        source: result.source,
-      };
-    },
+    outputSchema: RenderFrameOutputSchema,
+    execute: async (input) => executeRenderFrame(fileKey, input),
   });
 }
