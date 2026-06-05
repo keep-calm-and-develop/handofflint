@@ -139,3 +139,42 @@ _Goal: Final end-to-end performance runs._
 
 - [ ] **7.1** Run a complete user transaction trace passing a single layout frame URL. Verify that your system outputs unified structural checks and visual prompt enhancements in a single runtime pass.
 - [ ] **7.2** Double-check your API token consumption logs to ensure your single-turn architecture stays under your target budget limits.
+
+### Phase 8 — AgentMark Observability Foundation
+
+_Goal: Integrate AgentMark to capture clear execution traces, version your prompts, and monitor cost/latency tracking for the certification panel._
+
+- [ ] **8.1** Install and initialize AgentMark within your project workspace workspace parameters (`pnpm add agentmark`).
+- [ ] **8.2** Build the file infrastructure layout for your prompts: create `src/prompts/handoff-investigator.prompt.mdx`.
+- [ ] **8.3** Migrate your system instructions and core prompt blocks out of your static TypeScript file and into the `.prompt.mdx` layout to decouple your AI prompts from application logic.
+- [ ] **8.4** Connect the telemetry logger inside `src/app/api/scan/route.ts` to output local JSONL trace arrays during development passes.
+
+### Phase 9 — ReAct & Localized RAG Tools (No Token Cost)
+
+_Goal: Program the two core evaluation tools that turn your application into an intelligent design investigator. These parse raw local data structures at $0 cost._
+
+- [ ] **9.1** Setup the **Local RAG Corpus**: Download or write a concise markdown rulebook detailing Tailwind CSS layout guidelines (Flexbox rules, Grid properties, fluid wrapping parameters) and save it to `src/lib/agent/docs/tailwind-layout.md`.
+- [ ] **9.2** Implement the **RAG Tool** (`search_layout_guidelines`): Write a fast TypeScript function that takes a query keyword string, parses your local markdown file, matches relevant paragraphs, and returns them. Wrap this as an AI SDK tool.
+- [ ] **9.3** Implement the **Inspection Tool** (`inspect_node_properties`): Write an async tool block that takes a `nodeId`, pulls the full, untruncated JSON layout variables for that specific element from your tree memory cache, and returns it to the AI.
+
+### Phase 10 — Multi-Turn ReAct Orchestration Lifecycle
+
+_Goal: Transition from a single-turn call to an autonomous multi-turn cycle where Gemini discovers a layout bug, uses tools to investigate the tree properties, references the RAG manual, and builds a solution._
+
+- [ ] **10.1** Update your vision function inside `src/lib/agent/vision.ts` to connect the `tools` array parameter to the `generateText` config block.
+- [ ] **10.2** Enforce strict step budget boundaries on the tool calling cycle by configuring `maxSteps: 4` or `5` max to protect your request limits.
+- [ ] **10.3** Program the agent reasoning cycle to follow this explicit behavioral sequence:
+  1. Inspect the incoming screenshot frame image.
+  2. Identify a perceptual abnormality (e.g., text block clipping).
+  3. Execute `inspect_node_properties(nodeId)` to verify hidden width/height constraints.
+  4. Execute `search_layout_guidelines(query)` to draw down verified Tailwind mitigation syntax.
+  5. Assemble the structured, verified audit suggestions payload.
+- [ ] **10.4** Wire this multi-turn workflow loop directly into your primary `POST /api/scan` server route.
+
+### Phase 11 — Certification Review & Calibration Run
+
+_Goal: Compile your trace metrics to prove true agentic behavior and 100% groundedness to your evaluation committee._
+
+- [ ] **11.1** Trigger a mock evaluation sweep via your dashboard page to verify your agent loops capture multi-step traces perfectly (_Thought → Call inspect tool → Observation → Call RAG tool → Final Conclusion_).
+- [ ] **11.2** Verify your request rates stay cleanly under Google AI Studio's free allowance tier boundary limit of 15 requests per minute.
+- [ ] **11.3** Save your finalized local AgentMark trace logs directly into your repository folder workspace as a concrete verification asset for your presentation slides.
