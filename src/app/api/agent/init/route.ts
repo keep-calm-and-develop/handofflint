@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { executeRenderFrame } from "@/lib/agent/tools/render-frame";
 import { FigmaApiError, fetchFigmaTree } from "@/lib/figma/client";
 import { getTreeFromCache, indexFigmaTreeNodes } from "@/lib/figma/cache";
 import { parseFigmaUrl } from "@/lib/figma/url";
@@ -68,9 +69,25 @@ export async function POST(request: Request) {
       );
     }
 
+    let imageUrl: string | null = null;
+    let imageSource: "api" | "cache" | null = null;
+    if (parsed.nodeId) {
+      const render = await executeRenderFrame(parsed.fileKey, {
+        nodeId: parsed.nodeId,
+        scale: 2,
+        format: "png",
+      });
+      if (render.status === "ok") {
+        imageUrl = render.url;
+        imageSource = render.source;
+      }
+    }
+
     return NextResponse.json<AgentInitResponse>({
       fileKey: parsed.fileKey,
       nodeId: parsed.nodeId,
+      imageUrl,
+      imageSource,
       nodesIndexed,
       success: true,
     });

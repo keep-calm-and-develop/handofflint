@@ -25,12 +25,12 @@ Build Checklist Progress:
 - [x] Task 3: Endpoint 2 — Structural Linters POST /api/agent/audit — COMPLETED (src/app/api/agent/audit/route.ts)
 - [x] Task 4: ReAct Agent Tool Registration — COMPLETED (inspect-node.ts + search-guidelines.ts)
 - [x] Task 5: Endpoint 3 — ReAct Vision Engine POST /api/agent/vision — COMPLETED (src/app/api/agent/vision/route.ts)
-- [ ] Task 6: Terminal Verification Run
-- [ ] Task 7: Master Wizard State Machine (frontend)
-- [ ] Task 8: Right Panel — Agent Control Box (frontend)
-- [ ] Task 9: Vision Results Panel (frontend)
-- [ ] Task 10: Left Panel — Living State Display (frontend)
-- [ ] Task 11: Final E2E Calibration
+- [x] Task 6: Terminal Verification Run — confirmed streaming pipeline end-to-end
+- [x] Task 7: Master Wizard State Machine (frontend)
+- [x] Task 8: Right Panel — Agent Control Box (frontend)
+- [x] Task 9: Vision Results Panel (frontend)
+- [x] Task 10: Left Panel — Living State Display (frontend)
+- [x] Task 11: Final E2E Calibration — fixed system prompt JSON output, parseVisionCritiqueOutput fence extraction, rawAnalysis fallback, retrieval minScore threshold
 ```
 
 ## Existing Codebase Map (Key Files)
@@ -54,6 +54,11 @@ Build Checklist Progress:
 | `src/lib/agent/tools/search-guidelines.ts` | `makeSearchGuidelinesTool()` — Single-file RAG: fetch markdown → chunk → keyword score → top 3 retrieval |
 | `src/lib/agent/tools/search-guidelines.test.ts` | 30 tests: tokenize, chunkMarkdown, scoreChunks, retrieveTopChunks, fetchMarkdownContent, executeSearchGuidelines |
 | `src/app/api/agent/vision/route.ts` | Streaming ReAct vision endpoint — `streamText` with `stepCountIs(5)`, layout profile interpolation, `toUIMessageStreamResponse()` |
+| `src/app/agent/page.tsx` | `/agent` route entrypoint for the split-panel wizard dashboard |
+| `src/components/agent/AgentWizardDashboard.tsx` | Client-side split-panel wizard dashboard with left telemetry and right control box |
+| `src/components/agent/WizardStepIndicator.tsx` | Step breadcrumb indicator for the 4-phase agent flow |
+| `src/hooks/use-agent-wizard.ts` | Client hook that owns wizard state, API calls, and vision stream accumulation |
+| `src/lib/api/agent.ts` | Lightweight client fetch helpers for the agent init/audit/vision endpoints |
 
 ## Implementation Conventions
 
@@ -127,6 +132,13 @@ Build Checklist Progress:
 - `designManualUrl` passed directly in body — injected into user prompt so agent uses it with RAG tool
 - No Zod structured output (incompatible with streaming tools in SDK v6) — frontend parses the stream events
 - Logs: `stream_start`, `step_finish` (with tool names), `stream_complete` (steps, tokens), `stream_error`
+
+### Task 7–10 Frontend Wizard Notes
+
+- The `/agent` route now owns the split-panel dashboard shell, keeping the root page untouched.
+- Client state lives in `use-agent-wizard.ts` and is split into ingestion, audit, and vision concerns so the UI remains render-safe.
+- The right panel is intentionally minimal: step indicator, URL ingest, profile cards, manual markdown URL input, and streamed terminal output.
+- The left panel is driven directly from `scanData` plus stream-derived nodeId overlaps so the readiness gauge, frame canvas, and findings table stay in sync.
 
 ## Self-Update Protocol
 

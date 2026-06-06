@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { clearFigmaTreeCache, getTreeFromCache } from "@/lib/figma/cache";
+import { MOCK_IMAGE_URL } from "@/mocks/figma-handlers";
 import { figmaMockServer } from "@/mocks/server";
 
 import { POST } from "./route";
@@ -86,6 +87,8 @@ describe("POST /api/agent/init", () => {
     expect(json.success).toBe(true);
     expect(json.fileKey).toBe("abc123");
     expect(json.nodeId).toBe("1:4");
+    expect(json.imageUrl).toBe(MOCK_IMAGE_URL);
+    expect(json.imageSource).toBe("api");
     expect(json.nodesIndexed).toBeGreaterThan(0);
   });
 
@@ -109,6 +112,7 @@ describe("POST /api/agent/init", () => {
     expect(json.success).toBe(true);
     expect(json.fileKey).toBe("abc123");
     expect(json.nodeId).toBeNull();
+    expect(json.imageUrl).toBeNull();
     expect(json.nodesIndexed).toBeGreaterThan(0);
   });
 });

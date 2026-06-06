@@ -164,16 +164,23 @@ export function scoreChunks(query: string, chunks: string[]): ScoredChunk[] {
 
 export function retrieveTopChunks(
   scored: ScoredChunk[],
+  queryTokenCount: number = 0,
   limit: number = TOP_K_RESULTS,
 ): string {
+  // For multi-keyword queries (5+ unique tokens), require at least 2 matches
+  // to prevent a single common word (e.g. "primary" appearing in a typography section)
+  // from producing misleading guideline results for unrelated topics.
+  const minScore = queryTokenCount >= 5 ? 2 : 1;
+
   const ranked = [...scored]
-    .filter((c) => c.score > 0)
+    .filter((c) => c.score >= minScore)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 
   log("retrieval_complete", {
     totalWithMatches: scored.filter((c) => c.score > 0).length,
     topK: ranked.length,
+    minScoreApplied: minScore,
     topScores: ranked.map((c) => ({
       score: c.score,
       keywords: c.matchedKeywords,
@@ -220,7 +227,8 @@ export async function executeSearchGuidelines(
   }
 
   const scored = scoreChunks(query, chunks);
-  const context = retrieveTopChunks(scored);
+  const queryTokenCount = tokenize(query).length;
+  const context = retrieveTopChunks(scored, queryTokenCount);
 
   if (!context) {
     log("pipeline_no_matches", { query });

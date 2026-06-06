@@ -110,6 +110,9 @@ export interface ScanErrorResponse {
 export interface AgentInitResponse {
   fileKey: string;
   nodeId: string | null;
+  imageUrl: string | null;
+  /** Present when `imageUrl` was produced by `fetchFigmaImages`. */
+  imageSource?: "api" | "cache" | null;
   nodesIndexed: number;
   success: true;
 }

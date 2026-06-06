@@ -178,7 +178,7 @@ describe("retrieveTopChunks", () => {
       { text: "D", score: 4, matchedKeywords: ["d"] },
     ];
 
-    const result = retrieveTopChunks(scored, 3);
+    const result = retrieveTopChunks(scored, 0, 3);
     expect(result).toBe("B\n\n---\n\nD\n\n---\n\nC");
   });
 
@@ -189,7 +189,7 @@ describe("retrieveTopChunks", () => {
       { text: "C", score: 1, matchedKeywords: ["c"] },
     ];
 
-    const result = retrieveTopChunks(scored, 3);
+    const result = retrieveTopChunks(scored, 0, 3);
     expect(result).toBe("A\n\n---\n\nC");
   });
 
@@ -209,8 +209,20 @@ describe("retrieveTopChunks", () => {
       { text: "C", score: 1, matchedKeywords: ["c"] },
     ];
 
-    const result = retrieveTopChunks(scored, 1);
+    const result = retrieveTopChunks(scored, 0, 1);
     expect(result).toBe("A");
+  });
+
+  it("applies minScore=2 threshold when queryTokenCount >= 5", () => {
+    const scored: ScoredChunk[] = [
+      { text: "A", score: 1, matchedKeywords: ["a"] },
+      { text: "B", score: 2, matchedKeywords: ["b", "c"] },
+      { text: "C", score: 3, matchedKeywords: ["d", "e", "f"] },
+    ];
+
+    // With 6-token query, single-keyword matches (score=1) are filtered out
+    const result = retrieveTopChunks(scored, 6, 3);
+    expect(result).toBe("C\n\n---\n\nB");
   });
 });
 
