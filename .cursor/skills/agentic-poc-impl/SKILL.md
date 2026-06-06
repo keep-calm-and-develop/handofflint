@@ -22,7 +22,7 @@ Track completed tasks here. **After completing any task, update this section** s
 Build Checklist Progress:
 - [x] Task 1: Cache Memory Manager (src/lib/figma/cache.ts) — COMPLETED
 - [x] Task 2: Endpoint 1 — Ingestion POST /api/agent/init — COMPLETED (src/app/api/agent/init/route.ts)
-- [ ] Task 3: Endpoint 2 — Structural Linters POST /api/agent/audit
+- [x] Task 3: Endpoint 2 — Structural Linters POST /api/agent/audit — COMPLETED (src/app/api/agent/audit/route.ts)
 - [ ] Task 4: ReAct Agent Tool Registration (inspect-node + search-guidelines)
 - [ ] Task 5: Endpoint 3 — ReAct Vision Engine POST /api/agent/vision
 - [ ] Task 6: Terminal Verification Run
@@ -37,7 +37,7 @@ Build Checklist Progress:
 
 | File | Purpose |
 |------|---------|
-| `src/lib/figma/cache.ts` | Global singleton cache: `indexFigmaTreeNodes(fileKey, data)`, `getTreeFromCache(fileKey)`, `getIndexedNode(fileKey, nodeId)` |
+| `src/lib/figma/cache.ts` | Global singleton cache: `indexFigmaTreeNodes(fileKey, data)`, `getTreeFromCache(fileKey)`, `getIndexedNode(fileKey, nodeId)`, `getRootNodesFromCache(fileKey)` |
 | `src/lib/figma/client.ts` | `fetchFigmaTree(fileKey, nodeId)` — fetches from Figma API with cache-aware logic |
 | `src/lib/figma/url.ts` | `parseFigmaUrl(url)` — extracts `fileKey` and `nodeId` from Figma URLs |
 | `src/lib/figma/fetch.ts` | `figmaFetch()`, `parseFigmaResponse()`, `FigmaApiError` class |
@@ -47,7 +47,9 @@ Build Checklist Progress:
 | `src/lib/api/scan.ts` | Client-side fetch wrapper for `/api/scan` |
 | `src/app/api/agent/init/route.ts` | Ingestion endpoint — parses URL, fetches tree, primes flat-index cache |
 | `src/app/api/agent/init/route.test.ts` | 8 tests covering input validation, mock flow, cache verification, error handling |
-| `src/lib/types.ts` | Includes `AgentInitResponse`, `AgentErrorResponse` (shared across agent endpoints) |
+| `src/lib/types.ts` | Includes `AgentInitResponse`, `AgentAuditResponse`, `AgentErrorResponse` (shared across agent endpoints) |
+| `src/app/api/agent/audit/route.ts` | Structural linters endpoint — reads cache, runs 8 audits, returns score + findings |
+| `src/app/api/agent/audit/route.test.ts` | 9 tests covering input validation, cache miss, happy path, profile defaults, severity ordering |
 
 ## Implementation Conventions
 
@@ -78,9 +80,12 @@ Build Checklist Progress:
 
 **Flow**: Parse body `{ fileKey, layoutProfile }` → `getTreeFromCache(fileKey)` → run audits → compute score → respond `{ readinessScore, findings[] }`
 
-**Key decisions**:
-- Return 400 Cache Miss if `getTreeFromCache` returns null
-- Reuse existing `runAllAudits()`, `computeReadinessScore()`, `sortFindingsBySeverity()`
+**Key decisions (resolved)**:
+- Returns 400 Cache Miss if `getRootNodesFromCache` returns null (init must run first)
+- Uses existing `LayoutHandoffProfile` values ("fixed-size", "separate-screens", "flexible-layout") — NOT the spec's "dashboard"/"landing" strings
+- Accepts all optional params: `layoutHandoffProfile`, `contrastLevel`, `gridBase`, `exportQuality`
+- Added `getRootNodesFromCache(fileKey)` helper to `cache.ts` — tracks root node IDs during indexing, returns `FigmaNode[]` with full child trees for `runAllAudits`
+- Response includes `nodesScanned` and `layoutHandoffProfile` for frontend display
 
 ### Task 5: POST /api/agent/vision
 

@@ -17,6 +17,7 @@ const DEFAULT_MAX_ENTRIES = 50;
 const store = new Map<string, FigmaTreeCacheEntry>();
 
 const nodeRegistry = new Map<string, Map<string, FigmaNode>>();
+const rootNodeIds = new Map<string, string[]>();
 
 function logStore(event: string, details?: Record<string, unknown>): void {
   console.log("[figma-tree-cache]", event, details ?? "");
@@ -139,6 +140,7 @@ export function peekFigmaTreeCache(key: string): FigmaTreeCacheEntry | null {
 export function clearFigmaTreeCache(): void {
   store.clear();
   nodeRegistry.clear();
+  rootNodeIds.clear();
 }
 
 function getOrCreateFileMap(fileKey: string): Map<string, FigmaNode> {
@@ -174,11 +176,15 @@ export function indexFigmaTreeNodes(
     return;
   }
 
+  const roots: string[] = [];
+
   const documents = extractFigmaDocuments(rootTreeData);
   if (documents.length > 0) {
     for (const doc of documents) {
       flattenAndIndexNode(fileKey, doc);
+      roots.push(doc.id);
     }
+    rootNodeIds.set(fileKey, roots);
     return;
   }
 
@@ -188,6 +194,8 @@ export function indexFigmaTreeNodes(
 
   if (isFigmaNode(rootTreeData)) {
     flattenAndIndexNode(fileKey, rootTreeData);
+    roots.push(rootTreeData.id);
+    rootNodeIds.set(fileKey, roots);
     return;
   }
 
@@ -198,8 +206,13 @@ export function indexFigmaTreeNodes(
     for (const child of record.children) {
       if (isFigmaNode(child)) {
         flattenAndIndexNode(fileKey, child);
+        roots.push(child.id);
       }
     }
+  }
+
+  if (roots.length > 0) {
+    rootNodeIds.set(fileKey, roots);
   }
 }
 
@@ -211,6 +224,24 @@ export function getTreeFromCache(
   fileKey: string,
 ): Map<string, FigmaNode> | null {
   return nodeRegistry.get(fileKey) ?? null;
+}
+
+/**
+ * Returns the root FigmaNode[] that were indexed for a file, preserving
+ * their full child trees. Ready for direct use with `runAllAudits`.
+ * Returns null if the file has not been indexed.
+ */
+export function getRootNodesFromCache(fileKey: string): FigmaNode[] | null {
+  const ids = rootNodeIds.get(fileKey);
+  if (!ids || ids.length === 0) {
+    return null;
+  }
+  const fileMap = nodeRegistry.get(fileKey);
+  if (!fileMap) {
+    return null;
+  }
+  const roots = ids.map((id) => fileMap.get(id)).filter((n): n is FigmaNode => n != null);
+  return roots.length > 0 ? roots : null;
 }
 
 /**

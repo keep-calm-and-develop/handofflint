@@ -5,6 +5,7 @@ import {
   clearFigmaTreeCache,
   getFigmaTreeCache,
   getIndexedNode,
+  getRootNodesFromCache,
   getTreeFromCache,
   isCacheFresh,
   indexFigmaTreeNodes,
@@ -212,5 +213,75 @@ describe("node registry (indexFigmaTreeNodes / getIndexedNode / getTreeFromCache
     expect(getTreeFromCache("file-b")!.size).toBe(1);
     expect(getIndexedNode("file-a", "2:1")).toBeNull();
     expect(getIndexedNode("file-b", "1:1")).toBeNull();
+  });
+});
+
+describe("getRootNodesFromCache", () => {
+  afterEach(() => {
+    clearFigmaTreeCache();
+  });
+
+  const frame: FigmaNode = {
+    id: "1:1",
+    name: "Frame",
+    type: "FRAME",
+    children: [
+      { id: "1:2", name: "Button", type: "INSTANCE", componentId: "c1" },
+      { id: "1:3", name: "Text", type: "TEXT", characters: "Hello" },
+    ],
+  };
+
+  it("returns root nodes for a single FigmaNode root", () => {
+    indexFigmaTreeNodes("file-x", frame);
+
+    const roots = getRootNodesFromCache("file-x");
+    expect(roots).not.toBeNull();
+    expect(roots).toHaveLength(1);
+    expect(roots![0]).toBe(frame);
+    expect(roots![0].children).toHaveLength(2);
+  });
+
+  it("returns root nodes for a document wrapper response", () => {
+    const apiResponse = {
+      document: {
+        id: "0:0",
+        name: "Document",
+        type: "DOCUMENT",
+        children: [frame],
+      },
+      version: "v1",
+    };
+
+    indexFigmaTreeNodes("file-y", apiResponse);
+
+    const roots = getRootNodesFromCache("file-y");
+    expect(roots).not.toBeNull();
+    expect(roots).toHaveLength(1);
+    expect(roots![0].id).toBe("0:0");
+    expect(roots![0].type).toBe("DOCUMENT");
+  });
+
+  it("returns root nodes for a file-nodes API response", () => {
+    const nodesResponse = {
+      nodes: { "1:1": { document: frame } },
+    };
+
+    indexFigmaTreeNodes("file-z", nodesResponse);
+
+    const roots = getRootNodesFromCache("file-z");
+    expect(roots).not.toBeNull();
+    expect(roots).toHaveLength(1);
+    expect(roots![0]).toBe(frame);
+  });
+
+  it("returns null for a file not yet indexed", () => {
+    expect(getRootNodesFromCache("unknown")).toBeNull();
+  });
+
+  it("returns null after cache is cleared", () => {
+    indexFigmaTreeNodes("file-x", frame);
+    clearFigmaTreeCache();
+
+    expect(getRootNodesFromCache("file-x")).toBeNull();
   });
 });

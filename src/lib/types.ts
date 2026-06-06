@@ -114,6 +114,13 @@ export interface AgentInitResponse {
   success: true;
 }
 
+export interface AgentAuditResponse {
+  readinessScore: number;
+  findings: Finding[];
+  nodesScanned: number;
+  layoutHandoffProfile: LayoutHandoffProfile;
+}
+
 export interface AgentErrorResponse {
   error: string;
 }
