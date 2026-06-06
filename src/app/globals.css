@@ -2,7 +2,8 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1e1e1e;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -10,17 +11,15 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Figma brand design system primitives */
+  --color-figma-green: #24cb71;
+  --color-figma-blue: #0d99ff;
+  --color-figma-orange: #ff7237;
+  --color-figma-purple: #874fff;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

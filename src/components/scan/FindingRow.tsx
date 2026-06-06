@@ -28,7 +28,7 @@ export function FindingRow({ finding }: FindingRowProps) {
           href={finding.figmaUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-zinc-900 underline-offset-2 hover:underline dark:text-zinc-100"
+          className="cursor-pointer font-medium text-figma-blue underline-offset-2 hover:underline"
         >
           Open
         </a>

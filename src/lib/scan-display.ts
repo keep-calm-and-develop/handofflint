@@ -1,10 +1,10 @@
 import type { AuditTool, ContrastLevel, ExportQuality, LayoutHandoffProfile, Severity } from "@/lib/types";
 
 export const SEVERITY_STYLES: Record<Severity, string> = {
-  critical: "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200",
-  high: "bg-orange-100 text-orange-900 dark:bg-orange-950 dark:text-orange-200",
-  medium: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-  low: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
+  critical: "border-red-200 bg-red-50 text-red-700",
+  high: "border-figma-orange/50 bg-figma-orange/20 text-figma-orange",
+  medium: "border-figma-orange/30 bg-figma-orange/10 text-[#c95520]",
+  low: "border-figma-blue/30 bg-figma-blue/10 text-figma-blue",
 };
 
 export const AUDIT_LABELS: Record<AuditTool, string> = {
@@ -19,9 +19,9 @@ export const AUDIT_LABELS: Record<AuditTool, string> = {
 };
 
 export function getScoreColorClass(score: number): string {
-  if (score >= 85) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 60) return "text-amber-600 dark:text-amber-400";
-  return "text-red-600 dark:text-red-400";
+  if (score >= 85) return "text-figma-green";
+  if (score >= 60) return "text-figma-orange";
+  return "text-red-600";
 }
 
 export function formatFindingCount(count: number): string {

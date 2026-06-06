@@ -35,15 +35,15 @@ function phaseLabel(
 function statusStyles(status: VisionToolCallStatus): string {
   switch (status) {
     case "running":
-      return "border-amber-500/30 bg-amber-500/10 text-amber-200";
+      return "border-figma-purple bg-figma-purple/10 text-figma-purple";
     case "ok":
-      return "border-emerald-500/30 bg-emerald-500/10 text-emerald-200";
+      return "border-figma-green bg-figma-green/10 text-figma-green";
     case "not_found":
-      return "border-zinc-600 bg-zinc-900 text-zinc-400";
+      return "border-zinc-200 bg-zinc-50 text-zinc-500";
     case "error":
-      return "border-red-500/30 bg-red-500/10 text-red-200";
+      return "border-red-200 bg-red-50 text-red-700";
     default:
-      return "border-zinc-700 bg-zinc-900 text-zinc-400";
+      return "border-zinc-200 bg-zinc-50 text-zinc-500";
   }
 }
 
@@ -78,14 +78,14 @@ function ToolCallCard({
   nodeId: string | null;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-3">
+    <div className="rounded-xl border border-zinc-200 bg-white p-3 font-mono text-[13px] shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-zinc-100">{label}</p>
-          <p className="mt-0.5 font-mono text-[11px] text-zinc-500">{toolName}</p>
+          <p className="text-sm font-medium text-zinc-900">{label}</p>
+          <p className="mt-0.5 text-[11px] text-zinc-400">{toolName}</p>
         </div>
         <span
-          className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[10px] uppercase tracking-[0.2em] ${statusStyles(status)}`}
+          className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] ${statusStyles(status)}`}
         >
           {status === "running" ? (
             <span className="inline-flex items-center gap-1.5">
@@ -98,16 +98,16 @@ function ToolCallCard({
         </span>
       </div>
 
-      <div className="mt-3 space-y-1.5 text-xs text-zinc-400">
+      <div className="mt-3 space-y-1.5 text-xs text-zinc-500">
         {inputSummary && <p>{inputSummary}</p>}
         {nodeId && !inputSummary?.includes(nodeId) && (
           <p>
-            Target node: <span className="font-mono text-zinc-300">{nodeId}</span>
+            Target node: <span className="text-zinc-700">{nodeId}</span>
           </p>
         )}
         {outputSummary && (
-          <p className="text-zinc-300">
-            <span className="text-zinc-500">Result:</span> {outputSummary}
+          <p className="text-zinc-700">
+            <span className="text-zinc-400">Result:</span> {outputSummary}
           </p>
         )}
       </div>
@@ -131,13 +131,25 @@ export function VisionActivityPanel({
     (activity.phase === "complete" && !loading);
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
-      <div className="flex items-center justify-between gap-3 border-b border-zinc-800 pb-4">
+    <div
+      className={`rounded-2xl border bg-white p-4 shadow-sm ${
+        loading ? "border-figma-purple/40" : "border-zinc-200"
+      }`}
+    >
+      <div
+        className={`flex items-center justify-between gap-3 border-b pb-4 ${
+          loading ? "border-figma-purple/20" : "border-zinc-200"
+        }`}
+      >
         <div>
-          <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">
+          <p
+            className={`text-xs font-semibold uppercase tracking-[0.35em] ${
+              loading ? "text-figma-purple" : "text-zinc-400"
+            }`}
+          >
             Agent Investigation
           </p>
-          <p className="mt-1 text-sm text-zinc-300">
+          <p className="mt-1 text-sm text-zinc-600">
             {phaseLabel(
               activity.phase,
               toolCallCount,
@@ -147,12 +159,12 @@ export function VisionActivityPanel({
           </p>
         </div>
         <span
-          className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.25em] ${
+          className={`rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] ${
             loading
-              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+              ? "border-figma-purple bg-figma-purple/10 text-figma-purple"
               : activity.phase === "complete"
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                : "border-zinc-700 bg-zinc-900 text-zinc-400"
+                ? "border-figma-green bg-figma-green/10 text-figma-green"
+                : "border-zinc-200 bg-zinc-50 text-zinc-500"
           }`}
         >
           {loading ? "Live" : activity.phase === "complete" ? "Done" : "Idle"}
@@ -161,29 +173,29 @@ export function VisionActivityPanel({
 
       <div className="mt-4 space-y-4">
         {activity.phase === "idle" && !loading && (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-zinc-400">
             Launch the vision agent to watch tool calls stream in as the model
             investigates.
           </p>
         )}
 
         {activity.phase === "connecting" && loading && (
-          <div className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-300">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+          <div className="flex items-center gap-3 rounded-xl border border-figma-purple/30 bg-figma-purple/5 px-4 py-3 font-mono text-sm text-zinc-700">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-figma-purple" />
             Connecting to vision stream…
           </div>
         )}
 
         {turns.map(({ turn, toolCalls }) => (
-          <div key={turn} className="space-y-3">
+          <div key={turn} className="space-y-3 font-mono">
             <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-semibold text-emerald-300">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-figma-purple/15 text-xs font-bold text-figma-purple">
                 {turn}
               </span>
-              <p className="text-sm font-medium text-zinc-200">
+              <p className="text-sm font-semibold text-figma-purple">
                 Agent turn {turn}
               </p>
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-zinc-400">
                 {toolCalls.length} tool call{toolCalls.length === 1 ? "" : "s"}
               </span>
             </div>
@@ -197,23 +209,25 @@ export function VisionActivityPanel({
         ))}
 
         {activity.phase === "synthesizing" && loading && (
-          <div className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-300">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-sky-400" />
+          <div className="flex items-center gap-3 rounded-xl border border-figma-purple/30 bg-figma-purple/5 px-4 py-3 font-mono text-sm text-zinc-700">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-figma-purple" />
             Synthesizing visual critique from findings…
           </div>
         )}
 
         {activity.error && (
-          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 font-mono text-sm text-red-700">
             {activity.error}
           </div>
         )}
 
         {showResults && (
-          <div className="space-y-3 border-t border-zinc-800 pt-4">
+          <div className="space-y-3 border-t border-zinc-200 pt-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-medium text-zinc-100">Parsed findings</p>
-              <span className="text-xs text-zinc-500">
+              <p className="text-sm font-medium text-zinc-900">
+                Parsed findings
+              </p>
+              <span className="text-xs text-zinc-400">
                 {activity.enrichments?.length ?? 0} issue
                 {(activity.enrichments?.length ?? 0) === 1 ? "" : "s"}
               </span>
@@ -224,11 +238,11 @@ export function VisionActivityPanel({
             />
             {(activity.enrichments?.length ?? 0) === 0 &&
               activity.rawAnalysis && (
-                <details className="rounded-xl border border-zinc-800 bg-zinc-950/80">
-                  <summary className="cursor-pointer select-none px-4 py-3 text-xs text-zinc-400 hover:text-zinc-200 transition-colors">
+                <details className="rounded-xl border border-zinc-200 bg-zinc-50">
+                  <summary className="cursor-pointer select-none px-4 py-3 text-xs text-zinc-500 transition-colors hover:text-zinc-800">
                     Raw agent analysis (JSON parse failed — expand to inspect)
                   </summary>
-                  <pre className="overflow-x-auto whitespace-pre-wrap wrap-break-word px-4 pb-4 pt-2 font-mono text-[11px] leading-relaxed text-zinc-300">
+                  <pre className="wrap-break-word overflow-x-auto whitespace-pre-wrap px-4 pt-2 pb-4 font-mono text-[11px] leading-relaxed text-zinc-700">
                     {activity.rawAnalysis}
                   </pre>
                 </details>

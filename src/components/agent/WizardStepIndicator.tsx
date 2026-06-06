@@ -13,8 +13,8 @@ export function WizardStepIndicator({
   currentStep,
 }: WizardStepIndicatorProps) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
-      <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
+    <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">
         Stages
       </p>
       <ol className="mt-4 grid grid-cols-4 gap-2">
@@ -25,27 +25,35 @@ export function WizardStepIndicator({
           return (
             <li key={step.id} className="flex flex-col items-center gap-2">
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-full border text-xs font-semibold transition ${
+                className={`flex h-9 w-9 items-center justify-center rounded-full border-2 text-xs font-bold transition ${
                   current
-                    ? "border-emerald-400 bg-emerald-400 text-zinc-950"
+                    ? "border-figma-blue bg-figma-blue text-white shadow-sm shadow-figma-blue/40"
                     : active
-                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
-                      : "border-zinc-700 bg-zinc-900 text-zinc-500"
+                      ? "border-figma-green bg-figma-green/15 text-figma-green"
+                      : "border-zinc-200 bg-zinc-50 text-zinc-400"
                 }`}
               >
                 {step.id}
               </div>
               <span
-                className={`text-[10px] uppercase tracking-[0.3em] ${
-                  active ? "text-zinc-200" : "text-zinc-600"
+                className={`text-[10px] font-semibold uppercase tracking-[0.3em] ${
+                  current
+                    ? "text-figma-blue"
+                    : active
+                      ? "text-figma-green"
+                      : "text-zinc-400"
                 }`}
               >
                 {step.label}
               </span>
               {index < STEPS.length - 1 && (
                 <span
-                  className={`hidden h-px w-full sm:block ${
-                    active ? "bg-emerald-500/50" : "bg-zinc-800"
+                  className={`hidden h-0.5 w-full sm:block ${
+                    currentStep > step.id
+                      ? "bg-figma-green"
+                      : current
+                        ? "bg-figma-blue/40"
+                        : "bg-zinc-200"
                   }`}
                 />
               )}

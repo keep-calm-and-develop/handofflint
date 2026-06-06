@@ -9,6 +9,16 @@ import { AgentReadinessScoreCard } from "./AgentReadinessScoreCard";
 import { VisionActivityPanel } from "./VisionActivityPanel";
 import { WizardStepIndicator } from "./WizardStepIndicator";
 
+const CARD =
+  "rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm";
+const CHIP =
+  "rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-600";
+const CHIP_MONO = `${CHIP} font-mono`;
+const INPUT =
+  "w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-figma-blue focus:outline-none focus:ring-2 focus:ring-figma-blue/20";
+const CTA =
+  "cursor-pointer rounded-xl bg-figma-blue px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-figma-blue/30 transition hover:bg-[#0b87e0] disabled:cursor-not-allowed disabled:opacity-60";
+
 function truncateUrl(url: string, maxLength = 56): string {
   if (url.length <= maxLength) {
     return url;
@@ -29,23 +39,17 @@ function DensityChips({
   activeNodeId: string | null;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
-      <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">
+    <div className={CARD}>
+      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-zinc-400">
         Density Context
       </p>
-      <div className="mt-3 flex flex-wrap gap-2 text-xs">
-        <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-200">
+      <div className="mt-3 flex flex-wrap gap-2">
+        <span className={`${CHIP} font-medium text-zinc-800`}>
           {layoutProfile}
         </span>
-        <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-400">
-          fileKey: {fileKey || "pending"}
-        </span>
-        <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-400">
-          nodeId: {nodeId ?? "pending"}
-        </span>
-        <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-400">
-          active: {activeNodeId ?? "idle"}
-        </span>
+        <span className={CHIP_MONO}>fileKey: {fileKey || "pending"}</span>
+        <span className={CHIP_MONO}>nodeId: {nodeId ?? "pending"}</span>
+        <span className={CHIP_MONO}>active: {activeNodeId ?? "idle"}</span>
       </div>
     </div>
   );
@@ -66,33 +70,33 @@ function FrameCanvas({
   const hasImage = Boolean(imageUrl);
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4">
+    <div className={CARD}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-zinc-400">
             Figma Frame Canvas
           </p>
-          <p className="mt-1 text-sm text-zinc-400">
+          <p className="mt-1 text-sm text-zinc-500">
             {hasImage ? (
               <>
                 Rendered via Figma Images API
                 {imageSource ? ` (${imageSource})` : ""}:{" "}
-                <span className="text-zinc-200" title={imageUrl ?? undefined}>
+                <span className="text-zinc-800" title={imageUrl ?? undefined}>
                   {truncateUrl(imageUrl!)}
                 </span>
               </>
             ) : (
-              <span className="text-zinc-500">
+              <span>
                 Awaiting frame render from fetchFigmaImages after ingestion.
               </span>
             )}
           </p>
         </div>
         <span
-          className={`rounded-full border px-3 py-1 text-xs ${
+          className={`rounded-full border px-3 py-1 text-xs font-medium ${
             hasHighlight
-              ? "border-orange-500/40 bg-orange-500/10 text-orange-200"
-              : "border-zinc-700 bg-zinc-900 text-zinc-500"
+              ? "border-figma-orange bg-figma-orange/10 text-figma-orange"
+              : "border-zinc-200 bg-zinc-50 text-zinc-400"
           }`}
         >
           {activeNodeId ? `target ${activeNodeId}` : "awaiting stream"}
@@ -100,15 +104,15 @@ function FrameCanvas({
       </div>
 
       <div className="mt-4">
-        <div className="relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60">
+        <div className="relative overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
           {hasImage ? (
             <img
               src={imageUrl!}
               alt="Rendered Figma frame preview"
-              className="h-80 w-full object-contain bg-zinc-950 opacity-95"
+              className="h-80 w-full bg-white object-contain"
             />
           ) : (
-            <div className="flex h-80 flex-col items-center justify-center gap-2 px-6 text-center text-sm text-zinc-500">
+            <div className="flex h-80 flex-col items-center justify-center gap-2 px-6 text-center text-sm text-zinc-400">
               <p>No frame image yet.</p>
               <p className="text-xs">
                 Run step 1 with a node-id in the Figma URL to fetch a render URL
@@ -120,13 +124,13 @@ function FrameCanvas({
           <div
             className={`pointer-events-none absolute inset-3 rounded-xl border-2 transition ${
               hasHighlight
-                ? "border-orange-400 shadow-[0_0_0_1px_rgba(251,146,60,0.25),0_0_34px_rgba(251,146,60,0.2)]"
+                ? "border-figma-orange shadow-[0_0_0_1px_rgba(255,114,55,0.3),0_0_24px_rgba(255,114,55,0.25)]"
                 : "border-transparent"
             }`}
           />
 
           {activeNodeId && (
-            <div className="absolute left-4 top-4 rounded-full border border-orange-400/40 bg-zinc-950/90 px-3 py-1 text-xs text-orange-200">
+            <div className="absolute left-4 top-4 rounded-full border border-figma-orange bg-white px-3 py-1 text-xs font-semibold text-figma-orange shadow-sm">
               Auditing {activeNodeId}
               {targetNodeId ? ` · target ${targetNodeId}` : ""}
             </div>
@@ -168,20 +172,20 @@ export function AgentWizardDashboard() {
   const auditViewModel = useAgentAuditResult(scanData);
 
   return (
-    <div className="grid h-screen min-h-0 w-screen grid-cols-1 overflow-hidden bg-zinc-950 text-zinc-100 lg:grid-cols-2">
-      <section className="min-h-0 h-full overflow-y-auto border-r border-zinc-800 p-6 pb-10 space-y-6">
-        <header className="space-y-3 border-b border-zinc-800 pb-6">
-          <p className="text-xs uppercase tracking-[0.4em] text-zinc-500">
+    <div className="grid h-screen min-h-0 w-screen grid-cols-1 overflow-hidden bg-zinc-50 text-zinc-900 lg:grid-cols-2">
+      <section className="min-h-0 h-full space-y-6 overflow-y-auto border-r border-zinc-200 bg-white p-6 pb-10">
+        <header className="space-y-3 border-b border-zinc-200 pb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.4em] text-figma-blue">
             HandOffLint
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-white">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
             Autonomous Design Review Agent Pipeline
           </h1>
           <div className="flex flex-wrap gap-2 text-xs">
-            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-emerald-300">
+            <span className="rounded-full border border-figma-green bg-figma-green/15 px-3 py-1 font-semibold text-figma-green">
               API Status: Active
             </span>
-            <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-300">
+            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-zinc-500">
               Token: Free Tier
             </span>
           </div>
@@ -219,15 +223,15 @@ export function AgentWizardDashboard() {
           )}
 
           {scanData && (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4 text-sm text-zinc-400">
+            <div className={`${CARD} text-sm text-zinc-600`}>
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-200">
+                <span className={`${CHIP} text-zinc-700`}>
                   layout: {scanData.layoutHandoffProfile}
                 </span>
-                <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-200">
+                <span className={`${CHIP} font-medium text-figma-green`}>
                   scan ready: {scanData.readinessScore}
                 </span>
-                <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-200">
+                <span className={`${CHIP} text-zinc-700`}>
                   overlap nodes: {overlapCount}
                 </span>
               </div>
@@ -236,17 +240,17 @@ export function AgentWizardDashboard() {
         </div>
       </section>
 
-      <section className="min-h-0 h-full overflow-y-auto overscroll-y-contain bg-zinc-900/40 px-6 pt-6 pb-12">
+      <section className="min-h-0 h-full overflow-y-auto overscroll-y-contain bg-[#f0f7ff] px-6 pt-6 pb-12">
         <div className="space-y-6 pb-2">
           <WizardStepIndicator currentStep={wizardStep} />
 
           {error && (
-            <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-5">
+          <div className={`${CARD} p-5`}>
             {wizardStep === 1 && (
               <form
                 className="space-y-4"
@@ -258,7 +262,7 @@ export function AgentWizardDashboard() {
                 <div className="space-y-2">
                   <label
                     htmlFor="agent-figma-url"
-                    className="text-sm text-zinc-300"
+                    className="text-sm font-medium text-zinc-700"
                   >
                     Figma URL
                   </label>
@@ -269,14 +273,14 @@ export function AgentWizardDashboard() {
                     value={figmaUrl}
                     onChange={(e) => setFigmaUrl(e.target.value)}
                     placeholder="https://www.figma.com/design/…"
-                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-50 placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none"
+                    className={INPUT}
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={initLoading}
-                  className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-medium text-zinc-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={CTA}
                 >
                   {initLoading ? "Ingesting…" : "Run Ingestion"}
                 </button>
@@ -286,10 +290,10 @@ export function AgentWizardDashboard() {
             {wizardStep === 2 && (
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-zinc-400">
+                  <p className="text-sm text-zinc-600">
                     Choose a layout profile for the deterministic audit.
                   </p>
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-zinc-400">
                     Current fileKey: {fileKey || "pending"}
                   </p>
                 </div>
@@ -312,12 +316,12 @@ export function AgentWizardDashboard() {
                       type="button"
                       disabled={auditLoading}
                       onClick={() => void submitAudit(card.id)}
-                      className="rounded-2xl border border-zinc-700 bg-zinc-950 p-4 text-left transition hover:border-emerald-500/40 hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="cursor-pointer rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:border-figma-blue hover:shadow-md hover:shadow-figma-blue/10 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-semibold text-zinc-900">
                         {card.title}
                       </p>
-                      <p className="mt-2 text-sm text-zinc-400">{card.body}</p>
+                      <p className="mt-2 text-sm text-zinc-500">{card.body}</p>
                     </button>
                   ))}
                 </div>
@@ -327,10 +331,10 @@ export function AgentWizardDashboard() {
             {wizardStep === 3 && (
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-zinc-400">
+                  <p className="text-sm text-zinc-600">
                     Launch the ReAct vision agent with the design manual below.
                   </p>
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-zinc-400">
                     Pre-filled with the GitHub fire-your-design-team markdown
                     guide.
                   </p>
@@ -339,7 +343,7 @@ export function AgentWizardDashboard() {
                 <div className="space-y-2">
                   <label
                     htmlFor="agent-design-manual-url"
-                    className="text-sm text-zinc-300"
+                    className="text-sm font-medium text-zinc-700"
                   >
                     Design manual URL (RAG)
                   </label>
@@ -348,29 +352,29 @@ export function AgentWizardDashboard() {
                     type="url"
                     value={designManualUrl}
                     onChange={(e) => setDesignManualUrl(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-50 placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none"
+                    className={INPUT}
                   />
                 </div>
 
-                <div className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-xs text-zinc-400">
+                <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-xs text-zinc-600">
                   {hasFrameImage ? (
                     <>
                       <p>
                         Frame image from Figma Images API
                         {imageSource ? ` (${imageSource})` : ""}:{" "}
                         <span
-                          className="font-mono text-zinc-200"
+                          className="font-mono text-zinc-800"
                           title={imageUrl ?? undefined}
                         >
                           {truncateUrl(imageUrl!)}
                         </span>
                       </p>
-                      <p className="mt-2 text-emerald-300/80">
+                      <p className="mt-2 font-medium text-figma-green">
                         Render URL ready for the vision agent.
                       </p>
                     </>
                   ) : (
-                    <p className="text-amber-300/90">
+                    <p className="text-figma-orange">
                       No frame render yet. Re-run ingestion with a node-id so
                       fetchFigmaImages can return the preview URL.
                     </p>
@@ -381,7 +385,7 @@ export function AgentWizardDashboard() {
                   type="button"
                   disabled={visionLoading || !hasFrameImage}
                   onClick={() => void launchVision()}
-                  className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-medium text-zinc-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={CTA}
                 >
                   {visionLoading
                     ? "Launching Vision Agent…"
@@ -395,7 +399,7 @@ export function AgentWizardDashboard() {
                 <div className="space-y-2">
                   <label
                     htmlFor="agent-design-manual-url-stream"
-                    className="text-sm text-zinc-300"
+                    className="text-sm font-medium text-zinc-700"
                   >
                     Design manual URL (RAG)
                   </label>
@@ -404,35 +408,28 @@ export function AgentWizardDashboard() {
                     type="url"
                     readOnly
                     value={designManualUrl}
-                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-400 read-only:cursor-default"
+                    className={`${INPUT} bg-zinc-50 text-zinc-500 read-only:cursor-default`}
                   />
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-sm text-zinc-400">
-                    <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                      File Key
-                    </p>
-                    <p className="mt-2 font-mono text-zinc-200">
-                      {fileKey || "pending"}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-sm text-zinc-400">
-                    <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                      Active Node
-                    </p>
-                    <p className="mt-2 font-mono text-zinc-200">
-                      {activeNodeId ?? "idle"}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3 text-sm text-zinc-400">
-                    <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">
-                      Overlap
-                    </p>
-                    <p className="mt-2 font-mono text-zinc-200">
-                      {overlapCount} nodes
-                    </p>
-                  </div>
+                  {[
+                    { label: "File Key", value: fileKey || "pending" },
+                    { label: "Active Node", value: activeNodeId ?? "idle" },
+                    { label: "Overlap", value: `${overlapCount} nodes` },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm"
+                    >
+                      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">
+                        {item.label}
+                      </p>
+                      <p className="mt-2 font-mono text-zinc-800">
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
 
                 <VisionActivityPanel
@@ -442,23 +439,21 @@ export function AgentWizardDashboard() {
                 />
 
                 {visionResults && (
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4 text-sm text-zinc-300">
+                  <div className={`${CARD} text-sm text-zinc-600`}>
                     <div className="flex flex-wrap gap-2">
-                      <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-200">
+                      <span className={`${CHIP} font-medium text-figma-green`}>
                         {visionResults.status}
                       </span>
-                      <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-200">
+                      <span className={CHIP}>
                         turns: {visionResults.stepsUsed}
                       </span>
-                      <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-200">
+                      <span className={CHIP}>
                         tools: {visionResults.toolCallCount}
                       </span>
-                      <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-200">
+                      <span className={CHIP}>
                         findings: {visionResults.enrichments.length}
                       </span>
-                      <span className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-zinc-200">
-                        overlaps: {overlapCount}
-                      </span>
+                      <span className={CHIP}>overlaps: {overlapCount}</span>
                     </div>
                   </div>
                 )}

@@ -64,12 +64,12 @@ export function ScanForm({
             onChange={(e) => onUrlChange(e.target.value)}
             aria-invalid={hint ? true : undefined}
             aria-describedby={hint ? "figma-url-hint" : undefined}
-            className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:ring-zinc-800"
+            className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-figma-blue focus:outline-none focus:ring-2 focus:ring-figma-blue/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:ring-figma-blue/20"
           />
           <button
             type="submit"
             disabled={disabled}
-            className="shrink-0 rounded-lg bg-zinc-900 px-6 py-3 font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="shrink-0 cursor-pointer rounded-lg bg-figma-blue px-6 py-3 font-medium text-white transition hover:bg-figma-blue/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "Scanning…" : "Scan"}
           </button>
@@ -88,7 +88,7 @@ export function ScanForm({
         <button
           type="button"
           onClick={() => setConfigOpen((prev) => !prev)}
-          className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
+          className="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
           aria-expanded={configOpen}
         >
           <span>Scan Configuration</span>
