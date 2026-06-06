@@ -186,16 +186,16 @@ _Program the execution tools that Gemini invokes during the multi-turn vision lo
 
 **`inspect_node_properties` — Cache Lookup Tool**
 
-- [ ] **4.1.1** Create a fresh file for your inspection tool at `src/lib/agent/tools/inspect-node.ts`. Configure its Vercel AI SDK wrapper primitive with a strict schema that requires the model to supply a specific target node ID string.
-- [ ] **4.1.2** Write the properties extraction script inside the execution block. Program it to fetch the target node ID from your server-side map index cache (built in Task 1). Use JavaScript object destructuring to completely extract and remove the nested children arrays, returning only the shallow layout properties (padding, width, height) to safeguard the AI's token context window.
+- [x] **4.1.1** Create a fresh file for your inspection tool at `src/lib/agent/tools/inspect-node.ts`. Configure its Vercel AI SDK wrapper primitive with a strict schema that requires the model to supply a specific target node ID string.
+- [x] **4.1.2** Write the properties extraction script inside the execution block. Program it to fetch the target node ID from your server-side map index cache (built in Task 1). Use JavaScript object destructuring to completely extract and remove the nested children arrays, returning only the shallow layout properties (padding, width, height) to safeguard the AI's token context window.
 
 **`search_layout_guidelines` — Single-File RAG Pipeline**
 
-- [ ] **4.2.1** Create a fresh file for your RAG engine at `src/lib/agent/tools/search-guidelines.ts`. Configure its schema blocks to require two distinct parameters from the model: an open keyword search query string and a unified remote `designManualUrl` string.
-- [ ] **4.2.2** Program the ingestion layer. Implement an asynchronous HTTP network request that targets the raw markdown URL supplied by the model arguments to pull down the entire unstructured design manual text asset into server memory.
-- [ ] **4.2.3** Implement the chunking tokenizer. Write a string utility to split the downloaded markdown text into distinct text blocks using double-newline paragraph breaks. Run a filter mapping pass across these text blocks to strip out short noise lines, table-of-contents lists, and empty syntax characters shorter than 30 characters.
-- [ ] **4.2.4** Build the keyword ranking logic. Program an intersection check that tokenizes both the AI's inquiry and each individual paragraph block into clean, lowercase alphanumeric word arrays. Calculate an absolute relevance score for every paragraph based on the count of exact keyword overlaps found between the search words and the chunk tokens.
-- [ ] **4.2.5** Assemble the final retrieval payload. Sort the scored paragraphs by highest keyword relevance, isolate the top 3 matching chunks, join them with a distinct separator line, and return this condensed layout guideline context block back to the running Gemini session.
+- [x] **4.2.1** Create a fresh file for your RAG engine at `src/lib/agent/tools/search-guidelines.ts`. Configure its schema blocks to require two distinct parameters from the model: an open keyword search query string and a unified remote `designManualUrl` string.
+- [x] **4.2.2** Program the ingestion layer. Implement an asynchronous HTTP network request that targets the raw markdown URL supplied by the model arguments to pull down the entire unstructured design manual text asset into server memory.
+- [x] **4.2.3** Implement the chunking tokenizer. Write a string utility to split the downloaded markdown text into distinct text blocks using double-newline paragraph breaks. Run a filter mapping pass across these text blocks to strip out short noise lines, table-of-contents lists, and empty syntax characters shorter than 30 characters.
+- [x] **4.2.4** Build the keyword ranking logic. Program an intersection check that tokenizes both the AI's inquiry and each individual paragraph block into clean, lowercase alphanumeric word arrays. Calculate an absolute relevance score for every paragraph based on the count of exact keyword overlaps found between the search words and the chunk tokens.
+- [x] **4.2.5** Assemble the final retrieval payload. Sort the scored paragraphs by highest keyword relevance, isolate the top 3 matching chunks, join them with a distinct separator line, and return this condensed layout guideline context block back to the running Gemini session.
 
 #### Task 5: Endpoint 3 — ReAct Vision Engine (`POST /api/agent/vision`)
 
