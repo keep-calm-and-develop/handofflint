@@ -21,7 +21,7 @@ export function extractFigmaDocuments(data: unknown): FigmaNode[] {
   return [];
 }
 
-function isFigmaNode(value: unknown): value is FigmaNode {
+export function isFigmaNode(value: unknown): value is FigmaNode {
   if (!value || typeof value !== "object") {
     return false;
   }

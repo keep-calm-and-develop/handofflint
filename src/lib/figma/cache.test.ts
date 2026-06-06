@@ -4,9 +4,13 @@ import {
   buildFigmaCacheKey,
   clearFigmaTreeCache,
   getFigmaTreeCache,
+  getIndexedNode,
+  getTreeFromCache,
   isCacheFresh,
+  indexFigmaTreeNodes,
   setFigmaTreeCache,
 } from "@/lib/figma/cache";
+import type { FigmaNode } from "@/lib/figma/node";
 
 describe("figma cache", () => {
   afterEach(() => {
@@ -89,5 +93,124 @@ describe("figma cache", () => {
     expect(getFigmaTreeCache("a:_file:depth=2")).toBeNull();
     expect(getFigmaTreeCache("b:_file:depth=2")).toBeTruthy();
     expect(getFigmaTreeCache("c:_file:depth=2")).toBeTruthy();
+  });
+});
+
+describe("node registry (indexFigmaTreeNodes / getIndexedNode / getTreeFromCache)", () => {
+  afterEach(() => {
+    clearFigmaTreeCache();
+  });
+
+  const frame: FigmaNode = {
+    id: "1:1",
+    name: "Frame",
+    type: "FRAME",
+    children: [
+      { id: "1:2", name: "Button", type: "INSTANCE", componentId: "c1" },
+      {
+        id: "1:3",
+        name: "Text",
+        type: "TEXT",
+        characters: "Hello",
+        children: [],
+      },
+    ],
+  };
+
+  it("indexes a single FigmaNode root and retrieves by nodeId", () => {
+    indexFigmaTreeNodes("file-x", frame);
+
+    expect(getIndexedNode("file-x", "1:1")).toBe(frame);
+    expect(getIndexedNode("file-x", "1:2")).toBe(frame.children![0]);
+    expect(getIndexedNode("file-x", "1:3")).toBe(frame.children![1]);
+  });
+
+  it("returns null for unknown file or node", () => {
+    indexFigmaTreeNodes("file-x", frame);
+
+    expect(getIndexedNode("file-x", "99:99")).toBeNull();
+    expect(getIndexedNode("unknown-file", "1:1")).toBeNull();
+  });
+
+  it("getTreeFromCache returns the full flat map for an indexed file", () => {
+    indexFigmaTreeNodes("file-x", frame);
+
+    const map = getTreeFromCache("file-x");
+    expect(map).not.toBeNull();
+    expect(map!.size).toBe(3);
+    expect(map!.get("1:1")).toBe(frame);
+    expect(map!.get("1:2")).toBe(frame.children![0]);
+    expect(map!.get("1:3")).toBe(frame.children![1]);
+  });
+
+  it("getTreeFromCache returns null for a file not yet indexed", () => {
+    expect(getTreeFromCache("never-indexed")).toBeNull();
+  });
+
+  it("indexes a full Figma file API response (document wrapper)", () => {
+    const apiResponse = {
+      document: {
+        id: "0:0",
+        name: "Document",
+        type: "DOCUMENT",
+        children: [frame],
+      },
+      schemaVersion: 0,
+      version: "v1",
+    };
+
+    indexFigmaTreeNodes("file-y", apiResponse);
+
+    expect(getIndexedNode("file-y", "0:0")).not.toBeNull();
+    expect(getIndexedNode("file-y", "1:1")).toBe(frame);
+    expect(getIndexedNode("file-y", "1:2")).toBe(frame.children![0]);
+  });
+
+  it("indexes a file-nodes API response (nodes wrapper)", () => {
+    const nodesResponse = {
+      nodes: {
+        "1:1": {
+          document: frame,
+        },
+      },
+    };
+
+    indexFigmaTreeNodes("file-z", nodesResponse);
+
+    expect(getIndexedNode("file-z", "1:1")).toBe(frame);
+    expect(getIndexedNode("file-z", "1:3")).toBe(frame.children![1]);
+  });
+
+  it("clearFigmaTreeCache clears the node registry", () => {
+    indexFigmaTreeNodes("file-x", frame);
+    expect(getTreeFromCache("file-x")).not.toBeNull();
+
+    clearFigmaTreeCache();
+
+    expect(getTreeFromCache("file-x")).toBeNull();
+    expect(getIndexedNode("file-x", "1:1")).toBeNull();
+  });
+
+  it("handles null/undefined rootTreeData gracefully", () => {
+    indexFigmaTreeNodes("file-x", null);
+    indexFigmaTreeNodes("file-x", undefined);
+
+    expect(getTreeFromCache("file-x")).toBeNull();
+  });
+
+  it("keeps separate maps per fileKey", () => {
+    const otherFrame: FigmaNode = {
+      id: "2:1",
+      name: "Other",
+      type: "FRAME",
+    };
+
+    indexFigmaTreeNodes("file-a", frame);
+    indexFigmaTreeNodes("file-b", otherFrame);
+
+    expect(getTreeFromCache("file-a")!.size).toBe(3);
+    expect(getTreeFromCache("file-b")!.size).toBe(1);
+    expect(getIndexedNode("file-a", "2:1")).toBeNull();
+    expect(getIndexedNode("file-b", "1:1")).toBeNull();
   });
 });

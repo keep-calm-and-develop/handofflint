@@ -1,4 +1,6 @@
 import { isFigmaApiMockEnabled } from "@/lib/figma/mock-enabled";
+import type { FigmaNode } from "@/lib/figma/node";
+import { extractFigmaDocuments, isFigmaNode } from "@/lib/figma/tree";
 
 export interface FigmaTreeCacheEntry {
   fileKey: string;
@@ -13,6 +15,8 @@ const DEFAULT_FRESH_MS = 30 * 1000;
 const DEFAULT_MAX_ENTRIES = 50;
 
 const store = new Map<string, FigmaTreeCacheEntry>();
+
+const nodeRegistry = new Map<string, Map<string, FigmaNode>>();
 
 function logStore(event: string, details?: Record<string, unknown>): void {
   console.log("[figma-tree-cache]", event, details ?? "");
@@ -134,4 +138,87 @@ export function peekFigmaTreeCache(key: string): FigmaTreeCacheEntry | null {
 /** Clears in-memory cache (for tests). */
 export function clearFigmaTreeCache(): void {
   store.clear();
+  nodeRegistry.clear();
+}
+
+function getOrCreateFileMap(fileKey: string): Map<string, FigmaNode> {
+  let fileMap = nodeRegistry.get(fileKey);
+  if (!fileMap) {
+    fileMap = new Map<string, FigmaNode>();
+    nodeRegistry.set(fileKey, fileMap);
+  }
+  return fileMap;
+}
+
+/**
+ * Recursively walks a nested Figma tree to index every node by its ID.
+ */
+function flattenAndIndexNode(fileKey: string, node: FigmaNode): void {
+  getOrCreateFileMap(fileKey).set(node.id, node);
+
+  for (const child of node.children ?? []) {
+    flattenAndIndexNode(fileKey, child);
+  }
+}
+
+/**
+ * Public function to prime the flat registry cache when an audit runs.
+ * Accepts raw Figma API payloads (`unknown`), a document wrapper with
+ * `children`, or a single {@link FigmaNode} root.
+ */
+export function indexFigmaTreeNodes(
+  fileKey: string,
+  rootTreeData: unknown,
+): void {
+  if (rootTreeData == null) {
+    return;
+  }
+
+  const documents = extractFigmaDocuments(rootTreeData);
+  if (documents.length > 0) {
+    for (const doc of documents) {
+      flattenAndIndexNode(fileKey, doc);
+    }
+    return;
+  }
+
+  if (typeof rootTreeData !== "object") {
+    return;
+  }
+
+  if (isFigmaNode(rootTreeData)) {
+    flattenAndIndexNode(fileKey, rootTreeData);
+    return;
+  }
+
+  // Non-FigmaNode object with a children array (e.g. a raw document wrapper
+  // without id/name/type that just holds page subtrees).
+  const record = rootTreeData as Record<string, unknown>;
+  if (Array.isArray(record.children)) {
+    for (const child of record.children) {
+      if (isFigmaNode(child)) {
+        flattenAndIndexNode(fileKey, child);
+      }
+    }
+  }
+}
+
+/**
+ * Retrieves the full flat node map for a file. Returns null if the file
+ * has not been indexed yet.
+ */
+export function getTreeFromCache(
+  fileKey: string,
+): Map<string, FigmaNode> | null {
+  return nodeRegistry.get(fileKey) ?? null;
+}
+
+/**
+ * Instant O(1) property extraction function for your ReAct tool.
+ */
+export function getIndexedNode(
+  fileKey: string,
+  nodeId: string,
+): FigmaNode | null {
+  return nodeRegistry.get(fileKey)?.get(nodeId) ?? null;
 }
