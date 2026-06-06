@@ -1,14 +1,14 @@
 # handofflint-agentic-poc-spec.md
 
-# HandOffLint (AI-Codegen Guardrail Profile) — POC Specification
+# HandOffLint (AI-Codegen Guardrail Profile) — Agentic POC Specification
 
-> **Updated:** June 4, 2026. This specification refactors the project from a complex, multi-turn ReAct agent into a **lean, single-turn linear validation pipeline**. It focuses on acting as a "pre-flight preprocessor" for AI-assisted code generation (Vibe Coding), cleaning up Figma design quality to unlock production-grade UI output from tools like Cursor, v0, and Bolt. Phases 0 and 1 are already completed and verified.
+> **Updated:** June 6, 2026. This specification pivots the project from a single-turn linear validation pipeline into a **multi-step agentic architecture**. The backend maintains Figma tree memory across HTTP requests via a server-side flat index cache. A ReAct vision agent (Gemini 2.5 Flash) inspects the rendered frame, calls local tools to verify node properties and search layout guidelines, and returns a structured JSON payload to the wizard dashboard. Phases 0 and 1 (deterministic audits, Figma client, base UI) are already completed and verified.
 
 ---
 
 ## 1. One-Paragraph Summary
 
-HandOffLint lets a developer or design lead paste a Figma URL to clean, audit, and optimize design schemas _before_ passing them to AI code-generation tools (preventing the "garbage-in, garbage-out" cycle of vibe coding). While deterministic TypeScript audits instantly catch low-level structural defects (missing Auto Layout, hidden cruft, broken SVG constraints), a single-turn **structured vision validation pipeline** uses Gemini 2.5 Flash to view the rendered frame alongside the JSON context. The pipeline isolates perceptual defects (text overlaps, visual crowding, hierarchy breaks) and generates high-level UX suggestions. This produces a clean, high-signal summary of violations that guarantees production-grade code output when fed into AI generation models.
+HandOffLint lets a developer or design lead paste a Figma URL to clean, audit, and optimize design schemas _before_ passing them to AI code-generation tools (preventing the "garbage-in, garbage-out" cycle of vibe coding). Deterministic TypeScript audits instantly catch low-level structural defects (missing Auto Layout, hidden cruft, broken SVG constraints) and compute a weighted Readiness Score. A multi-turn **ReAct vision agent** then views the rendered frame screenshot, invokes server-side tools at zero marginal cost to inspect cached node properties and search local layout guideline docs, and synthesizes a final structured response matching a strict Zod schema. This produces grounded, actionable UX suggestions that guarantee production-grade code output when fed into AI generation models.
 
 ---
 
@@ -16,40 +16,75 @@ HandOffLint lets a developer or design lead paste a Figma URL to clean, audit, a
 
 - **Specific User:** The modern software engineer or product builder "vibe coding" applications using AI assistants (Cursor, v0, Bolt, Claude) who relies heavily on Figma layouts for code generation.
 - **The Problem:** Modern LLMs are excellent at writing code from clean design layouts, but they inherit structural debt directly from Figma. Messy positioning, overlapping text, missing auto-layout components, and bad line-heights cause AI tools to generate fragile, absolute-positioned, unmaintainable UI code.
-- **The Solution:** A fast, external pre-flight dashboard that lints both the JSON properties and the visual layout of a design asset. Instead of enforcing arbitrary team severities, it acts as a filter that reduces layout noise, catches visual edge cases, and optimizes components for frictionless AI generation.
+- **The Solution:** A fast, external pre-flight dashboard that lints both the JSON properties and the visual layout of a design asset through a staged wizard. Deterministic audits run first as the numerical source of truth; an autonomous vision agent then investigates perceptual defects with tool-backed grounding instead of hallucinating from a single prompt.
 
 ---
 
 ## 3. Why Now
 
-Frontier vision models like Gemini 2.5 Flash have achieved exceptional performance in structural and visual layout parsing via single-turn structured schema modes (`generateObject`). Running open-ended multi-turn loops is slow and expensive, but a linear single-turn call allows a cheap, fast vision check to identify alignment breaks and overlap failures that raw JSON parsers miss entirely.
+Frontier vision models like Gemini 2.5 Flash support reliable multi-step tool calling via the Vercel AI SDK (`generateText` + `maxSteps`). A server-side flat node index gives the agent O(1) property lookup without re-fetching the full Figma tree on every tool call — making a lightweight ReAct loop feasible within free-tier rate limits. Local tool execution (cache lookup, markdown RAG) runs at $0 cost per turn, keeping the investigation loop cheap even across 3–5 steps.
 
 ---
 
-## 4. Architecture Sketch (Linear Pipeline)
+## 4. Architecture Sketch
+
+### 4a. Wizard Pipeline (Dashboard → Three API Routes)
 
 ```
-User pastes Figma Frame URL (Next.js Dashboard)
+User opens Wizard Dashboard (Next.js split-panel UI)
    ↓
-POST /api/scan
+[STEP 1: INGESTION]
+POST /api/agent/init  { url }
+   → parseFigmaUrl → fetchFigmaTree → saveTreeToCache (flat Map<nodeId, FigmaNode>)
+   → returns { fileKey, nodeId, success }
    ↓
-[STEP 1: DETERMINISTIC AUDITS - SOURCE OF TRUTH]
-fetchFigmaTree → runAllAudits (8 TypeScript checks)
+[STEP 2: STRUCTURAL LINTERS]
+POST /api/agent/audit  { fileKey, layoutProfile: "dashboard" | "landing" }
+   → getTreeFromCache → runAllAudits (8 TypeScript checks + density profile)
+   → returns { readinessScore, findings[] }
    ↓
-[STEP 2: TARGETED VISUAL SOURCE ACQUISITION]
-Isolate flagged frames → fetchFigmaImages (Phase 1 Image URL)
-   ↓
-[STEP 3: SINGLE-TURN VISION CRITIQUE]
-Send Image URL + TS Audit context to Gemini 2.5 Flash
-Execute via `generateObject` for clean Zod structured output
-   ↓
-[STEP 4: DETERMINISTIC GUARDRAILS]
-- Groundedness Gate: Ensure all cited nodeIds exist in Figma JSON
-- Cross-Modal Filter: Drop claims that directly contradict raw JSON
+[STEP 3: VISION INVESTIGATION — ReAct Agent]
+POST /api/agent/vision  { fileKey, nodeId, imageUrl, customGuides? }
+   → see 4b below
    ↓
 [OUTPUT]
-Dashboard Display: Core Violations + Clear Code-Gen Suggestions
+Left panel: Readiness Score + findings table
+Right panel: Agent investigation results + codegen suggestions
 ```
+
+**Server-side state:** A global in-memory `Map<fileKey, Map<nodeId, FigmaNode>>` persists the flattened Figma tree across wizard steps. No database required for POC.
+
+### 4b. Vision Agent User Flow (`POST /api/agent/vision`)
+
+```
+Frontend hits POST /api/agent/vision
+                                    ↓
+       Server runs `generateText({ maxSteps: 5, tools: [...] })`
+                                    ↓
+    [TURN 1] Gemini inspects screenshot PNG.
+             "Hmm, element 4:23 looks squashed."
+             → Agent Action: Calls `inspect_node_properties("4:23")`
+                                    ↓
+    [TURN 2] Tool executes locally at $0 cost, returns raw node padding/bounds.
+             Gemini reads observation: "Ah, it has no auto-layout flex attributes."
+             → Agent Action: Calls `search_layout_guidelines("clipping")`
+                                    ↓
+    [TURN 3] RAG tool fetches a GitHub markdown file, chunks it, and ranks paragraphs by keyword match.
+             Returns: "Apply whitespace-nowrap or flex-wrap rules."
+             → Agent Action: Gemini synthesizes the solution.
+                                    ↓
+    [FINAL TURN] Loop terminates because Gemini has everything it needs.
+                 It structures the final array matching your Zod schema.
+                                    ↓
+                Backend sends clean JSON back to your UI!
+```
+
+**Registered tools:**
+
+| Tool | Cost | What it does |
+| --- | --- | --- |
+| `inspect_node_properties` | $0 | Looks up `nodeId` in server cache; returns layout properties with child arrays stripped |
+| `search_layout_guidelines` | $0 | Fetches a GitHub raw markdown file, chunks by paragraph, ranks by keyword intersection, returns top 3 matches |
 
 ---
 
@@ -59,38 +94,48 @@ Dashboard Display: Core Violations + Clear Code-Gen Suggestions
 
 - **Deterministic Baseline (DONE):** 8 automated TypeScript structural checks + weighted Readiness Score computing.
 - **Figma Image Fetching (DONE):** Integrated `fetchFigmaImages` client via the Figma Image API (`GET /v1/images`).
-- **Single-Turn Vision Tool:** A unified call using `generateObject` powered by Gemini 2.5 Flash to extract `violations` and `suggestions` matching a strict Zod schema.
-- **TypeScript Guardrails:** \* _Groundedness check:_ A direct code validation filter matching model-cited IDs against the real Figma tree array.
-  - _Cross-modal check:_ Pure code rules discarding structural AI assertions that clash with concrete layout parameters (e.g., claiming a layout is broken when the JSON contains clean Auto Layout declarations).
-- **AI-Codegen Output:** High-level optimization summaries ready to be copied directly into AI coding prompts to guide clean layout creation.
+- **Server Tree Cache:** Global singleton flat-index cache keyed by `fileKey` for cross-request node lookup.
+- **Three API Routes:** `POST /api/agent/init`, `POST /api/agent/audit`, `POST /api/agent/vision`.
+- **ReAct Agent Tools:** `inspect_node_properties` (cache lookup, child-array stripping) and `search_layout_guidelines` (single-file GitHub markdown RAG with keyword ranking).
+- **Multi-Turn Vision Loop:** Vercel AI SDK `generateText` with `maxSteps: 5`, tools bound in config, final output via Zod schema.
+- **Wizard UI State Machine:** 4-step client workflow (URL → profile → launch → results) with split-panel dashboard.
+- **Layout Density Profiles:** `"dashboard"` and `"landing"` profile strings passed to audit math boundaries.
 
 ### Explicitly Out of Scope
 
-- Multi-turn ReAct loops, state tracking, and open-ended tool navigation.
-- LLM-driven design system RAG lookups or external token directories.
-- Expensive multi-model critic or evaluator workflows (e.g., Anthropic Claude 4.5 Sonnet passes).
+- Persistent database or Redis cache (in-memory only for POC).
+- OAuth / user accounts / scan history.
+- Expensive multi-model critic or evaluator workflows.
+- Figma plugin or MCP server integration.
 
 ---
 
 ## 6. Tech Stack
 
-- **Core Audits & Logic:** Pure TypeScript, execution environment built natively inside Next.js App Router API routes.
-- **Vision & Optimization Inference:** OpenRouter or direct Google AI SDK utilizing `google/gemini-2.5-flash`. Configured for single-turn structured JSON schemas via `generateObject`.
-- **Testing & Guardrails:** Vitest for traditional snapshots and edge cases. Pure JavaScript array methods for groundedness validation.
-- **UI Interface:** Tailwind CSS dashboard showcasing the asset score, detected structural issues, and high-signal prompt hints.
+- **Core Audits & Logic:** Pure TypeScript inside Next.js App Router API routes.
+- **Tree Cache:** Global in-memory `Map` with tree-flattening helper (`src/lib/figma/cache.ts`).
+- **Vision Agent:** Vercel AI SDK `generateText` + `google/gemini-2.5-flash`, `maxSteps: 5`, Zod structured output.
+- **Agent Tools:** AI SDK tool wrappers in `src/lib/agent/tools/`.
+- **Single-File RAG:** GitHub raw CDN fetch → paragraph chunking → keyword intersection scoring → top-3 retrieval (`src/lib/agent/tools/search-guidelines.ts`).
+- **Testing:** Vitest for deterministic audit snapshots; manual curl/script verification for endpoint chain.
+- **UI:** Tailwind CSS split-panel wizard dashboard.
 
 ---
 
 ## 7. Eval Plan
 
-1. **Deterministic Stability (Vitest):** Running mock Figma JSON payloads through the 8 audits must output 100% identical findings and scores across every test iteration.
-2. **Hard Groundedness Validation:** Seed mock visual findings containing fake node IDs; your TypeScript filter must cleanly catch and discard 100% of the hallucinated entities.
-3. **Cross-Modal Consistency:** Feed a visual finding asserting an overlay error on a node that actually possesses a flawless structural flexible layout configuration; the filter must successfully discard the edge-case error.
-4. **Latency Target:** Complete processing pipelines for targeted frames in under 8 seconds.
+1. **Deterministic Stability (Vitest):** Mock Figma JSON payloads through the 8 audits must output identical findings and scores on every run.
+2. **Cache Round-Trip:** `init` → `audit` → `vision` sequential calls must share the same `fileKey` index without re-fetching from Figma.
+3. **Cache Miss Guard:** `audit` and `vision` routes must return 400 when `fileKey` is absent from cache.
+4. **Tool Groundedness:** Every `inspect_node_properties` call must resolve a real `nodeId` from the flat index; no hallucinated IDs.
+5. **ReAct Turn Sequence:** Agent must follow the expected pattern — visual observation → inspect tool → RAG tool → structured synthesis — within `maxSteps: 5`.
+6. **Structured Output Validity:** Final vision response must parse against the Zod schema with no missing required fields.
+7. **Latency Target:** Full wizard pipeline (init + audit + vision) completes in under 30 seconds for a single-frame target.
+8. **Rate Limit Safety:** ReAct loop stays within `maxSteps: 5` and Google AI Studio free-tier allowance (15 RPM).
 
 ---
 
-## Appendix A — Build Checklist (Linear Pipeline Update)
+## Appendix A — Build Checklist (Agentic Architecture Pivot)
 
 ### Phase 0 & Phase 1 — Foundations (COMPLETED)
 
@@ -100,81 +145,128 @@ Dashboard Display: Core Violations + Clear Code-Gen Suggestions
 - [x] **1.1** `fetchFigmaImages` integration handling API interaction, 429 safety paths, and null image results
 - [x] **1.2** Vercel AI SDK compliant schema implementation for frame evaluation
 
-### Phase 2 — Golden Snapshot Evals (BUILD BY HAND) (COMPLETED)
+---
 
-_Goal: Secure your deterministic test parameters before connecting LLM operations._
+### Part 1: Backend Architecture (Days 1–2)
 
-- [ ] **2.1** Save your mock Figma JSON payloads into your test workspace fixture directory.
-- [ ] **2.2** Write an automated Vitest script validating that your layout audits output consistent flags against your mock layouts.
-- [ ] **2.3** Add a basic validation case verifying that unparseable or completely blank design canvas assets generate empty exception sets.
+_Goal: Split the monolithic scan route into three cache-aware endpoints and register the ReAct agent tools._
 
-### Phase 3 — Vision Critique Implementation (SURGICAL AI)
+#### Task 1: The Cache Memory Manager
 
-_Goal: Build the single-turn object generator prompt context._
+_Create a global cache utility to save, flat-index, and retrieve parsed Figma trees on the server._
 
-- [ ] **3.1** Configure your API layer to isolate your key targeted design assets (e.g., the parent selection or nodes flagged by Phase 0).
-- [ ] **3.2** Declare a clean Zod schema format containing array items: `nodeId`, `violationCategory`, `perceptualFlawDescription`, and `codegenPromptSuggestion`.
-- [ ] **3.3** Prompt Cursor to generate _only_ the single-turn `generateObject` message array connecting the image asset URL and raw layout parameters to Gemini 2.5 Flash.
+- [ ] **1.1** Create `src/lib/figma/cache.ts`.
+- [ ] **1.2** Declare a global singleton `Map` instance to hold tree nodes indexed by `fileKey`.
+- [ ] **1.3** Write a tree-flattening helper function that walks a deeply nested Figma node structure and builds a flat `Map<string, FigmaNode>` for O(1) property lookup by `nodeId`.
+- [ ] **1.4** Export two core functions: `saveTreeToCache(fileKey, rawData)` (which flattens and caches the nodes) and `getTreeFromCache(fileKey)` (which retrieves the map index).
 
-### Phase 4 — Pure TypeScript Guardrails (BUILD BY HAND)
+#### Task 2: Endpoint 1 — Ingestion (`POST /api/agent/init`)
 
-_Goal: Program defensive code wrappers without burning AI tokens._
+_This route takes the user's raw Figma URL, parses it, and primes the server cache._
 
-- [ ] **4.1** Implement a standard JavaScript map check verifying that every AI-cited `nodeId` is actively present in the Figma JSON tree.
-- [ ] **4.2** Add simple code exception rules: if the model reports an element alignment failure, but the element has valid Auto Layout properties, skip the finding to reduce visual noise.
+- [ ] **2.1** Create `src/app/api/agent/init/route.ts`.
+- [ ] **2.2** Extract the incoming `url` parameter from the request JSON body.
+- [ ] **2.3** Call the existing `parseFigmaUrl(url)` utility to isolate the `fileKey` and `nodeId`.
+- [ ] **2.4** Invoke `fetchFigmaTree(fileKey)` to pull the data from Figma (or mock files) and run `saveTreeToCache` to populate the flat index.
+- [ ] **2.5** Return a 200 OK JSON object containing `fileKey`, `nodeId`, and a success validation boolean.
 
-### Phase 5 — (Deleted / Absorbed into Phase 4 Contracts)
+#### Task 3: Endpoint 2 — Structural Linters (`POST /api/agent/audit`)
 
-### Phase 6 — UI Dashboard Enrichment Panel (BUILD BY HAND)
+_This route calculates the numerical metrics based on the user's design density profile choice._
 
-_Goal: Wire your structured AI outputs directly into your visual dashboard layout._
+- [ ] **3.1** Create `src/app/api/agent/audit/route.ts`.
+- [ ] **3.2** Accept `fileKey` and `layoutProfile` (`"dashboard"` or `"landing"`) from the body payload.
+- [ ] **3.3** Retrieve the flat tree node map from the cache helper using `fileKey`. If empty, throw a 400 Cache Miss error.
+- [ ] **3.4** Feed the nodes into the 8 existing TypeScript deterministic audit functions, passing the user's density configuration string down to adjust math boundaries.
+- [ ] **3.5** Compute the `readinessScore` and return a standard JSON payload: `{ readinessScore: number, findings: Finding[] }`.
 
-- [ ] **6.1** Update your scan route response payload contract to include an optional `aiEnrichment` collection field.
-- [ ] **6.2** Clone an existing layout card layout inside your React front-end workspace.
-- [ ] **6.3** Render a clean visual panel displaying the AI's structural flaws alongside code-snippet optimization suggestions.
+#### Task 4: ReAct Agent Tool Registration (Revised for Single-File RAG)
 
-### Phase 7 — Production Polish & Validation (BUILD BY HAND)
+_Program the execution tools that Gemini invokes during the multi-turn vision loop. Task 4.2 builds a standalone search utility that extracts relevant guidelines directly from a user's GitHub markdown file._
 
-_Goal: Final end-to-end performance runs._
+- [ ] **4.1** Create `src/lib/agent/tools/inspect-node.ts`. Write an AI SDK tool wrapper that looks up a `nodeId` in the server cache, strips out any massive child arrays to save tokens, and returns the layout properties.
 
-- [ ] **7.1** Run a complete user transaction trace passing a single layout frame URL. Verify that your system outputs unified structural checks and visual prompt enhancements in a single runtime pass.
-- [ ] **7.2** Double-check your API token consumption logs to ensure your single-turn architecture stays under your target budget limits.
+**`search_layout_guidelines` — Single-File RAG Pipeline**
 
-### Phase 8 — AgentMark Observability Foundation
+- [ ] **4.2.1** Create the core tool declaration file structure within the agent tools directory (`src/lib/agent/tools/search-guidelines.ts`). Define the tool's parameter constraints using a strict schema configuration block that forces the model to provide both a search keyword query string and the source GitHub repository URL.
+- [ ] **4.2.2** Build the remote ingestion engine wrapper. Implement an async network fetch handler that hits the raw GitHub CDN endpoint provided by the tool arguments to download the completely unstructured plain-text markdown file into server memory.
+- [ ] **4.2.3** Implement the structural chunking tokenizer pipeline. Write a utility rule to parse the downloaded markdown text asset, dividing it into distinct, isolated text paragraphs using double-newline string spacing boundaries. Add a guard rule to drop short noise fragments, empty syntax lines, or single-character strings.
+- [ ] **4.2.4** Build the local keyword ranking math matrix. Write an intersection algorithm that splits both the AI's search query and each individual paragraph block into clean lowercase alphanumeric word lists. Compute a relevance score for every single paragraph based on the count of exact keyword intersections found between the search terms and the chunk tokens.
+- [ ] **4.2.5** Program the retrieval sorting layer. Order all scored paragraph text chunks by their frequency of keyword matches, isolate the top 3 highest-ranking results, and join them with a clear separator line string to return a dense context window back to the active Gemini stream loop.
 
-_Goal: Integrate AgentMark to capture clear execution traces, version your prompts, and monitor cost/latency tracking for the certification panel._
+#### Task 5: Endpoint 3 — ReAct Vision Engine (`POST /api/agent/vision`)
 
-- [ ] **8.1** Install and initialize AgentMark within your project workspace workspace parameters (`pnpm add agentmark`).
-- [ ] **8.2** Build the file infrastructure layout for your prompts: create `src/prompts/handoff-investigator.prompt.mdx`.
-- [ ] **8.3** Migrate your system instructions and core prompt blocks out of your static TypeScript file and into the `.prompt.mdx` layout to decouple your AI prompts from application logic.
-- [ ] **8.4** Connect the telemetry logger inside `src/app/api/scan/route.ts` to output local JSONL trace arrays during development passes.
+_This route boots the autonomous vision loop and returns structured JSON to the client._
 
-### Phase 9 — ReAct & Localized RAG Tools (No Token Cost)
+- [ ] **5.1** Create `src/app/api/agent/vision/route.ts`.
+- [ ] **5.2** Read `fileKey`, `nodeId`, `imageUrl`, and optional custom guide configurations from the request payload.
+- [ ] **5.3** Initialize the Vercel AI SDK `generateText` engine using `google('gemini-2.5-flash')`.
+- [ ] **5.4** Set `maxSteps: 5` and bind `inspect_node_properties` and `search_layout_guidelines` tools inside the config object.
+- [ ] **5.5** Attach the screenshot PNG and audit context to the initial message array so Gemini can begin Turn 1 visual inspection.
+- [ ] **5.6** On loop termination, extract the final structured output matching your Zod schema and return clean JSON to the UI.
 
-_Goal: Program the two core evaluation tools that turn your application into an intelligent design investigator. These parse raw local data structures at $0 cost._
+#### Task 6: Terminal Verification Run
 
-- [ ] **9.1** Setup the **Local RAG Corpus**: Download or write a concise markdown rulebook detailing Tailwind CSS layout guidelines (Flexbox rules, Grid properties, fluid wrapping parameters) and save it to `src/lib/agent/docs/tailwind-layout.md`.
-- [ ] **9.2** Implement the **RAG Tool** (`search_layout_guidelines`): Write a fast TypeScript function that takes a query keyword string, parses your local markdown file, matches relevant paragraphs, and returns them. Wrap this as an AI SDK tool.
-- [ ] **9.3** Implement the **Inspection Tool** (`inspect_node_properties`): Write an async tool block that takes a `nodeId`, pulls the full, untruncated JSON layout variables for that specific element from your tree memory cache, and returns it to the AI.
+_Verify the entire backend state cycle manually without a frontend browser._
 
-### Phase 10 — Multi-Turn ReAct Orchestration Lifecycle
+- [ ] **6.1** Start the Next.js local server (`pnpm dev`).
+- [ ] **6.2** Execute 3 sequential curl commands or run a local node test script to trace that the endpoints read/write to the server cache correctly and return valid structured JSON from the vision route.
 
-_Goal: Transition from a single-turn call to an autonomous multi-turn cycle where Gemini discovers a layout bug, uses tools to investigate the tree properties, references the RAG manual, and builds a solution._
+---
 
-- [ ] **10.1** Update your vision function inside `src/lib/agent/vision.ts` to connect the `tools` array parameter to the `generateText` config block.
-- [ ] **10.2** Enforce strict step budget boundaries on the tool calling cycle by configuring `maxSteps: 4` or `5` max to protect your request limits.
-- [ ] **10.3** Program the agent reasoning cycle to follow this explicit behavioral sequence:
-  1. Inspect the incoming screenshot frame image.
-  2. Identify a perceptual abnormality (e.g., text block clipping).
-  3. Execute `inspect_node_properties(nodeId)` to verify hidden width/height constraints.
-  4. Execute `search_layout_guidelines(query)` to draw down verified Tailwind mitigation syntax.
-  5. Assemble the structured, verified audit suggestions payload.
-- [ ] **10.4** Wire this multi-turn workflow loop directly into your primary `POST /api/scan` server route.
+### Part 2: Frontend Dashboard (Days 3–5)
 
-### Phase 11 — Certification Review & Calibration Run
+_Goal: Map UI state onto the split-screen wizard dashboard once the backend endpoint chain is locked._
 
-_Goal: Compile your trace metrics to prove true agentic behavior and 100% groundedness to your evaluation committee._
+#### Task 7: The Master Wizard State Machine
 
-- [ ] **11.1** Trigger a mock evaluation sweep via your dashboard page to verify your agent loops capture multi-step traces perfectly (_Thought → Call inspect tool → Observation → Call RAG tool → Final Conclusion_).
-- [ ] **11.2** Verify your request rates stay cleanly under Google AI Studio's free allowance tier boundary limit of 15 requests per minute.
-- [ ] **11.3** Save your finalized local AgentMark trace logs directly into your repository folder workspace as a concrete verification asset for your presentation slides.
+_Set up the central client-side control center to drive the wizard workflow step-by-step._
+
+- [ ] **7.1** Open the main dashboard interface workspace page (`src/app/scan/page.tsx` or similar layout component).
+- [ ] **7.2** Declare Option B state tracking primitives:
+  - `wizardStep: 1 | 2 | 3 | 4` (default `1`)
+  - `fileKey: string` (default `""`)
+  - `scanData: ScanAuditResult | null` (populated after Step 2)
+  - `visionResults: VisionCritique | null` (populated after Step 4)
+
+#### Task 8: Right Panel — The Interactive Agent Control Box
+
+_Build out the wizard's UI forms, action buttons, and investigation results display._
+
+- [ ] **8.1** Set up a split-panel grid structure (`grid grid-cols-1 lg:grid-cols-2`). Dedicate the right side to the Agent Control Box.
+- [ ] **8.2** Render Step 1 UI: Display the Figma URL input field. On submission, hit `/api/agent/init`, save the returned `fileKey`, and call `setWizardStep(2)`.
+- [ ] **8.3** Render Step 2 UI: Hide the URL input and render two big selection cards: **[Dashboard View]** and **[Landing Page View]**. On click, hit `/api/agent/audit` with the selected profile, save the findings payload to state, and call `setWizardStep(3)`.
+- [ ] **8.4** Render Step 3 UI: Render an optional text field for custom GitHub Markdown URLs and a primary button labeled **[Launch Vision Agent Investigation]**. On click, advance to step 4 and fire `POST /api/agent/vision`.
+- [ ] **8.5** Render Step 4 UI: Show a loading state while the ReAct loop runs server-side, then render the structured violations and codegen suggestions from the JSON response.
+
+#### Task 9: Vision Results Panel
+
+_Display the agent's final structured output and tie findings back to the audit table._
+
+- [ ] **9.1** Parse the vision route JSON response against the Zod schema shape (`violations`, `suggestions`, or equivalent fields).
+- [ ] **9.2** Render each violation with its cited `nodeId`, perceptual description, and codegen prompt suggestion.
+- [ ] **9.3** When a vision finding cites a `nodeId` that also appears in `scanData.findings`, highlight that row in the left-panel findings table.
+
+#### Task 10: Left Panel — The Living State Display
+
+_Connect backend data frames to update visual indicators and telemetry cards automatically._
+
+- [ ] **10.1** Connect the left panel metrics scoreboard, readiness meter gauges, and finding tables directly to the `scanData` React state variable populated during Step 2.
+- [ ] **10.2** After vision results arrive, cross-reference cited `nodeId` values between `scanData` and `visionResults` to show which structural and perceptual issues overlap.
+
+#### Task 11: Final E2E Calibration & Review Run
+
+_Run through the complete application chain using a pre-tested layout frame target profile to prepare for the project presentation._
+
+- [ ] **11.1** Trigger the entire pipeline end-to-end. Confirm that the cache transfers context across wizard steps, the ReAct loop completes within `maxSteps: 5`, and the UI renders the structured JSON response without page crashes or layout stuttering.
+
+---
+
+### Phase 8 — AgentMark Observability Foundation (DEFERRED)
+
+_Goal: Integrate AgentMark to capture execution traces, version prompts, and monitor cost/latency — to be wired after the agentic endpoint chain is stable._
+
+- [ ] **8.1** Install and initialize AgentMark within the project workspace (`pnpm add agentmark`).
+- [ ] **8.2** Build the file infrastructure layout for prompts: create `src/prompts/handoff-investigator.prompt.mdx`.
+- [ ] **8.3** Migrate system instructions and core prompt blocks out of static TypeScript files and into the `.prompt.mdx` layout to separate AI prompts from application logic.
+- [ ] **8.4** Connect the telemetry logger inside `src/app/api/agent/vision/route.ts` to output local JSONL trace arrays during development passes.
