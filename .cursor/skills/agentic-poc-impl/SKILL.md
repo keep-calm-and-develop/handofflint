@@ -23,7 +23,7 @@ Build Checklist Progress:
 - [x] Task 1: Cache Memory Manager (src/lib/figma/cache.ts) — COMPLETED
 - [x] Task 2: Endpoint 1 — Ingestion POST /api/agent/init — COMPLETED (src/app/api/agent/init/route.ts)
 - [x] Task 3: Endpoint 2 — Structural Linters POST /api/agent/audit — COMPLETED (src/app/api/agent/audit/route.ts)
-- [ ] Task 4: ReAct Agent Tool Registration (inspect-node + search-guidelines)
+- [~] Task 4: ReAct Agent Tool Registration — IN PROGRESS (4.1 done, 4.2 pending)
 - [ ] Task 5: Endpoint 3 — ReAct Vision Engine POST /api/agent/vision
 - [ ] Task 6: Terminal Verification Run
 - [ ] Task 7: Master Wizard State Machine (frontend)
@@ -50,6 +50,7 @@ Build Checklist Progress:
 | `src/lib/types.ts` | Includes `AgentInitResponse`, `AgentAuditResponse`, `AgentErrorResponse` (shared across agent endpoints) |
 | `src/app/api/agent/audit/route.ts` | Structural linters endpoint — reads cache, runs 8 audits, returns score + findings |
 | `src/app/api/agent/audit/route.test.ts` | 9 tests covering input validation, cache miss, happy path, profile defaults, severity ordering |
+| `src/lib/agent/tools/inspect-node.ts` | `makeInspectNodeTool(fileKey)` — AI SDK tool wrapper; O(1) cache lookup, strips children, returns shallow layout props |
 
 ## Implementation Conventions
 
