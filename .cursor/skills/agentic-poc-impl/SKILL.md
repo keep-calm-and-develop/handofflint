@@ -24,7 +24,7 @@ Build Checklist Progress:
 - [x] Task 2: Endpoint 1 — Ingestion POST /api/agent/init — COMPLETED (src/app/api/agent/init/route.ts)
 - [x] Task 3: Endpoint 2 — Structural Linters POST /api/agent/audit — COMPLETED (src/app/api/agent/audit/route.ts)
 - [x] Task 4: ReAct Agent Tool Registration — COMPLETED (inspect-node.ts + search-guidelines.ts)
-- [ ] Task 5: Endpoint 3 — ReAct Vision Engine POST /api/agent/vision
+- [x] Task 5: Endpoint 3 — ReAct Vision Engine POST /api/agent/vision — COMPLETED (src/app/api/agent/vision/route.ts)
 - [ ] Task 6: Terminal Verification Run
 - [ ] Task 7: Master Wizard State Machine (frontend)
 - [ ] Task 8: Right Panel — Agent Control Box (frontend)
@@ -53,6 +53,7 @@ Build Checklist Progress:
 | `src/lib/agent/tools/inspect-node.ts` | `makeInspectNodeTool(fileKey)` — AI SDK tool wrapper; O(1) cache lookup, strips children, returns shallow layout props |
 | `src/lib/agent/tools/search-guidelines.ts` | `makeSearchGuidelinesTool()` — Single-file RAG: fetch markdown → chunk → keyword score → top 3 retrieval |
 | `src/lib/agent/tools/search-guidelines.test.ts` | 30 tests: tokenize, chunkMarkdown, scoreChunks, retrieveTopChunks, fetchMarkdownContent, executeSearchGuidelines |
+| `src/app/api/agent/vision/route.ts` | Streaming ReAct vision endpoint — `streamText` with `stepCountIs(5)`, layout profile interpolation, `toUIMessageStreamResponse()` |
 
 ## Implementation Conventions
 
@@ -111,11 +112,21 @@ Build Checklist Progress:
 - `designManualUrl` is a model-supplied parameter so the agent can target different guideline docs per investigation
 - Chunk noise filter threshold: < 30 characters
 
-### Task 5: POST /api/agent/vision
+### Task 5: POST /api/agent/vision (Streaming)
 
 **Route**: `src/app/api/agent/vision/route.ts`
 
-**Flow**: Parse body `{ fileKey, nodeId, imageUrl, customGuides? }` → validate cache → `generateText()` with tools → return structured JSON
+**Flow**: Parse body `{ fileKey, nodeId, imageUrl, layoutProfile, designManualUrl }` → validate cache → `streamText()` with tools → `toUIMessageStreamResponse()`
+
+**Key decisions (resolved)**:
+- Uses AI SDK v6 `streamText` (not `generateText`) for real-time chunked streaming
+- `stopWhen: stepCountIs(5)` — allows up to 5 investigation turns
+- `toUIMessageStreamResponse()` replaces old `toDataStreamResponse()` — returns HTTP 200 with `Transfer-Encoding: chunked` immediately
+- `layoutProfile` (VisionLayoutProfile) dynamically interpolated into system prompt to set investigation priorities per screen context
+- Available profiles: "dashboard", "landing-page", "mobile-app", "ai-chat", "e-commerce", "form-heavy" — each has a context string in `VISION_PROFILE_CONTEXT`
+- `designManualUrl` passed directly in body — injected into user prompt so agent uses it with RAG tool
+- No Zod structured output (incompatible with streaming tools in SDK v6) — frontend parses the stream events
+- Logs: `stream_start`, `step_finish` (with tool names), `stream_complete` (steps, tokens), `stream_error`
 
 ## Self-Update Protocol
 

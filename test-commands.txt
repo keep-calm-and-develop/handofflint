@@ -1,0 +1,32 @@
+curl -s -X POST http://localhost:3000/api/agent/init \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://www.figma.com/design/kvT3qcauDE67CW76Kb56Qw/vaxin?node-id=1-4&t=EQm77ojxRtNwhUir-0"}' \
+  | jq .
+
+# Step 1: Prime the cache via init
+curl -s -X POST http://localhost:3000/api/agent/init \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://www.figma.com/design/kvT3qcauDE67CW76Kb56Qw/vaxin?node-id=1-4"}' \
+  | jq .
+
+# Step 2: Run audits against the cached tree
+curl -s -X POST http://localhost:3000/api/agent/audit \
+  -H "Content-Type: application/json" \
+  -d '{"fileKey":"kvT3qcauDE67CW76Kb56Qw"}' \
+  | jq .
+
+# With custom profile + contrast level
+curl -s -X POST http://localhost:3000/api/agent/audit \
+  -H "Content-Type: application/json" \
+  -d '{"fileKey":"kvT3qcauDE67CW76Kb56Qw","layoutHandoffProfile":"flexible-layout","contrastLevel":"aaa"}' \
+  | jq .
+
+# Step 3: Stream vision investigation (imageUrl optional — server fetches via fetchFigmaImages)
+curl -s -X POST http://localhost:3000/api/agent/init \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://www.figma.com/design/kvT3qcauDE67CW76Kb56Qw/vaxin?node-id=1-4"}' \
+  | jq .
+
+  curl -N -X POST http://localhost:3000/api/agent/vision \
+  -H "Content-Type: application/json" \
+  -d '{"fileKey":"kvT3qcauDE67CW76Kb56Qw","nodeId":"1:4","imageUrl":"https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/33f30ad2-8de0-4e29-a22e-d47ecf272e67","layoutProfile":"dashboard","designManualUrl":"https://raw.githubusercontent.com/RayFernando1337/llm-cursor-rules/main/fire-your-design-team.md"}'

@@ -124,3 +124,50 @@ export interface AgentAuditResponse {
 export interface AgentErrorResponse {
   error: string;
 }
+
+/** Screen context profiles for the vision agent — influences investigative priorities. */
+export type VisionLayoutProfile =
+  | "dashboard"
+  | "landing-page"
+  | "mobile-app"
+  | "ai-chat"
+  | "e-commerce"
+  | "form-heavy";
+
+export const VISION_LAYOUT_PROFILES: VisionLayoutProfile[] = [
+  "dashboard",
+  "landing-page",
+  "mobile-app",
+  "ai-chat",
+  "e-commerce",
+  "form-heavy",
+];
+
+export const VISION_PROFILE_CONTEXT: Record<VisionLayoutProfile, string> = {
+  dashboard:
+    "This is a data-dense dashboard with charts, tables, KPI cards, and navigation sidebars. " +
+    "Prioritize: information hierarchy clashes, card alignment symmetry, dense spacing issues, and data label clipping.",
+  "landing-page":
+    "This is a marketing landing page with hero sections, CTAs, testimonials, and feature grids. " +
+    "Prioritize: CTA hierarchy (only one primary action per viewport), hero text overflow, section rhythm breaks, and accent color overuse.",
+  "mobile-app":
+    "This is a mobile app screen with constrained viewport width, touch targets, and bottom navigation. " +
+    "Prioritize: touch target sizing (min 44px), text clipping in narrow containers, bottom nav alignment, and thumb-zone reachability.",
+  "ai-chat":
+    "This is a conversational AI chat interface with message bubbles, input areas, and streaming indicators. " +
+    "Prioritize: message bubble alignment consistency, input area overflow, code block clipping, and typing indicator placement.",
+  "e-commerce":
+    "This is a product/e-commerce screen with product cards, pricing, cart elements, and category navigation. " +
+    "Prioritize: price typography hierarchy, product card symmetry, image aspect ratio consistency, and CTA button competition.",
+  "form-heavy":
+    "This is a form-heavy interface with input fields, labels, validation states, and multi-step flows. " +
+    "Prioritize: label-input alignment, error message clipping, field group spacing rhythm, and submit button hierarchy.",
+};
+
+export interface AgentVisionResponse {
+  fileKey: string;
+  nodeId: string;
+  enrichments: AIEnrichmentItem[];
+  stepsUsed: number;
+  toolCalls: string[];
+}

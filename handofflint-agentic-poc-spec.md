@@ -59,7 +59,7 @@ Right panel: Agent investigation results + codegen suggestions
 ```
 Frontend hits POST /api/agent/vision
                                     ↓
-       Server runs `generateText({ maxSteps: 5, tools: [...] })`
+       Server runs `generateText({ stopWhen: stepCountIs(3), tools: [...] })`
                                     ↓
     [TURN 1] Gemini inspects screenshot PNG.
              "Hmm, element 4:23 looks squashed."
@@ -97,7 +97,7 @@ Frontend hits POST /api/agent/vision
 - **Server Tree Cache:** Global singleton flat-index cache keyed by `fileKey` for cross-request node lookup.
 - **Three API Routes:** `POST /api/agent/init`, `POST /api/agent/audit`, `POST /api/agent/vision`.
 - **ReAct Agent Tools:** `inspect_node_properties` (cache lookup, child-array stripping) and `search_layout_guidelines` (single-file GitHub markdown RAG with keyword ranking).
-- **Multi-Turn Vision Loop:** Vercel AI SDK `generateText` with `maxSteps: 5`, tools bound in config, final output via Zod schema.
+- **Multi-Turn Vision Loop:** Vercel AI SDK `streamText` with `stopWhen: stepCountIs(5)`, tools bound in config, streamed via `toUIMessageStreamResponse()` for real-time chunked delivery.
 - **Wizard UI State Machine:** 4-step client workflow (URL → profile → launch → results) with split-panel dashboard.
 - **Layout Density Profiles:** `"dashboard"` and `"landing"` profile strings passed to audit math boundaries.
 
@@ -114,7 +114,7 @@ Frontend hits POST /api/agent/vision
 
 - **Core Audits & Logic:** Pure TypeScript inside Next.js App Router API routes.
 - **Tree Cache:** Global in-memory `Map` with tree-flattening helper (`src/lib/figma/cache.ts`).
-- **Vision Agent:** Vercel AI SDK `generateText` + `google/gemini-2.5-flash`, `maxSteps: 5`, Zod structured output.
+- **Vision Agent:** Vercel AI SDK `streamText` + `google/gemini-2.5-flash`, `stopWhen: stepCountIs(5)`, streamed chunked response via `toUIMessageStreamResponse()`.
 - **Agent Tools:** AI SDK tool wrappers in `src/lib/agent/tools/`.
 - **Single-File RAG:** GitHub raw CDN fetch → paragraph chunking → keyword intersection scoring → top-3 retrieval (`src/lib/agent/tools/search-guidelines.ts`).
 - **Testing:** Vitest for deterministic audit snapshots; manual curl/script verification for endpoint chain.
@@ -128,10 +128,10 @@ Frontend hits POST /api/agent/vision
 2. **Cache Round-Trip:** `init` → `audit` → `vision` sequential calls must share the same `fileKey` index without re-fetching from Figma.
 3. **Cache Miss Guard:** `audit` and `vision` routes must return 400 when `fileKey` is absent from cache.
 4. **Tool Groundedness:** Every `inspect_node_properties` call must resolve a real `nodeId` from the flat index; no hallucinated IDs.
-5. **ReAct Turn Sequence:** Agent must follow the expected pattern — visual observation → inspect tool → RAG tool → structured synthesis — within `maxSteps: 5`.
+5. **ReAct Turn Sequence:** Agent must follow the expected pattern — visual observation → inspect tool → RAG tool → structured synthesis — within `stepCountIs(5)`.
 6. **Structured Output Validity:** Final vision response must parse against the Zod schema with no missing required fields.
 7. **Latency Target:** Full wizard pipeline (init + audit + vision) completes in under 30 seconds for a single-frame target.
-8. **Rate Limit Safety:** ReAct loop stays within `maxSteps: 5` and Google AI Studio free-tier allowance (15 RPM).
+8. **Rate Limit Safety:** ReAct loop stays within `stepCountIs(5)` and Google AI Studio free-tier allowance (15 RPM).
 
 ---
 
@@ -197,16 +197,16 @@ _Program the execution tools that Gemini invokes during the multi-turn vision lo
 - [x] **4.2.4** Build the keyword ranking logic. Program an intersection check that tokenizes both the AI's inquiry and each individual paragraph block into clean, lowercase alphanumeric word arrays. Calculate an absolute relevance score for every paragraph based on the count of exact keyword overlaps found between the search words and the chunk tokens.
 - [x] **4.2.5** Assemble the final retrieval payload. Sort the scored paragraphs by highest keyword relevance, isolate the top 3 matching chunks, join them with a distinct separator line, and return this condensed layout guideline context block back to the running Gemini session.
 
-#### Task 5: Endpoint 3 — ReAct Vision Engine (`POST /api/agent/vision`)
+#### Task 5: Endpoint 3 — Streaming ReAct Vision Engine (`POST /api/agent/vision`)
 
-_This route boots the autonomous vision loop and returns structured JSON to the client._
+_This route boots the autonomous vision loop and streams every step back to the client in real-time via chunked transfer encoding._
 
-- [ ] **5.1** Create `src/app/api/agent/vision/route.ts`.
-- [ ] **5.2** Read `fileKey`, `nodeId`, `imageUrl`, and optional custom guide configurations from the request payload.
-- [ ] **5.3** Initialize the Vercel AI SDK `generateText` engine using `google('gemini-2.5-flash')`.
-- [ ] **5.4** Set `maxSteps: 5` and bind `inspect_node_properties` and `search_layout_guidelines` tools inside the config object.
-- [ ] **5.5** Attach the screenshot PNG and audit context to the initial message array so Gemini can begin Turn 1 visual inspection.
-- [ ] **5.6** On loop termination, extract the final structured output matching your Zod schema and return clean JSON to the UI.
+- [x] **5.1** Create `src/app/api/agent/vision/route.ts`.
+- [x] **5.2** Parse the JSON payload: `fileKey`, `nodeId`, `imageUrl`, `layoutProfile`, and `designManualUrl` from the request body.
+- [x] **5.3** Initialize the Vercel AI SDK `streamText` engine using `google('gemini-2.5-flash')` with `stopWhen: stepCountIs(5)`.
+- [x] **5.4** Inject the custom design system persona system prompt with the user's `layoutProfile` dynamically interpolated to alter investigative priorities per screen context (dashboard, landing-page, mobile-app, ai-chat, e-commerce, form-heavy).
+- [x] **5.5** Bind `inspect_node_properties` and `search_layout_guidelines` tools to the model call configuration.
+- [x] **5.6** Return `result.toUIMessageStreamResponse()` — instantly sends HTTP 200 with `Transfer-Encoding: chunked`, keeping the connection open so every step of the multi-turn loop is piped to the client the moment it occurs.
 
 #### Task 6: Terminal Verification Run
 
@@ -261,7 +261,7 @@ _Connect backend data frames to update visual indicators and telemetry cards aut
 
 _Run through the complete application chain using a pre-tested layout frame target profile to prepare for the project presentation._
 
-- [ ] **11.1** Trigger the entire pipeline end-to-end. Confirm that the cache transfers context across wizard steps, the ReAct loop completes within `maxSteps: 5`, and the UI renders the structured JSON response without page crashes or layout stuttering.
+- [ ] **11.1** Trigger the entire pipeline end-to-end. Confirm that the cache transfers context across wizard steps, the ReAct loop completes within `stepCountIs(5)`, and the UI renders the streamed response without page crashes or layout stuttering.
 
 ---
 
