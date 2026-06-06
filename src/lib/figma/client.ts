@@ -8,11 +8,11 @@ import {
   type FigmaTreeCacheEntry,
 } from "@/lib/figma/cache";
 import { ensureFigmaMockServer } from "@/mocks/ensure-server";
+import { FigmaApiError, figmaFetch, parseFigmaResponse } from "@/lib/figma/fetch";
 import {
-  FigmaApiError,
-  figmaFetch,
-  parseFigmaResponse,
-} from "@/lib/figma/fetch";
+  rateLimitLogFields,
+  type FigmaRateLimitDetails,
+} from "@/lib/figma/retry-after";
 import type { FigmaDataSource } from "@/lib/types";
 
 export { FigmaApiError } from "@/lib/figma/fetch";
@@ -26,13 +26,8 @@ const FIGMA_API_BASE = "https://api.figma.com/v1";
  * @see https://www.figma.com/developers/api#get-file-nodes-endpoint
  * @see https://www.figma.com/developers/api#get-files-endpoint
  */
-export interface FetchFigmaTreeOptions {
-  forceRefresh?: boolean;
-}
-
 export interface FetchFigmaTreeCacheInfo {
   hit: boolean;
-  validatedAt: string;
   fetchedAt: string;
 }
 
@@ -49,23 +44,20 @@ interface FigmaFileMeta {
 type FigmaFileMetaResult =
   | { status: "ok"; version: string }
   | { status: "forbidden" }
-  | { status: "rate_limited" }
+  | { status: "rate_limited"; rateLimit: FigmaRateLimitDetails }
   | { status: "error" };
 
-function extractFigmaFileMeta(data: unknown): {
-  version: string;
-  lastModified: string;
-} {
+function logTree(event: string, details?: Record<string, unknown>): void {
+  console.log("[figma-tree-cache]", event, details ?? "");
+}
+
+function extractVersion(data: unknown): string {
   if (typeof data !== "object" || data === null) {
-    return { version: "", lastModified: "" };
+    return "";
   }
 
-  const record = data as Record<string, unknown>;
-  return {
-    version: typeof record.version === "string" ? record.version : "",
-    lastModified:
-      typeof record.lastModified === "string" ? record.lastModified : "",
-  };
+  const version = (data as Record<string, unknown>).version;
+  return typeof version === "string" ? version : "";
 }
 
 function buildFigmaTreeUrl(fileKey: string, nodeId: string | null): string {
@@ -85,7 +77,15 @@ async function fetchFigmaFileMeta(
     res = await figmaFetch(url, token);
   } catch (err) {
     if (err instanceof FigmaApiError && err.status === 429) {
-      return { status: "rate_limited" };
+      return {
+        status: "rate_limited",
+        rateLimit: err.rateLimit ?? {
+          retryAfterSec: 60,
+          planTier: null,
+          rateLimitType: null,
+          upgradeLink: null,
+        },
+      };
     }
     throw err;
   }
@@ -116,10 +116,10 @@ async function fetchFullFigmaTree(
   fileKey: string,
   nodeId: string | null,
   token: string,
-): Promise<{ data: unknown; meta: { version: string; lastModified: string } }> {
+): Promise<{ data: unknown; version: string }> {
   const url = buildFigmaTreeUrl(fileKey, nodeId);
   const data = await parseFigmaResponse(await figmaFetch(url, token));
-  return { data, meta: extractFigmaFileMeta(data) };
+  return { data, version: extractVersion(data) };
 }
 
 function toCacheInfo(
@@ -128,7 +128,6 @@ function toCacheInfo(
 ): FetchFigmaTreeCacheInfo {
   return {
     hit,
-    validatedAt: new Date().toISOString(),
     fetchedAt: new Date(entry.fetchedAt).toISOString(),
   };
 }
@@ -147,6 +146,12 @@ async function resolveCachedTree(
   cached: FigmaTreeCacheEntry,
 ): Promise<FetchFigmaTreeResult | null> {
   if (isCacheFresh(cached)) {
+    logTree("serve", {
+      fileKey,
+      nodeId: cached.nodeId,
+      reason: "fresh_window",
+      version: cached.version,
+    });
     return serveCachedTree(cached);
   }
 
@@ -154,11 +159,47 @@ async function resolveCachedTree(
 
   switch (meta.status) {
     case "ok":
-      return meta.version === cached.version ? serveCachedTree(cached) : null;
+      if (meta.version === cached.version) {
+        logTree("serve", {
+          fileKey,
+          nodeId: cached.nodeId,
+          reason: "meta_version_match",
+          version: cached.version,
+        });
+        return serveCachedTree(cached);
+      }
+      logTree("stale", {
+        fileKey,
+        nodeId: cached.nodeId,
+        reason: "meta_version_mismatch",
+        cachedVersion: cached.version,
+        remoteVersion: meta.version,
+      });
+      return null;
     case "forbidden":
+      logTree("serve", {
+        fileKey,
+        nodeId: cached.nodeId,
+        reason: "meta_forbidden",
+        version: cached.version,
+      });
+      return serveCachedTree(cached);
     case "rate_limited":
+      logTree("serve", {
+        fileKey,
+        nodeId: cached.nodeId,
+        reason: "meta_rate_limited",
+        version: cached.version,
+        ...rateLimitLogFields(meta.rateLimit),
+      });
       return serveCachedTree(cached);
     case "error":
+      logTree("stale", {
+        fileKey,
+        nodeId: cached.nodeId,
+        reason: "meta_error",
+        cachedVersion: cached.version,
+      });
       return null;
   }
 }
@@ -166,7 +207,6 @@ async function resolveCachedTree(
 export async function fetchFigmaTree(
   fileKey: string,
   nodeId: string | null,
-  options: FetchFigmaTreeOptions = {},
 ): Promise<FetchFigmaTreeResult | null> {
   await ensureFigmaMockServer();
 
@@ -177,27 +217,32 @@ export async function fetchFigmaTree(
 
   const cacheEnabled = isFigmaCacheEnabled();
   const cacheKey = buildFigmaCacheKey(fileKey, nodeId);
-  const cached =
-    cacheEnabled && !options.forceRefresh
-      ? getFigmaTreeCache(cacheKey)
-      : null;
+  const cached = cacheEnabled ? getFigmaTreeCache(cacheKey) : null;
 
   if (cached) {
     const cachedResult = await resolveCachedTree(fileKey, token, cached);
     if (cachedResult) {
       return cachedResult;
     }
+  } else if (cacheEnabled) {
+    logTree("miss", { cacheKey, fileKey, nodeId });
   }
 
-  try {
-    const { data, meta } = await fetchFullFigmaTree(fileKey, nodeId, token);
+  logTree("api_fetch", {
+    fileKey,
+    nodeId,
+    cacheKey,
+    endpoint: nodeId ? "nodes" : "file",
+  });
 
-    if (cacheEnabled && meta.version) {
+  try {
+    const { data, version } = await fetchFullFigmaTree(fileKey, nodeId, token);
+
+    if (cacheEnabled && version) {
       const entry: FigmaTreeCacheEntry = {
         fileKey,
         nodeId,
-        version: meta.version,
-        lastModified: meta.lastModified,
+        version,
         data,
         fetchedAt: Date.now(),
       };
@@ -210,6 +255,15 @@ export async function fetchFigmaTree(
       };
     }
 
+    if (cacheEnabled && !version) {
+      logTree("store_skipped", {
+        cacheKey,
+        fileKey,
+        nodeId,
+        reason: "missing_version",
+      });
+    }
+
     return { data, source: "api" };
   } catch (err) {
     if (
@@ -219,8 +273,21 @@ export async function fetchFigmaTree(
     ) {
       const stale = peekFigmaTreeCache(cacheKey);
       if (stale) {
+        logTree("serve", {
+          fileKey,
+          nodeId: stale.nodeId,
+          reason: "rate_limited_stale",
+          version: stale.version,
+          ...rateLimitLogFields(err.rateLimit),
+        });
         return serveCachedTree(stale);
       }
+      logTree("rate_limited_no_stale", {
+        cacheKey,
+        fileKey,
+        nodeId,
+        ...rateLimitLogFields(err.rateLimit),
+      });
     }
     throw err;
   }

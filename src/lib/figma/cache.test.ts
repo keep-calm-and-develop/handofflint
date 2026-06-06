@@ -24,7 +24,6 @@ describe("figma cache", () => {
       fileKey: "file-a",
       nodeId: null,
       version: "v1",
-      lastModified: "2026-01-01T00:00:00Z",
       data: { name: "A" },
       fetchedAt: Date.now(),
     };
@@ -41,7 +40,6 @@ describe("figma cache", () => {
       fileKey: "file-a",
       nodeId: null,
       version: "v1",
-      lastModified: "2026-01-01T00:00:00Z",
       data: {},
       fetchedAt: Date.now() - 2000,
     });
@@ -57,7 +55,6 @@ describe("figma cache", () => {
         fileKey: "file-a",
         nodeId: null,
         version: "v1",
-        lastModified: "2026-01-01T00:00:00Z",
         data: {},
         fetchedAt: Date.now() - 1000,
       }),
@@ -68,7 +65,6 @@ describe("figma cache", () => {
         fileKey: "file-a",
         nodeId: null,
         version: "v1",
-        lastModified: "2026-01-01T00:00:00Z",
         data: {},
         fetchedAt: Date.now() - 6000,
       }),
@@ -82,7 +78,6 @@ describe("figma cache", () => {
       fileKey,
       nodeId: null,
       version: "v1",
-      lastModified: "2026-01-01T00:00:00Z",
       data: {},
       fetchedAt: Date.now(),
     });

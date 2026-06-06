@@ -1,5 +1,40 @@
 const UNIX_TIMESTAMP_THRESHOLD = 1_000_000_000;
 
+/** Fields returned on Figma 429 responses. @see https://developers.figma.com/docs/rest-api/rate-limits/ */
+export interface FigmaRateLimitDetails {
+  retryAfterSec: number;
+  planTier: string | null;
+  rateLimitType: string | null;
+  upgradeLink: string | null;
+}
+
+export function rateLimitLogFields(
+  rateLimit?: FigmaRateLimitDetails,
+): Record<string, unknown> {
+  if (!rateLimit) {
+    return {};
+  }
+  return {
+    retryAfterSec: rateLimit.retryAfterSec,
+    planTier: rateLimit.planTier,
+    rateLimitType: rateLimit.rateLimitType,
+    upgradeLink: rateLimit.upgradeLink,
+  };
+}
+
+/** Extract rate-limit metadata from a Figma 429 response. */
+export function extractFigmaRateLimitDetails(
+  headers: Headers,
+  nowMs: number = Date.now(),
+): FigmaRateLimitDetails {
+  return {
+    retryAfterSec: parseRetryAfterSeconds(headers.get("Retry-After"), nowMs),
+    planTier: headers.get("X-Figma-Plan-Tier"),
+    rateLimitType: headers.get("X-Figma-Rate-Limit-Type"),
+    upgradeLink: headers.get("X-Figma-Upgrade-Link"),
+  };
+}
+
 /** Parse Figma's Retry-After header (seconds, or HTTP-date). */
 export function parseRetryAfterSeconds(
   header: string | null,

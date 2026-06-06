@@ -16,7 +16,7 @@ import { ScanResults } from "./ScanResults";
 
 export function ScanDashboard() {
   const figmaUrl = useFigmaUrl(
-    "https://www.figma.com/design/kvT3qcauDE67CW76Kb56Qw/vaxin?node-id=2-28&t=8wS4VeFLBfj0FD4F-0",
+    "https://www.figma.com/design/kvT3qcauDE67CW76Kb56Qw/vaxin?node-id=1-4&t=EQm77ojxRtNwhUir-0",
   );
   const layoutHandoff = useLayoutHandoffProfile();
   const gridBase = useGridBase();

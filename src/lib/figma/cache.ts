@@ -4,7 +4,6 @@ export interface FigmaTreeCacheEntry {
   fileKey: string;
   nodeId: string | null;
   version: string;
-  lastModified: string;
   data: unknown;
   fetchedAt: number;
 }
@@ -14,6 +13,10 @@ const DEFAULT_FRESH_MS = 30 * 1000;
 const DEFAULT_MAX_ENTRIES = 50;
 
 const store = new Map<string, FigmaTreeCacheEntry>();
+
+function logStore(event: string, details?: Record<string, unknown>): void {
+  console.log("[figma-tree-cache]", event, details ?? "");
+}
 
 /** Cache key for a file or node subtree fetch (must match query params used in client). */
 export function buildFigmaCacheKey(
@@ -44,11 +47,11 @@ function parsePositiveInt(raw: string | undefined, fallback: number): number {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
-export function getFigmaCacheTtlMs(): number {
+function getCacheTtlMs(): number {
   return parsePositiveInt(process.env.FIGMA_CACHE_TTL_MS, DEFAULT_TTL_MS);
 }
 
-export function getFigmaCacheMaxEntries(): number {
+function getCacheMaxEntries(): number {
   return parsePositiveInt(
     process.env.FIGMA_CACHE_MAX_ENTRIES,
     DEFAULT_MAX_ENTRIES,
@@ -56,7 +59,7 @@ export function getFigmaCacheMaxEntries(): number {
 }
 
 /** Skip /meta validation when the tree was fetched within this window (instant re-scans). */
-export function getFigmaCacheFreshMs(): number {
+function getCacheFreshMs(): number {
   const raw = process.env.FIGMA_CACHE_FRESH_MS?.trim();
   if (!raw) {
     return DEFAULT_FRESH_MS;
@@ -66,7 +69,7 @@ export function getFigmaCacheFreshMs(): number {
 }
 
 export function isCacheFresh(entry: FigmaTreeCacheEntry): boolean {
-  const freshMs = getFigmaCacheFreshMs();
+  const freshMs = getCacheFreshMs();
   if (freshMs === 0) {
     return false;
   }
@@ -74,7 +77,7 @@ export function isCacheFresh(entry: FigmaTreeCacheEntry): boolean {
 }
 
 function isExpired(entry: FigmaTreeCacheEntry): boolean {
-  return Date.now() - entry.fetchedAt > getFigmaCacheTtlMs();
+  return Date.now() - entry.fetchedAt > getCacheTtlMs();
 }
 
 /** Returns a non-expired entry, or null on miss/expiry. Refreshes LRU order on hit. */
@@ -93,18 +96,33 @@ export function setFigmaTreeCache(
   key: string,
   entry: FigmaTreeCacheEntry,
 ): void {
-  if (store.has(key)) {
+  const isUpdate = store.has(key);
+  if (isUpdate) {
     store.delete(key);
   }
   store.set(key, entry);
 
-  const maxEntries = getFigmaCacheMaxEntries();
+  logStore("upsert", {
+    key,
+    action: isUpdate ? "update" : "insert",
+    fileKey: entry.fileKey,
+    nodeId: entry.nodeId,
+    version: entry.version,
+    storeSize: store.size,
+  });
+
+  const maxEntries = getCacheMaxEntries();
   while (store.size > maxEntries) {
     const oldest = store.keys().next().value;
     if (oldest === undefined) {
       break;
     }
     store.delete(oldest);
+    logStore("lru_evict", {
+      evictedKey: oldest,
+      maxEntries,
+      storeSize: store.size,
+    });
   }
 }
 

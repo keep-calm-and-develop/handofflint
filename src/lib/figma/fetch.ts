@@ -1,16 +1,29 @@
 import {
   buildRateLimitMessage,
-  parseRetryAfterSeconds,
+  extractFigmaRateLimitDetails,
+  rateLimitLogFields,
+  type FigmaRateLimitDetails,
 } from "@/lib/figma/retry-after";
 
 export class FigmaApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly rateLimit?: FigmaRateLimitDetails,
   ) {
     super(message);
     this.name = "FigmaApiError";
   }
+}
+
+export function logFigmaRateLimited(
+  context: string,
+  details: FigmaRateLimitDetails & { url?: string },
+): void {
+  console.warn("[figma-rate-limit]", context, {
+    ...rateLimitLogFields(details),
+    ...(details.url ? { url: details.url } : {}),
+  });
 }
 
 /**
@@ -25,13 +38,15 @@ export async function figmaFetch(url: string, token: string): Promise<Response> 
   });
 
   if (res.status === 429) {
-    const retryAfterSec = parseRetryAfterSeconds(res.headers.get("Retry-After"));
+    const rateLimit = extractFigmaRateLimitDetails(res.headers);
+    logFigmaRateLimited("api_request", { url, ...rateLimit });
     throw new FigmaApiError(
-      buildRateLimitMessage(retryAfterSec, {
-        planTier: res.headers.get("X-Figma-Plan-Tier"),
-        limitType: res.headers.get("X-Figma-Rate-Limit-Type"),
+      buildRateLimitMessage(rateLimit.retryAfterSec, {
+        planTier: rateLimit.planTier,
+        limitType: rateLimit.rateLimitType,
       }),
       429,
+      rateLimit,
     );
   }
 

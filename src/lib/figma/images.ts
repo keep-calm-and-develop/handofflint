@@ -1,6 +1,7 @@
 import { ensureFigmaMockServer } from "@/mocks/ensure-server";
 import { FigmaApiError, figmaFetch, parseFigmaResponse } from "@/lib/figma/fetch";
 import { isFigmaApiMockEnabled } from "@/lib/figma/mock-enabled";
+import { rateLimitLogFields } from "@/lib/figma/retry-after";
 
 export type FigmaImageFormat = "png" | "jpg" | "svg" | "pdf";
 
@@ -35,11 +36,6 @@ const DEFAULT_SCALE = 2;
 const DEFAULT_FORMAT: FigmaImageFormat = "png";
 const MAX_IDS_PER_REQUEST = 50;
 
-// ---------------------------------------------------------------------------
-// In-memory cache for image URLs (valid for 30 days; we use a shorter TTL to
-// be safe against file edits that invalidate a previously-rendered frame).
-// ---------------------------------------------------------------------------
-
 interface ImageCacheEntry {
   images: Record<string, FigmaImageUrl>;
   fetchedAt: number;
@@ -47,6 +43,10 @@ interface ImageCacheEntry {
 
 const IMAGE_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const imageStore = new Map<string, ImageCacheEntry>();
+
+function logImage(event: string, details?: Record<string, unknown>): void {
+  console.log("[figma-image-cache]", event, details ?? "");
+}
 
 function buildImageCacheKey(
   fileKey: string,
@@ -76,10 +76,6 @@ export function clearFigmaImageCache(): void {
   imageStore.clear();
 }
 
-// ---------------------------------------------------------------------------
-// Raw Figma Images API response shape
-// ---------------------------------------------------------------------------
-
 interface FigmaImagesApiResponse {
   err: string | null;
   images: Record<string, string | null>;
@@ -104,8 +100,6 @@ function parseFigmaImagesResponse(raw: unknown): Record<string, FigmaImageUrl> {
     throw new FigmaApiError("Figma images API returned no image map", 500);
   }
 
-  // Preserve null values — they represent unrenderable nodes and must be
-  // surfaced to callers rather than silently dropped.
   return Object.fromEntries(
     Object.entries(body.images).map(([id, url]) => [id, url ?? null]),
   );
@@ -116,11 +110,6 @@ function parseFigmaImagesResponse(raw: unknown): Record<string, FigmaImageUrl> {
  *
  * Reuses the shared PAT, 429 handling, and mock-server setup from the tree
  * client. Results are cached for 10 minutes (image URLs are 30-day S3 links).
- *
- * @param fileKey  - Figma file key from the URL.
- * @param nodeIds  - One or more node IDs to render. Batched in groups of 50.
- * @param options  - `scale` (default 2×) and `format` (default "png").
- * @returns `{ images, source }` where each `images[nodeId]` is a URL or null.
  *
  * @see https://www.figma.com/developers/api#get-images-endpoint
  */
@@ -140,14 +129,16 @@ export async function fetchFigmaImages(
 
   const scale = options.scale ?? DEFAULT_SCALE;
   const format = options.format ?? DEFAULT_FORMAT;
-
   const cacheKey = buildImageCacheKey(fileKey, nodeIds, scale, format);
+
   const cached = isFigmaApiMockEnabled() ? null : getImageCache(cacheKey);
   if (cached) {
+    logImage("serve", { cacheKey, fileKey, reason: "hit" });
     return { images: cached.images, source: "cache" };
   }
 
-  // Figma caps the ids parameter; batch large requests.
+  logImage("api_fetch", { cacheKey, fileKey, nodeIds });
+
   const batches = chunk(nodeIds, MAX_IDS_PER_REQUEST);
   const merged: Record<string, FigmaImageUrl> = {};
 
@@ -159,25 +150,33 @@ export async function fetchFigmaImages(
       res = await figmaFetch(url, token);
     } catch (err) {
       if (err instanceof FigmaApiError && err.status === 429) {
-        // On rate limit, surface stale cache if available; otherwise re-throw.
         const stale = imageStore.get(cacheKey);
-        if (stale) return { images: stale.images, source: "cache" };
+        if (stale) {
+          logImage("serve", {
+            cacheKey,
+            fileKey,
+            reason: "rate_limited_stale",
+            expired: Date.now() - stale.fetchedAt > IMAGE_CACHE_TTL_MS,
+            ...rateLimitLogFields(err.rateLimit),
+          });
+          return { images: stale.images, source: "cache" };
+        }
+        logImage("rate_limited_no_stale", {
+          cacheKey,
+          fileKey,
+          ...rateLimitLogFields(err.rateLimit),
+        });
       }
       throw err;
     }
 
     const raw = await parseFigmaResponse(res);
-    const batchImages = parseFigmaImagesResponse(raw);
-    Object.assign(merged, batchImages);
+    Object.assign(merged, parseFigmaImagesResponse(raw));
   }
 
   setImageCache(cacheKey, { images: merged, fetchedAt: Date.now() });
   return { images: merged, source: "api" };
 }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 function buildImagesUrl(
   fileKey: string,

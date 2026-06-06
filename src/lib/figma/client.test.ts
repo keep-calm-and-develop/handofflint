@@ -113,25 +113,6 @@ describe("fetchFigmaTree", () => {
     );
   });
 
-  it("bypasses cache read when forceRefresh is true", async () => {
-    const fetchMock = vi.fn(async (url: string) => {
-      if (url.includes("/meta")) {
-        return new Response(JSON.stringify(metaPayload("v1")), { status: 200 });
-      }
-      return new Response(JSON.stringify(treePayload("v1")), { status: 200 });
-    });
-    vi.stubGlobal("fetch", fetchMock);
-
-    await fetchFigmaTree(FILE_KEY, null);
-    fetchMock.mockClear();
-
-    const result = await fetchFigmaTree(FILE_KEY, null, { forceRefresh: true });
-
-    expect(result?.source).toBe("api");
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0]?.[0]).toContain(`?depth=2`);
-  });
-
   it("serves cached tree when meta is unavailable (TTL-only fallback)", async () => {
     const fetchMock = vi.fn(async (url: string) => {
       if (url.includes("/meta")) {
