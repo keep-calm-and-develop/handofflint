@@ -104,3 +104,16 @@ export interface ScanResponse {
 export interface ScanErrorResponse {
   error: string;
 }
+
+// ── Agent Pipeline Types ─────────────────────────────────────────────
+
+export interface AgentInitResponse {
+  fileKey: string;
+  nodeId: string | null;
+  nodesIndexed: number;
+  success: true;
+}
+
+export interface AgentErrorResponse {
+  error: string;
+}
