@@ -87,6 +87,27 @@ Build Checklist Progress:
 - Added `getRootNodesFromCache(fileKey)` helper to `cache.ts` — tracks root node IDs during indexing, returns `FigmaNode[]` with full child trees for `runAllAudits`
 - Response includes `nodesScanned` and `layoutHandoffProfile` for frontend display
 
+### Task 4: ReAct Agent Tool Registration
+
+**Files**: `src/lib/agent/tools/inspect-node.ts`, `src/lib/agent/tools/search-guidelines.ts`
+
+**Sub-task 4.1 — `inspect_node_properties`**:
+- AI SDK `tool()` wrapper with Zod schema requiring `nodeId: z.string()`
+- Execute block calls `getIndexedNode(fileKey, nodeId)` from `cache.ts`
+- Destructure `{ children, ...shallowProps }` to strip nested arrays before returning
+- Returns only layout properties (padding, width, height, layoutMode, etc.) to protect token budget
+
+**Sub-task 4.2 — `search_layout_guidelines` (Single-File RAG)**:
+- AI SDK `tool()` with schema: `query: z.string()` + `designManualUrl: z.string().url()`
+- Execution pipeline: fetch raw markdown → chunk by `\n\n` → filter lines < 30 chars → keyword intersection scoring → return top 3 chunks joined by separator
+- Keyword scoring: tokenize query and each chunk into lowercase alphanumeric word arrays, count exact overlaps as relevance score
+- No external vector DB — pure in-memory string processing at $0 cost
+
+**Key decisions**:
+- `fileKey` for inspect-node is captured via closure from the route handler scope (not a tool parameter — the model only supplies `nodeId`)
+- `designManualUrl` is a model-supplied parameter so the agent can target different guideline docs per investigation
+- Chunk noise filter threshold: < 30 characters
+
 ### Task 5: POST /api/agent/vision
 
 **Route**: `src/app/api/agent/vision/route.ts`
