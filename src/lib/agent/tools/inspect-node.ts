@@ -45,7 +45,9 @@ export type InspectNodeOutput = z.infer<typeof InspectNodeOutputSchema>;
  * Strips the nested `children` array from a FigmaNode and returns only
  * the shallow layout properties to protect the agent's token budget.
  */
-function extractShallowProperties(node: FigmaNode): Record<string, unknown> {
+export function toShallowInspectProperties(
+  node: FigmaNode,
+): Record<string, unknown> {
   const { children: _children, ...shallowProps } = node; // eslint-disable-line @typescript-eslint/no-unused-vars
   return shallowProps;
 }
@@ -69,7 +71,7 @@ export function executeInspectNode(
   return {
     status: "ok",
     nodeId,
-    properties: extractShallowProperties(node),
+    properties: toShallowInspectProperties(node),
   };
 }
 

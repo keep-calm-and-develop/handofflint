@@ -110,9 +110,13 @@ export function ReActLoopPresentation({ data }: ReActLoopPresentationProps) {
             <strong className="text-slate-800">Reasons</strong>,{" "}
             <strong className="text-slate-800">Acts</strong> with tools, and{" "}
             <strong className="text-slate-800">observes</strong> results — up to{" "}
-            {data.maxSteps} steps. This page replays a captured stream from{" "}
+            {data.maxSteps} steps. Figma context comes from{" "}
             <code className="text-sm font-mono bg-slate-100 px-1.5 py-0.5 rounded">
-              {data.sourceFile}
+              {data.fixture.sourceFile}
+            </code>
+            ; the SSE replay is from{" "}
+            <code className="text-sm font-mono bg-slate-100 px-1.5 py-0.5 rounded">
+              {data.streamSourceFile}
             </code>
             .
           </p>
@@ -131,7 +135,11 @@ export function ReActLoopPresentation({ data }: ReActLoopPresentationProps) {
             <StatCard label="Steps used" value={data.stepsUsed} hint={`max ${data.maxSteps}`} />
             <StatCard label="Tool calls" value={data.toolCallCount} />
             <StatCard label="Findings" value={data.enrichments.length} />
-            <StatCard label="Source" value="Recorded SSE" hint="not live API" />
+            <StatCard
+              label="Figma fixture"
+              value={data.fixture.fileName}
+              hint={`${data.fixture.nodesIndexed} nodes`}
+            />
           </div>
         </div>
       </section>

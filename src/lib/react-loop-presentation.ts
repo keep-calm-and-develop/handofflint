@@ -10,10 +10,13 @@ import {
   type VisionStreamParseResult,
   type VisionToolCallActivity,
 } from "@/lib/agent/vision-stream";
+import {
+  AGENT_SSE_CAPTURE_FILE,
+  getExampleFigmaFixtureMeta,
+} from "@/lib/presentation-mock-data";
 import type { AIEnrichmentItem } from "@/lib/types";
 
 export const MAX_AGENT_STEPS = 6;
-export const MOCK_CAPTURE_FILE = "agent-output-2.txt";
 
 export interface TurnExplanation {
   turn: number;
@@ -25,7 +28,8 @@ export interface TurnExplanation {
 }
 
 export interface ReactLoopPresentationData {
-  sourceFile: string;
+  fixture: ReturnType<typeof getExampleFigmaFixtureMeta>;
+  streamSourceFile: string;
   maxSteps: number;
   stepsUsed: number;
   toolCallCount: number;
@@ -40,7 +44,7 @@ const TURN_NARRATION: Record<number, { title: string; agentThought: string; deta
     agentThought:
       "Screenshot shows body copy with a possible typo (“availibility”). Look up node 2:3 in the flat index to read exact characters and dimensions.",
     detail:
-      "Returns shallow props only — children stripped. Confirms characters string and 320px container width.",
+      "Returns shallow props only — children stripped. Node 2:3 comes from example.json (vaxin pincode UI).",
   },
   2: {
     title: "Search design guidelines",
@@ -52,7 +56,7 @@ const TURN_NARRATION: Record<number, { title: string; agentThought: string; deta
     title: "Inspect pincode component",
     agentThought:
       "Pincode input boxes look horizontally cramped. Verify the parent component’s bounding box from cache.",
-    detail: "Node 2:28 is a COMPONENT — 320×71px, no children sent to the model.",
+    detail: "Node 2:28 from example.json — real child subtrees stay in cache, not sent to the model.",
   },
   4: {
     title: "Search spacing rules",
@@ -70,13 +74,14 @@ const TURN_NARRATION: Record<number, { title: string; agentThought: string; deta
 };
 
 function loadMockSseCapture(): string {
-  const filePath = path.join(process.cwd(), MOCK_CAPTURE_FILE);
+  const filePath = path.join(process.cwd(), AGENT_SSE_CAPTURE_FILE);
   return fs.readFileSync(filePath, "utf8");
 }
 
 function buildTurnExplanations(
   grouped: Array<{ turn: number; toolCalls: VisionToolCallActivity[] }>,
   synthesisTurn: number,
+  fixture: ReturnType<typeof getExampleFigmaFixtureMeta>,
 ): TurnExplanation[] {
   const explanations: TurnExplanation[] = [
     {
@@ -84,7 +89,7 @@ function buildTurnExplanations(
       kind: "observe",
       title: "Macro scan (screenshot)",
       agentThought:
-        "Gemini receives the rendered frame PNG plus a allowlist of valid node IDs. It scans for hierarchy clashes, typos, clipping, and spacing issues before calling tools.",
+        `Gemini receives the rendered frame PNG from ${fixture.sourceFile} (${fixture.frameName}) plus a allowlist of valid node IDs. It scans for hierarchy clashes, typos, clipping, and spacing issues before calling tools.`,
     },
   ];
 
@@ -115,6 +120,7 @@ function buildTurnExplanations(
 }
 
 export function buildReactLoopPresentationData(): ReactLoopPresentationData {
+  const fixture = getExampleFigmaFixtureMeta();
   const raw = loadMockSseCapture();
   const { events } = parseSseBuffer(`${raw}\n`);
 
@@ -132,11 +138,12 @@ export function buildReactLoopPresentationData(): ReactLoopPresentationData {
   const stepsUsed = synthesisTurn;
 
   return {
-    sourceFile: MOCK_CAPTURE_FILE,
+    fixture,
+    streamSourceFile: AGENT_SSE_CAPTURE_FILE,
     maxSteps: MAX_AGENT_STEPS,
     stepsUsed,
     toolCallCount: state.activity.toolCalls.length,
-    turns: buildTurnExplanations(grouped, synthesisTurn),
+    turns: buildTurnExplanations(grouped, synthesisTurn, fixture),
     enrichments: state.activity.enrichments ?? [],
     streamPhases: [
       { phase: "connecting", label: "Stream opens" },
