@@ -89,11 +89,23 @@ export async function fetchMarkdownContent(url: string): Promise<string> {
 // Sub-step 4.2.3: Chunking — split by double-newline, filter noise
 // ---------------------------------------------------------------------------
 
+/**
+ * Keeps substantive paragraphs and markdown headings. Short fragments like
+ * "---" or "hi" are dropped, but section headers (e.g. "## Typography System")
+ * are kept because they label topics for keyword matching.
+ */
+export function isKeepableChunk(chunk: string): boolean {
+  const trimmed = chunk.trim();
+  if (!trimmed) return false;
+  if (trimmed.length >= MIN_CHUNK_LENGTH) return true;
+  return /^#{1,6}\s+\S/.test(trimmed);
+}
+
 export function chunkMarkdown(text: string): string[] {
   const rawChunks = text.split(/\n\n+/);
   const filtered = rawChunks
     .map((chunk) => chunk.trim())
-    .filter((chunk) => chunk.length >= MIN_CHUNK_LENGTH);
+    .filter(isKeepableChunk);
 
   log("chunk_complete", {
     rawCount: rawChunks.length,

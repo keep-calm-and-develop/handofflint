@@ -4,6 +4,7 @@ import {
   chunkMarkdown,
   executeSearchGuidelines,
   fetchMarkdownContent,
+  isKeepableChunk,
   retrieveTopChunks,
   scoreChunks,
   tokenize,
@@ -82,15 +83,22 @@ describe("chunkMarkdown", () => {
     );
   });
 
-  it("filters out chunks shorter than 30 characters", () => {
+  it("filters out short noise but keeps markdown headings", () => {
     const text =
       "Short line\n\n" +
-      "# TOC\n\n" +
+      "## Typography System\n\n" +
       "---\n\n" +
       "This paragraph has enough content to survive the noise filter easily.";
     const chunks = chunkMarkdown(text);
-    expect(chunks).toHaveLength(1);
-    expect(chunks[0]).toContain("enough content");
+    expect(chunks).toHaveLength(2);
+    expect(chunks[0]).toBe("## Typography System");
+    expect(chunks[1]).toContain("enough content");
+  });
+
+  it("isKeepableChunk keeps headings and drops bare separators", () => {
+    expect(isKeepableChunk("## 8pt Grid System")).toBe(true);
+    expect(isKeepableChunk("---")).toBe(false);
+    expect(isKeepableChunk("hi")).toBe(false);
   });
 
   it("handles triple+ newlines as a single split point", () => {
@@ -364,7 +372,7 @@ describe("executeSearchGuidelines", () => {
   it("returns no_matches when markdown has only short fragments", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
-      text: async () => "# TOC\n\n---\n\nhi\n\nbye",
+      text: async () => "hi\n\nbye\n\n---\n\nok",
     });
 
     const result = await executeSearchGuidelines({
