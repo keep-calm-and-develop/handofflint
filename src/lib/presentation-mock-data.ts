@@ -51,6 +51,14 @@ export function getExampleNode(nodeId: string): FigmaNode | null {
   return getExampleNodeIndex().get(nodeId) ?? null;
 }
 
+export function getExampleNodeIndexMap(): Map<string, FigmaNode> {
+  return new Map(getExampleNodeIndex());
+}
+
+export function getExampleNodeIdSet(): Set<string> {
+  return new Set(getExampleNodeIndex().keys());
+}
+
 export function getExampleNodeAsRecord(
   nodeId: string,
 ): Record<string, unknown> | null {
