@@ -1,3 +1,4 @@
+import { SystemArchitectureFlowDiagram } from "@/components/architecture/Diagram";
 import { FIGMA_COLORS } from "@/components/layout/figma-colors";
 import { SiteShell } from "@/components/layout/SiteShell";
 import {
@@ -8,7 +9,6 @@ import {
   Code,
   Cpu,
   Database,
-  Settings,
 } from "lucide-react";
 
 const SECTION_LINKS = [
@@ -49,23 +49,17 @@ export default function LandingPage() {
     <SiteShell activeNav="home" headerExtra={<LandingSectionsNav />}>
       <section
         id="overview"
-        className="scroll-mt-16 bg-white py-16 sm:py-24 border-b border-slate-200"
+        className="scroll-mt-16 bg-white py-8 sm:py-24 border-b border-slate-200"
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 mb-6">
-            <Settings className="w-3.5 h-3.5 text-slate-500" />
-            <span>Capstone Design: AI-Codegen Guardrail Profile</span>
-          </span>
-
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            An Agentic Pre-Flight Guardrail for Figma-to-Code Pipelines
+            Pre-flight audits for structured design-to-code generation.
           </h1>
 
           <p className="mt-6 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            This system implements a multi-step verification pipeline that
-            parses design tree structures, runs deterministic audits, and
-            executes a visual ReAct agent loop to optimize prompt schemas before
-            AI code-generation.
+            An engineering evaluation workspace built on a multi-turn design
+            verification loop. Check schemas and layouts with zero-cost RAG
+            context and deterministic rule evaluations.
           </p>
 
           <div className="mt-8 flex justify-center">
@@ -74,7 +68,7 @@ export default function LandingPage() {
               className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold rounded-lg text-white shadow-md hover:shadow-lg transition-all"
               style={{ backgroundColor: FIGMA_COLORS.blue }}
             >
-              Try Agent Now
+              Try Now
               <ArrowRight className="w-4 h-4 ml-2" />
             </a>
           </div>
@@ -83,7 +77,7 @@ export default function LandingPage() {
 
       <section
         id="problem"
-        className="scroll-mt-16 py-16 sm:py-20 border-b border-slate-200"
+        className="scroll-mt-16 py-8 sm:py-12 border-b border-slate-200"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mb-8">
@@ -159,7 +153,7 @@ export default function LandingPage() {
 
       <section
         id="architecture"
-        className="scroll-mt-16 py-16 bg-white sm:py-20 border-b border-slate-200"
+        className="scroll-mt-16 py-8 bg-white sm:py-12 border-b border-slate-200"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mb-8">
@@ -233,8 +227,10 @@ export default function LandingPage() {
             </div>
           </div>
 
+          <SystemArchitectureFlowDiagram />
+
           {/* RAG and Tools Execution Information */}
-          <div className="mt-8 p-6 bg-slate-50 border border-slate-200 rounded-2xl">
+          {/* <div className="mt-8 p-6 bg-slate-50 border border-slate-200 rounded-2xl">
             <h4 className="text-xs font-bold text-slate-700 uppercase tracking-widest mb-4 flex items-center">
               <Database className="w-4 h-4 mr-2 text-slate-500" />
               Agent Execution Tools (Standardized API)
@@ -257,13 +253,13 @@ export default function LandingPage() {
                 intersection counts, and returns top ranked guidelines context.
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </section>
 
       <section
         id="rules"
-        className="scroll-mt-16 py-16 sm:py-20 border-b border-slate-200"
+        className="scroll-mt-16 py-8 sm:py-12 border-b border-slate-200"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mb-8">
@@ -408,7 +404,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="stack" className="scroll-mt-16 py-16 sm:py-20 bg-white">
+      <section id="stack" className="scroll-mt-16 py-8 sm:py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mb-8">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
