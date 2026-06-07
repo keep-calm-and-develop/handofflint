@@ -78,38 +78,137 @@ function BrandLogo() {
 function SiteFooter() {
   return (
     <footer className="border-t border-slate-200 bg-white py-12 text-xs text-slate-500">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between">
-        <div className="flex items-center space-x-3 mb-4 sm:mb-0">
-          <div className="flex -space-x-1">
-            <span
-              className="w-2.5 h-2.5 rounded-full block"
-              style={{ backgroundColor: FIGMA_COLORS.orange }}
-            />
-            <span
-              className="w-2.5 h-2.5 rounded-full block"
-              style={{ backgroundColor: FIGMA_COLORS.purple }}
-            />
-            <span
-              className="w-2.5 h-2.5 rounded-full block"
-              style={{ backgroundColor: FIGMA_COLORS.blue }}
-            />
-            <span
-              className="w-2.5 h-2.5 rounded-full block"
-              style={{ backgroundColor: FIGMA_COLORS.green }}
-            />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <div>
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="flex -space-x-1">
+                <span
+                  className="w-2.5 h-2.5 rounded-full block"
+                  style={{ backgroundColor: FIGMA_COLORS.orange }}
+                />
+                <span
+                  className="w-2.5 h-2.5 rounded-full block"
+                  style={{ backgroundColor: FIGMA_COLORS.purple }}
+                />
+                <span
+                  className="w-2.5 h-2.5 rounded-full block"
+                  style={{ backgroundColor: FIGMA_COLORS.blue }}
+                />
+                <span
+                  className="w-2.5 h-2.5 rounded-full block"
+                  style={{ backgroundColor: FIGMA_COLORS.green }}
+                />
+              </div>
+              <span className="text-sm font-semibold text-slate-900">
+                HandOff<span className="text-slate-500 font-normal">Lint</span>
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Pre-flight audits for structured design-to-code generation.
+            </p>
           </div>
-          <span className="text-sm font-semibold text-slate-900">
-            HandOff<span className="text-slate-500 font-normal">Lint</span>
-          </span>
+
+          <div>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+              Project
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="https://handofflint.vercel.app/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Website
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/keep-calm-and-develop/handofflint"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Source Code
+                </a>
+              </li>
+              <li>
+                <Link
+                  href="/#architecture"
+                  className="text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Architecture
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/agent"
+                  className="text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Agent Wizard
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+              Architecture Deep Dives
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/react-loop"
+                  className="text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  ReAct Vision Loop
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/inspect-node"
+                  className="text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  inspect_node Tool
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/rag"
+                  className="text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  search_guides RAG
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/guardrails"
+                  className="text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Cross-Modal Guardrails
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+              Built With
+            </h3>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Next.js, Tailwind CSS, Vercel AI SDK, and Gemini 2.5 Flash.
+              Capstone Project 2026.
+            </p>
+            <p className="mt-3 font-mono text-[10px] text-slate-400">
+              v1.2.0-agentic-poc
+            </p>
+          </div>
         </div>
 
-        <p className="text-center sm:text-left text-[11px] text-slate-400">
-          &copy; {new Date().getFullYear()} HandOffLint. Designed for Capstone
-          Project 2026. Built with Next.js, Tailwind CSS, and Gemini 2.5 Flash.
-        </p>
-
-        <div className="text-slate-400 font-mono text-[10px]">
-          v1.2.0-agentic-poc
+        <div className="border-t border-slate-100 pt-6 text-center text-[11px] text-slate-400">
+          &copy; {new Date().getFullYear()} HandOffLint
         </div>
       </div>
     </footer>

@@ -10,6 +10,14 @@ import {
   Cpu,
   Database,
 } from "lucide-react";
+import Link from "next/link";
+
+const ARCHITECTURE_DEEP_DIVES = [
+  { href: "/react-loop", label: "ReAct Vision Loop", hint: "Multi-turn agent stream" },
+  { href: "/inspect-node", label: "inspect_node", hint: "Shallow cache lookup" },
+  { href: "/rag", label: "search_guides RAG", hint: "Keyword guideline retrieval" },
+  { href: "/guardrails", label: "Cross-Modal Guardrails", hint: "Vision vs structure" },
+] as const;
 
 const SECTION_LINKS = [
   { href: "#overview", label: "1. Overview" },
@@ -222,12 +230,38 @@ export default function LandingPage() {
                 A multi-step visual agent inspects the frame image. It executes
                 zero-cost local tools to query cached properties and performs
                 paragraph-chunk keyword RAG checks against GitHub guideline
-                documents.
+                documents.{" "}
+                <Link
+                  href="/react-loop"
+                  className="font-semibold hover:underline"
+                  style={{ color: FIGMA_COLORS.orange }}
+                >
+                  Walkthrough →
+                </Link>
               </p>
             </div>
           </div>
 
           <SystemArchitectureFlowDiagram />
+
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {ARCHITECTURE_DEEP_DIVES.map(({ href, label, hint }) => (
+              <Link
+                key={href}
+                href={href}
+                className="group rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:border-slate-300 hover:shadow-md transition-all"
+              >
+                <span
+                  className="text-xs font-bold text-slate-900 group-hover:underline"
+                >
+                  {label}
+                </span>
+                <span className="block text-[10px] text-slate-500 mt-0.5">
+                  {hint}
+                </span>
+              </Link>
+            ))}
+          </div>
 
           {/* RAG and Tools Execution Information */}
           {/* <div className="mt-8 p-6 bg-slate-50 border border-slate-200 rounded-2xl">

@@ -1,4 +1,9 @@
+import Link from "next/link";
+
 import { FIGMA_COLORS } from "../layout/figma-colors";
+
+const DIAGRAM_LINK =
+  "transition-shadow hover:shadow-md hover:ring-2 hover:ring-offset-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 rounded-lg";
 
 export function SystemArchitectureFlowDiagram() {
   const colors = FIGMA_COLORS;
@@ -421,9 +426,11 @@ export function SystemArchitectureFlowDiagram() {
             </div>
 
             {/* Vision Endpoint */}
-            <div
-              className="bg-white border p-3 rounded-lg shadow-sm"
+            <Link
+              href="/guardrails"
+              className={`block bg-white border p-3 shadow-sm ${DIAGRAM_LINK}`}
               style={{ borderColor: `${colors.purple}40` }}
+              title="Cross-modal guardrails walkthrough"
             >
               <span className="text-[8px] font-mono font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">
                 POST
@@ -434,7 +441,10 @@ export function SystemArchitectureFlowDiagram() {
               <p className="text-[9px] text-slate-500 mt-0.5">
                 Executes streaming multi-turn loop.
               </p>
-            </div>
+              <p className="text-[8px] font-mono text-purple-600 mt-1">
+                → guardrails
+              </p>
+            </Link>
           </div>
 
           {/* Flat Index Cache Database Symbol */}
@@ -477,19 +487,23 @@ export function SystemArchitectureFlowDiagram() {
             backgroundColor: `${colors.orange}08`,
           }}
         >
-          <span
-            className="text-[10px] uppercase font-mono font-black tracking-wider"
+          <Link
+            href="/react-loop"
+            className={`text-[10px] uppercase font-mono font-black tracking-wider hover:underline ${DIAGRAM_LINK}`}
             style={{ color: colors.orange }}
+            title="ReAct vision loop walkthrough"
           >
             ReAct Vision Agent
-          </span>
+          </Link>
 
           {/* Core Gemini Module */}
           <div className="my-auto space-y-6">
             {/* Gemini Star Box */}
-            <div
-              className="bg-white border p-4 rounded-xl text-center shadow-sm relative overflow-hidden"
+            <Link
+              href="/react-loop"
+              className={`block bg-white border p-4 text-center shadow-sm relative overflow-hidden ${DIAGRAM_LINK}`}
               style={{ borderColor: `${colors.orange}40` }}
+              title="ReAct vision loop walkthrough"
             >
               {/* Decorative plus signs matching original mockup */}
               <span className="absolute top-2 right-4 text-xs font-semibold text-orange-400">
@@ -519,7 +533,7 @@ export function SystemArchitectureFlowDiagram() {
               <p className="text-[9px] font-mono text-slate-500 mt-1 uppercase tracking-wider">
                 max steps: 5 (ReAct Loop)
               </p>
-            </div>
+            </Link>
 
             {/* Tools list container */}
             <div className="space-y-2">
@@ -528,9 +542,11 @@ export function SystemArchitectureFlowDiagram() {
               </span>
 
               {/* inspect_node */}
-              <div
-                className="bg-white border p-3 rounded-lg shadow-sm text-center"
+              <Link
+                href="/inspect-node"
+                className={`block bg-white border p-3 shadow-sm text-center ${DIAGRAM_LINK}`}
                 style={{ borderColor: `${colors.orange}30` }}
+                title="inspect_node shallow lookup walkthrough"
               >
                 <span className="text-xs font-bold text-slate-800 font-mono block">
                   inspect_node
@@ -538,12 +554,14 @@ export function SystemArchitectureFlowDiagram() {
                 <span className="text-[9px] text-slate-500 leading-tight">
                   Reads shallow properties, strips children
                 </span>
-              </div>
+              </Link>
 
               {/* search_guides */}
-              <div
-                className="bg-white border p-3 rounded-lg shadow-sm text-center"
+              <Link
+                href="/rag"
+                className={`block bg-white border p-3 shadow-sm text-center ${DIAGRAM_LINK}`}
                 style={{ borderColor: `${colors.orange}30` }}
+                title="search_guides RAG pipeline walkthrough"
               >
                 <span className="text-xs font-bold text-slate-800 font-mono block">
                   search_guides
@@ -551,7 +569,7 @@ export function SystemArchitectureFlowDiagram() {
                 <span className="text-[9px] text-slate-500 leading-tight">
                   Single-file markdown RAG pipeline
                 </span>
-              </div>
+              </Link>
             </div>
           </div>
 

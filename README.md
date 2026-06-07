@@ -1,36 +1,90 @@
 # HandOffLint
 
-Paste a Figma URL to get a **Readiness Score** and severity-sorted lint findings before dev handoff. `POST /api/scan` runs deterministic audit tools against the Figma tree (naming audit implemented; more audits added over time).
+**Pre-flight audits for structured design-to-code generation.**
 
-## Getting Started
+An engineering evaluation workspace built on a multi-turn design verification loop. Check Figma schemas and layouts with zero-cost RAG context, deterministic rule evaluations, and a ReAct vision agent before dev handoff.
 
-First, run the development server:
+| | |
+|---|---|
+| **Website** | [handofflint.vercel.app](https://handofflint.vercel.app/) |
+| **Source code** | [github.com/keep-calm-and-develop/handofflint](https://github.com/keep-calm-and-develop/handofflint) |
+| **Architecture overview** | [handofflint.vercel.app/#architecture](https://handofflint.vercel.app/#architecture) |
+| **Try the agent** | [handofflint.vercel.app/agent](https://handofflint.vercel.app/agent) |
+
+## Architecture deep dives
+
+Each major pipeline stage has a dedicated walkthrough page on the live site:
+
+| Route | Topic |
+|---|---|
+| [/react-loop](https://handofflint.vercel.app/react-loop) | ReAct vision agent loop — multi-turn tool calling with Gemini 2.5 Flash |
+| [/inspect-node](https://handofflint.vercel.app/inspect-node) | `inspect_node` tool — O(1) flat-index lookup with shallow property stripping |
+| [/rag](https://handofflint.vercel.app/rag) | `search_guides` tool — zero-cost keyword RAG over layout guideline markdown |
+| [/guardrails](https://handofflint.vercel.app/guardrails) | Cross-modal guardrails — vetting vision findings against structural Figma JSON |
+
+## Figma setup
+
+HandOffLint reads Figma file trees and renders frame images via the [Figma REST API](https://www.figma.com/developers/api). You need two things before running a scan or the agent wizard.
+
+### 1. Create a personal access token
+
+1. Open Figma and go to **Settings** → **Security** → **Personal access tokens** (or visit [Manage personal access tokens](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens) directly).
+2. Click **Generate new token**, give it a name (e.g. `handofflint`), and copy the token — it is shown only once.
+3. Grant scopes that allow reading file content:
+   - **`file_content:read`** — required to fetch node trees and render frames
+   - **`file_metadata:read`** — recommended for cache validation via `/meta`
+
+### 2. Enable link sharing on your design file
+
+The token can only access files your Figma account is allowed to read. For files you own:
+
+1. Open the Figma file you want to audit.
+2. Click **Share** in the top-right corner.
+3. Set link access to **Anyone with the link** → **can view** (or ensure your account has at least view access to the file).
+4. Copy the file URL — it should look like:
+   `https://www.figma.com/design/YOUR_FILE_KEY/Example?node-id=1-2`
+
+If the file belongs to a team or org, confirm your token's account has view permission on that file; link sharing alone does not grant access to private team files your account cannot open.
+
+## Getting started (local)
+
+Install dependencies and start the dev server:
 
 ```bash
+pnpm install
 pnpm dev
 ```
 
-Copy `.env.example` to `.env.local` and set `FIGMA_ACCESS_TOKEN` to a [Figma personal access token](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens) with `file_content:read` (and `file_metadata:read` for cache validation).
+Copy `.env.example` to `.env.local` and set server-side variables:
 
-**Try a scan:** paste a Figma URL you can access with that token, e.g. `https://www.figma.com/design/YOUR_FILE_KEY/Example?node-id=1-2`
+```bash
+cp .env.example .env.local
+```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Variable | Required | Description |
+|---|---|---|
+| `FIGMA_ACCESS_TOKEN` | Yes (for live Figma) | Personal access token from the steps above |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes (for vision agent) | [Google AI Studio](https://aistudio.google.com/apikey) key for Gemini 2.5 Flash |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open [http://localhost:3000](http://localhost:3000) for the landing page, or [http://localhost:3000/agent](http://localhost:3000/agent) for the wizard. On the deployed site and in the agent UI you can also paste credentials per session instead of using `.env.local`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### API routes
 
-## Learn More
+The agentic pipeline is orchestrated across three endpoints:
 
-To learn more about Next.js, take a look at the following resources:
+- `POST /api/agent/init` — parse Figma URL, fetch and flatten the node tree
+- `POST /api/agent/audit` — run 8 deterministic linter rules, compute Readiness Score
+- `POST /api/agent/vision` — ReAct vision loop with `inspect_node` and `search_guides` tools
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Legacy single-shot scanning is available at `POST /api/scan`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech stack
 
-## Deploy on Vercel
+- **Next.js** (App Router) — server routes and wizard UI
+- **Vercel AI SDK** + **Gemini 2.5 Flash** — multi-turn vision agent
+- **Tailwind CSS** — UI
+- **TypeScript** — deterministic audit rules and tool implementations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [LICENSE](LICENSE).
