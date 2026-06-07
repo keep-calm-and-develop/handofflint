@@ -9,8 +9,7 @@ import { AgentReadinessScoreCard } from "./AgentReadinessScoreCard";
 import { VisionActivityPanel } from "./VisionActivityPanel";
 import { WizardStepIndicator } from "./WizardStepIndicator";
 
-const CARD =
-  "rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm";
+const CARD = "rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm";
 const CHIP =
   "rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-600";
 const CHIP_MONO = `${CHIP} font-mono`;
@@ -106,6 +105,7 @@ function FrameCanvas({
       <div className="mt-4">
         <div className="relative overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
           {hasImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imageUrl!}
               alt="Rendered Figma frame preview"
@@ -172,7 +172,7 @@ export function AgentWizardDashboard() {
   const auditViewModel = useAgentAuditResult(scanData);
 
   return (
-    <div className="grid h-full min-h-0 w-full grid-cols-1 overflow-hidden bg-slate-50 text-slate-900 lg:grid-cols-2">
+    <div className="grid h-full min-h-0 w-full grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(0,1fr)] overflow-hidden bg-slate-50 text-slate-900 lg:grid-cols-2 lg:grid-rows-1">
       <section className="min-h-0 h-full space-y-6 overflow-y-auto border-r border-slate-200 bg-white p-6 pb-10">
         <header className="space-y-3 border-b border-slate-200 pb-6">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-figma-blue">
@@ -277,11 +277,7 @@ export function AgentWizardDashboard() {
                   />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={initLoading}
-                  className={CTA}
-                >
+                <button type="submit" disabled={initLoading} className={CTA}>
                   {initLoading ? "Ingesting…" : "Run Ingestion"}
                 </button>
               </form>
@@ -420,7 +416,7 @@ export function AgentWizardDashboard() {
                   ].map((item) => (
                     <div
                       key={item.label}
-                      className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm"
+                      className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm truncate"
                     >
                       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400">
                         {item.label}

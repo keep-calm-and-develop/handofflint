@@ -12,7 +12,7 @@ export default function AgentPage() {
       activeNav="agent"
       ctaHref="/linear"
       ctaLabel="Linear Linter"
-      mainClassName="flex-1 min-h-0"
+      fullHeight
     >
       <AgentWizardDashboard />
     </SiteShell>

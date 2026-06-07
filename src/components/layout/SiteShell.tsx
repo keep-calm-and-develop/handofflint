@@ -20,6 +20,8 @@ type SiteShellProps = {
   ctaHref?: string;
   ctaLabel?: string;
   mainClassName?: string;
+  /** Locks layout to the viewport so nested panels can scroll independently. */
+  fullHeight?: boolean;
 };
 
 function FigmaColorStrip() {
@@ -121,9 +123,16 @@ export function SiteShell({
   ctaHref = "/agent",
   ctaLabel = "Try Agent",
   mainClassName,
+  fullHeight = false,
 }: SiteShellProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800 font-sans selection:bg-figma-blue selection:text-white antialiased">
+    <div
+      className={`flex flex-col bg-slate-50 text-slate-800 font-sans selection:bg-figma-blue selection:text-white antialiased ${
+        fullHeight
+          ? "h-dvh overflow-hidden"
+          : "min-h-screen"
+      }`}
+    >
       <FigmaColorStrip />
 
       <header className="border-b border-slate-200 bg-white/90 backdrop-blur-md sticky top-0 z-50">
@@ -178,9 +187,16 @@ export function SiteShell({
         </div>
       </header>
 
-      <main className={mainClassName ?? "flex-1"}>{children}</main>
+      <main
+        className={
+          mainClassName ??
+          (fullHeight ? "flex-1 min-h-0 overflow-hidden" : "flex-1")
+        }
+      >
+        {children}
+      </main>
 
-      <SiteFooter />
+      {!fullHeight && <SiteFooter />}
     </div>
   );
 }
