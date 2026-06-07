@@ -13,10 +13,26 @@ import {
 import Link from "next/link";
 
 const ARCHITECTURE_DEEP_DIVES = [
-  { href: "/react-loop", label: "ReAct Vision Loop", hint: "Multi-turn agent stream" },
-  { href: "/inspect-node", label: "inspect_node", hint: "Shallow cache lookup" },
-  { href: "/rag", label: "search_guides RAG", hint: "Keyword guideline retrieval" },
-  { href: "/guardrails", label: "Cross-Modal Guardrails", hint: "Vision vs structure" },
+  {
+    href: "/react-loop",
+    label: "ReAct Vision Loop",
+    hint: "Multi-turn agent stream",
+  },
+  {
+    href: "/inspect-node",
+    label: "inspect_node",
+    hint: "Shallow cache lookup",
+  },
+  {
+    href: "/rag",
+    label: "search_guides RAG",
+    hint: "Keyword guideline retrieval",
+  },
+  {
+    href: "/guardrails",
+    label: "Cross-Modal Guardrails",
+    hint: "Vision vs structure",
+  },
 ] as const;
 
 const SECTION_LINKS = [
@@ -61,13 +77,14 @@ export default function LandingPage() {
       >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            Pre-flight audits for structured design-to-code generation.
+            Fix your Figma file before AI writes the code
           </h1>
 
           <p className="mt-6 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            An engineering evaluation workspace built on a multi-turn design
-            verification loop. Check schemas and layouts with zero-cost RAG
-            context and deterministic rule evaluations.
+            HandOffLint reviews your design for layout and structure problems
+            before you hand it off to tools like Cursor, v0, or Claude. Catch
+            messy frames early so the code you get back is clean, responsive,
+            and ready to ship—not a pile of fixes.
           </p>
 
           <div className="mt-8 flex justify-center">
@@ -90,44 +107,44 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mb-8">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              The Translation Bottleneck in Vibe-Coding
+              Messy designs become messy code
             </h2>
             <p className="text-slate-600 mt-2 text-sm sm:text-base">
-              Why unguided large language models struggle to translate raw
-              design schemas into maintainable code.
+              AI coding tools can only work with what they see. When a Figma
+              file is disorganized, the output is hard to maintain.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-7 space-y-6 text-sm text-slate-600 leading-relaxed">
               <p>
-                When visual designers arrange UI components in Figma, structural
-                practices often lapse. Overlapping boundaries, missing
-                containers, absolute coordinate vectors, and deep hidden draft
-                layers are frequent side-effects of rapid prototyping.
+                Designers move fast in Figma—and that speed often leaves
+                problems behind: layers stacked on top of each other, frames
+                without proper containers, elements placed with fixed pixel
+                positions, and half-finished layers buried in the file.
               </p>
               <p>
-                Frontier code generation engines (such as Cursor, v0, or Claude)
-                consume either rendered layout screenshots or raw nested design
-                layers. In the absence of strict layout constraints (like Auto
-                Layout) or semantic class mappings, the generator translates
-                coordinate markers literally.
+                When you ask an AI tool to turn that file into code, it reads
+                the pixels and layer tree as-is. Without clear structure—things
+                like Auto Layout, consistent spacing, and named components—it
+                guesses. Often it copies exact x/y coordinates into your CSS.
               </p>
               <p>
-                This results in fragile, absolutely positioned blocks in the
-                generated CSS that require substantial developer refactoring to
-                become responsive, accessible, and system-compliant.
+                The result is brittle code: fixed-position divs that break on
+                different screen sizes, skip accessibility basics, and ignore
+                your design system. Developers then spend hours rewriting what
+                should have been a straightforward handoff.
               </p>
 
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start space-x-3 text-amber-900 text-xs">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600" />
                 <div>
                   <strong className="font-semibold block">
-                    {`The "Garbage-In, Garbage-Out" Cycle:`}
+                    Bad input, bad output
                   </strong>
-                  Failing to lint underlying visual schemas prior to generation
-                  forces developers to spend hours manually aligning container
-                  flows that should have been deterministic from the start.
+                  Skipping a design check before generation means fixing layout
+                  and structure in code instead of fixing them once in Figma—
+                  where it takes minutes, not days.
                 </div>
               </div>
             </div>
@@ -150,8 +167,8 @@ export default function LandingPage() {
 </div>`}
                 </pre>
                 <div className="mt-4 border-t border-slate-800 pt-3 text-[11px] text-slate-500">
-                  Without layout constraints, the model relies on coordinate
-                  boundaries, causing breaks on fluid viewport screens.
+                  Without clear layout rules in the design, the AI falls back to
+                  fixed coordinates—and the UI falls apart on mobile or resize.
                 </div>
               </div>
             </div>
@@ -251,9 +268,7 @@ export default function LandingPage() {
                 href={href}
                 className="group rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:border-slate-300 hover:shadow-md transition-all"
               >
-                <span
-                  className="text-xs font-bold text-slate-900 group-hover:underline"
-                >
+                <span className="text-xs font-bold text-slate-900 group-hover:underline">
                   {label}
                 </span>
                 <span className="block text-[10px] text-slate-500 mt-0.5">
