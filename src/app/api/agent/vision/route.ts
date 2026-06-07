@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { google } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { streamText, stepCountIs } from "ai";
 
+import { extractRequestCredentials } from "@/lib/agent/request-credentials";
 import { getTreeFromCache } from "@/lib/figma/cache";
 import { makeInspectNodeTool } from "@/lib/agent/tools/inspect-node";
 import { makeSearchGuidelinesTool } from "@/lib/agent/tools/search-guidelines";
@@ -127,6 +128,19 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+
+  const { googleGenerativeAiApiKey } = extractRequestCredentials(request);
+
+  if (!googleGenerativeAiApiKey) {
+    return NextResponse.json<AgentErrorResponse>(
+      { error: "GOOGLE_GENERATIVE_AI_API_KEY is not configured" },
+      { status: 500 },
+    );
+  }
+
+  const google = createGoogleGenerativeAI({
+    apiKey: googleGenerativeAiApiKey,
+  });
 
   // Validate cache exists
   const treeMap = getTreeFromCache(fileKey);

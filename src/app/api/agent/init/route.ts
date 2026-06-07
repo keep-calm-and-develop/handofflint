@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { extractRequestCredentials } from "@/lib/agent/request-credentials";
 import { executeRenderFrame } from "@/lib/agent/tools/render-frame";
 import { FigmaApiError, fetchFigmaTree } from "@/lib/figma/client";
 import { getTreeFromCache, indexFigmaTreeNodes } from "@/lib/figma/cache";
@@ -47,8 +48,19 @@ export async function POST(request: Request) {
     );
   }
 
+  const { figmaAccessToken } = extractRequestCredentials(request);
+
+  if (!figmaAccessToken) {
+    return NextResponse.json<AgentErrorResponse>(
+      { error: "FIGMA_ACCESS_TOKEN is not configured" },
+      { status: 500 },
+    );
+  }
+
   try {
-    const result = await fetchFigmaTree(parsed.fileKey, parsed.nodeId);
+    const result = await fetchFigmaTree(parsed.fileKey, parsed.nodeId, {
+      figmaAccessToken,
+    });
 
     if (!result) {
       return NextResponse.json<AgentErrorResponse>(
@@ -72,11 +84,15 @@ export async function POST(request: Request) {
     let imageUrl: string | null = null;
     let imageSource: "api" | "cache" | null = null;
     if (parsed.nodeId) {
-      const render = await executeRenderFrame(parsed.fileKey, {
-        nodeId: parsed.nodeId,
-        scale: 2,
-        format: "png",
-      });
+      const render = await executeRenderFrame(
+        parsed.fileKey,
+        {
+          nodeId: parsed.nodeId,
+          scale: 2,
+          format: "png",
+        },
+        { figmaAccessToken },
+      );
       if (render.status === "ok") {
         imageUrl = render.url;
         imageSource = render.source;

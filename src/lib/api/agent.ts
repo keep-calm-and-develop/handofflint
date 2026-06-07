@@ -1,3 +1,8 @@
+import {
+  FIGMA_ACCESS_TOKEN_HEADER,
+  GOOGLE_GENERATIVE_AI_API_KEY_HEADER,
+  type AgentCredentials,
+} from "@/lib/agent-credentials";
 import { isAbsoluteHttpUrl } from "@/lib/agent/validate-url";
 import type {
   AgentAuditResponse,
@@ -45,14 +50,25 @@ async function readAgentErrorMessage(
   return fallbackMessage;
 }
 
+function buildAgentHeaders(
+  credentials: AgentCredentials,
+): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    [FIGMA_ACCESS_TOKEN_HEADER]: credentials.figmaAccessToken,
+    [GOOGLE_GENERATIVE_AI_API_KEY_HEADER]: credentials.googleGenerativeAiApiKey,
+  };
+}
+
 async function postAgentJson<T>(
   path: string,
   body: unknown,
   fallbackMessage: string,
+  credentials: AgentCredentials,
 ): Promise<T> {
   const response = await fetch(path, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: buildAgentHeaders(credentials),
     body: JSON.stringify(body),
   });
 
@@ -72,17 +88,22 @@ export function mapVisionProfileToHandoff(
   return LAYOUT_HANDOFF_PROFILE_BY_VISION_PROFILE[layoutProfile];
 }
 
-export async function postAgentInit(url: string): Promise<AgentInitResponse> {
+export async function postAgentInit(
+  url: string,
+  credentials: AgentCredentials,
+): Promise<AgentInitResponse> {
   return postAgentJson<AgentInitResponse>(
     "/api/agent/init",
     { url },
     "Agent init failed",
+    credentials,
   );
 }
 
 export async function postAgentAudit(
   fileKey: string,
   layoutProfile: VisionLayoutProfile,
+  credentials: AgentCredentials,
 ): Promise<AgentAuditResponse> {
   return postAgentJson<AgentAuditResponse>(
     "/api/agent/audit",
@@ -91,6 +112,7 @@ export async function postAgentAudit(
       layoutHandoffProfile: mapVisionProfileToHandoff(layoutProfile),
     },
     "Agent audit failed",
+    credentials,
   );
 }
 
@@ -102,6 +124,7 @@ export async function postAgentVision(
     layoutProfile: VisionLayoutProfile;
     designManualUrl: string;
   },
+  credentials: AgentCredentials,
   options?: { signal?: AbortSignal },
 ): Promise<Response> {
   if (!isAbsoluteHttpUrl(body.imageUrl)) {
@@ -118,7 +141,7 @@ export async function postAgentVision(
 
   const response = await fetch("/api/agent/vision", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: buildAgentHeaders(credentials),
     body: JSON.stringify(body),
     signal: options?.signal,
   });

@@ -10,6 +10,8 @@ export interface FetchFigmaImagesOptions {
   scale?: number;
   /** Image encoding format. Default: "png". */
   format?: FigmaImageFormat;
+  /** Optional PAT override (request header or session store). */
+  figmaAccessToken?: string;
 }
 
 /**
@@ -120,7 +122,9 @@ export async function fetchFigmaImages(
 ): Promise<FetchFigmaImagesResult | null> {
   await ensureFigmaMockServer();
 
-  const token = process.env.FIGMA_ACCESS_TOKEN?.trim();
+  const token =
+    options.figmaAccessToken?.trim() ||
+    process.env.FIGMA_ACCESS_TOKEN?.trim();
   if (!token) return null;
 
   if (nodeIds.length === 0) {

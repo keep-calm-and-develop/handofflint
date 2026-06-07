@@ -76,15 +76,24 @@ const renderFrameInputSchema = z.object({
 
 export type RenderFrameInput = z.infer<typeof renderFrameInputSchema>;
 
+export interface ExecuteRenderFrameOptions {
+  figmaAccessToken?: string;
+}
+
 export async function executeRenderFrame(
   fileKey: string,
   input: RenderFrameInput,
+  options: ExecuteRenderFrameOptions = {},
 ): Promise<RenderFrameOutput> {
   const { nodeId, scale, format } = input;
 
   let result;
   try {
-    result = await fetchFigmaImages(fileKey, [nodeId], { scale, format });
+    result = await fetchFigmaImages(fileKey, [nodeId], {
+      scale,
+      format,
+      figmaAccessToken: options.figmaAccessToken,
+    });
   } catch (err) {
     if (err instanceof FigmaApiError) {
       return {

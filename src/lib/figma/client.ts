@@ -204,13 +204,20 @@ async function resolveCachedTree(
   }
 }
 
+export interface FetchFigmaTreeOptions {
+  figmaAccessToken?: string;
+}
+
 export async function fetchFigmaTree(
   fileKey: string,
   nodeId: string | null,
+  options: FetchFigmaTreeOptions = {},
 ): Promise<FetchFigmaTreeResult | null> {
   await ensureFigmaMockServer();
 
-  const token = process.env.FIGMA_ACCESS_TOKEN?.trim();
+  const token =
+    options.figmaAccessToken?.trim() ||
+    process.env.FIGMA_ACCESS_TOKEN?.trim();
   if (!token) {
     return null;
   }

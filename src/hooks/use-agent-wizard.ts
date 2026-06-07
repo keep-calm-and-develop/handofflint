@@ -27,8 +27,12 @@ import {
   postAgentInit,
   postAgentVision,
 } from "@/lib/api/agent";
+import { hasAgentCredentials } from "@/lib/agent-credentials";
+import { getAgentCredentials } from "@/stores/agent-credentials-store";
 
 const NETWORK_ERROR = "Network error — try again.";
+const CREDENTIALS_REQUIRED_ERROR =
+  "API credentials are required — enter FIGMA_ACCESS_TOKEN and GOOGLE_GENERATIVE_AI_API_KEY first.";
 
 export type WizardStep = 1 | 2 | 3 | 4;
 
@@ -110,6 +114,12 @@ export function useAgentWizard(): UseAgentWizardReturn {
   }, [nodeId]);
 
   const submitInit = useCallback(async () => {
+    const credentials = getAgentCredentials();
+    if (!hasAgentCredentials(credentials)) {
+      setError(CREDENTIALS_REQUIRED_ERROR);
+      return false;
+    }
+
     const trimmedUrl = figmaUrl.trim();
     if (!trimmedUrl) {
       setError("Missing Figma URL");
@@ -126,7 +136,7 @@ export function useAgentWizard(): UseAgentWizardReturn {
     setImageSource(null);
 
     try {
-      const result = await postAgentInit(trimmedUrl);
+      const result = await postAgentInit(trimmedUrl, credentials);
       setFileKey(result.fileKey);
       setNodeId(result.nodeId);
       setImageUrl(result.imageUrl);
@@ -151,6 +161,12 @@ export function useAgentWizard(): UseAgentWizardReturn {
 
   const submitAudit = useCallback(
     async (profile: VisionLayoutProfile) => {
+      const credentials = getAgentCredentials();
+      if (!hasAgentCredentials(credentials)) {
+        setError(CREDENTIALS_REQUIRED_ERROR);
+        return false;
+      }
+
       if (!fileKey.trim()) {
         setError("Missing fileKey — run ingestion first");
         return false;
@@ -161,7 +177,7 @@ export function useAgentWizard(): UseAgentWizardReturn {
       setLayoutProfile(profile);
 
       try {
-        const result = await postAgentAudit(fileKey, profile);
+        const result = await postAgentAudit(fileKey, profile, credentials);
         setScanData(result);
         setWizardStep(3);
         setActiveNodeId(result.findings[0]?.nodeId ?? nodeId);
@@ -177,6 +193,12 @@ export function useAgentWizard(): UseAgentWizardReturn {
   );
 
   const launchVision = useCallback(async () => {
+    const credentials = getAgentCredentials();
+    if (!hasAgentCredentials(credentials)) {
+      setError(CREDENTIALS_REQUIRED_ERROR);
+      return false;
+    }
+
     if (!fileKey.trim()) {
       setError("Missing fileKey — run ingestion first");
       return false;
@@ -239,6 +261,7 @@ export function useAgentWizard(): UseAgentWizardReturn {
           layoutProfile,
           designManualUrl: manualUrl,
         },
+        credentials,
         { signal: controller.signal },
       );
 

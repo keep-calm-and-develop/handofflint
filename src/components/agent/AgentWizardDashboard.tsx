@@ -2,7 +2,9 @@
 
 import { useAgentAuditResult } from "@/hooks/use-agent-audit-result";
 import { useAgentWizard } from "@/hooks/use-agent-wizard";
+import { useAgentCredentialsStore } from "@/stores/agent-credentials-store";
 
+import { AgentCredentialsForm } from "./AgentCredentialsForm";
 import { AgentFindingsEmptyState } from "./AgentFindingsEmptyState";
 import { AgentFindingsTable } from "./AgentFindingsTable";
 import { AgentReadinessScoreCard } from "./AgentReadinessScoreCard";
@@ -143,6 +145,12 @@ function FrameCanvas({
 
 export function AgentWizardDashboard() {
   const {
+    isReady: credentialsReady,
+    saveCredentials,
+    clearCredentials,
+  } = useAgentCredentialsStore();
+
+  const {
     wizardStep,
     fileKey,
     nodeId,
@@ -171,6 +179,28 @@ export function AgentWizardDashboard() {
   const overlapCount = overlappingNodeIds.length;
   const auditViewModel = useAgentAuditResult(scanData);
 
+  if (!credentialsReady) {
+    return (
+      <div className="flex h-full min-h-0 w-full items-center justify-center overflow-y-auto bg-slate-50 p-6">
+        <div className="w-full max-w-xl space-y-4">
+          <header className="space-y-2 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-figma-blue">
+              Agent Pipeline
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+              Autonomous Design Review Wizard
+            </h1>
+            <p className="text-sm text-zinc-600">
+              Provide API credentials before ingestion, audit, and vision
+              investigation can run.
+            </p>
+          </header>
+          <AgentCredentialsForm onSave={saveCredentials} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid h-full min-h-0 w-full grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(0,1fr)] overflow-hidden bg-slate-50 text-slate-900 lg:grid-cols-2 lg:grid-rows-1">
       <section className="min-h-0 h-full space-y-6 overflow-y-auto border-r border-slate-200 bg-white p-6 pb-10">
@@ -181,13 +211,17 @@ export function AgentWizardDashboard() {
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
             Autonomous Design Review Wizard
           </h1>
-          <div className="flex flex-wrap gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="rounded-full border border-figma-green bg-figma-green/15 px-3 py-1 font-semibold text-figma-green">
-              API Status: Active
+              Credentials: Session only
             </span>
-            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-zinc-500">
-              Token: Free Tier
-            </span>
+            <button
+              type="button"
+              onClick={clearCredentials}
+              className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-zinc-500 transition hover:border-zinc-300 hover:text-zinc-700"
+            >
+              Clear credentials
+            </button>
           </div>
         </header>
 
