@@ -11,7 +11,6 @@ import { useScanResult } from "@/hooks/use-scan-result";
 
 import { ScanErrorAlert } from "./ScanErrorAlert";
 import { ScanForm } from "./ScanForm";
-import { ScanHeader } from "./ScanHeader";
 import { ScanResults } from "./ScanResults";
 
 export function ScanDashboard() {
@@ -37,8 +36,7 @@ export function ScanDashboard() {
     figmaUrl.validationHint && !scan.loading ? figmaUrl.validationHint : null;
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6">
-      <ScanHeader />
+    <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
       <ScanForm
         url={figmaUrl.url}
         onUrlChange={figmaUrl.setUrl}

@@ -12,6 +12,7 @@ import { ContrastLevelPicker } from "./ContrastLevelPicker";
 import { ExportQualityPicker } from "./ExportQualityPicker";
 import { GridBasePicker } from "./GridBasePicker";
 import { LayoutHandoffPicker } from "./LayoutHandoffPicker";
+import { SCAN_CARD, SCAN_INPUT } from "./scan-styles";
 
 interface ScanFormProps {
   url: string;
@@ -64,7 +65,7 @@ export function ScanForm({
             onChange={(e) => onUrlChange(e.target.value)}
             aria-invalid={hint ? true : undefined}
             aria-describedby={hint ? "figma-url-hint" : undefined}
-            className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-figma-blue focus:outline-none focus:ring-2 focus:ring-figma-blue/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:ring-figma-blue/20"
+            className={`min-w-0 flex-1 ${SCAN_INPUT}`}
           />
           <button
             type="submit"
@@ -77,18 +78,18 @@ export function ScanForm({
         {hint && (
           <p
             id="figma-url-hint"
-            className="text-sm text-amber-700 dark:text-amber-400"
+            className="text-sm text-amber-700"
           >
             {hint}
           </p>
         )}
       </div>
 
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className={SCAN_CARD}>
         <button
           type="button"
           onClick={() => setConfigOpen((prev) => !prev)}
-          className="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-sm font-medium text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+          className="flex w-full cursor-pointer items-center justify-between px-4 py-3 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
           aria-expanded={configOpen}
         >
           <span>Scan Configuration</span>
@@ -108,7 +109,7 @@ export function ScanForm({
         </button>
 
         {configOpen && (
-          <div className="space-y-5 border-t border-zinc-200 dark:border-zinc-800 px-4 py-4">
+          <div className="space-y-5 border-t border-slate-200 px-4 py-4">
             <LayoutHandoffPicker
               value={layoutHandoffProfile}
               onChange={onLayoutHandoffProfileChange}

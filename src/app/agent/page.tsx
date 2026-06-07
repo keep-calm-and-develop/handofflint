@@ -1,4 +1,5 @@
 import { AgentWizardDashboard } from "@/components/agent/AgentWizardDashboard";
+import { SiteShell } from "@/components/layout/SiteShell";
 
 export const metadata = {
   title: "HandOffLint Agent",
@@ -6,5 +7,14 @@ export const metadata = {
 };
 
 export default function AgentPage() {
-  return <AgentWizardDashboard />;
+  return (
+    <SiteShell
+      activeNav="agent"
+      ctaHref="/linear"
+      ctaLabel="Linear Linter"
+      mainClassName="flex-1 min-h-0"
+    >
+      <AgentWizardDashboard />
+    </SiteShell>
+  );
 }

@@ -9,18 +9,18 @@ interface FindingRowProps {
 
 export function FindingRow({ finding }: FindingRowProps) {
   return (
-    <tr className="bg-white dark:bg-zinc-950">
+    <tr className="bg-white">
       <td className="px-4 py-3">
         <SeverityBadge severity={finding.severity} />
       </td>
-      <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
+      <td className="px-4 py-3 text-slate-700">
         {getAuditLabel(finding.auditTool)}
       </td>
-      <td className="px-4 py-3 font-mono text-xs text-zinc-600 dark:text-zinc-400">
+      <td className="px-4 py-3 font-mono text-xs text-slate-600">
         {finding.nodeName}
-        <span className="mt-0.5 block text-zinc-400">{finding.nodeId}</span>
+        <span className="mt-0.5 block text-slate-400">{finding.nodeId}</span>
       </td>
-      <td className="max-w-xs px-4 py-3 text-zinc-800 dark:text-zinc-200">
+      <td className="max-w-xs px-4 py-3 text-slate-800">
         {finding.message}
       </td>
       <td className="px-4 py-3">

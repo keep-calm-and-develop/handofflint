@@ -172,14 +172,14 @@ export function AgentWizardDashboard() {
   const auditViewModel = useAgentAuditResult(scanData);
 
   return (
-    <div className="grid h-screen min-h-0 w-screen grid-cols-1 overflow-hidden bg-zinc-50 text-zinc-900 lg:grid-cols-2">
-      <section className="min-h-0 h-full space-y-6 overflow-y-auto border-r border-zinc-200 bg-white p-6 pb-10">
-        <header className="space-y-3 border-b border-zinc-200 pb-6">
+    <div className="grid h-full min-h-0 w-full grid-cols-1 overflow-hidden bg-slate-50 text-slate-900 lg:grid-cols-2">
+      <section className="min-h-0 h-full space-y-6 overflow-y-auto border-r border-slate-200 bg-white p-6 pb-10">
+        <header className="space-y-3 border-b border-slate-200 pb-6">
           <p className="text-xs font-semibold uppercase tracking-[0.4em] text-figma-blue">
-            HandOffLint
+            Agent Pipeline
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            Autonomous Design Review Agent Pipeline
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+            Autonomous Design Review Wizard
           </h1>
           <div className="flex flex-wrap gap-2 text-xs">
             <span className="rounded-full border border-figma-green bg-figma-green/15 px-3 py-1 font-semibold text-figma-green">

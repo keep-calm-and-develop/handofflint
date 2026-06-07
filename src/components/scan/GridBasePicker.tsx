@@ -1,3 +1,5 @@
+import { SCAN_INPUT_COMPACT } from "./scan-styles";
+
 interface GridBasePickerProps {
   value: number;
   onChange: (gridBase: number) => void;
@@ -13,11 +15,11 @@ export function GridBasePicker({
     <div className="space-y-3">
       <label
         htmlFor="grid-base"
-        className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
+        className="text-sm font-medium text-slate-900"
       >
         Spacing grid base (px)
       </label>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-slate-600">
         Spacing and padding values that aren&apos;t multiples of this unit will
         be flagged.
       </p>
@@ -35,7 +37,7 @@ export function GridBasePicker({
           }
         }}
         disabled={disabled}
-        className="w-20 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:ring-zinc-800"
+        className={SCAN_INPUT_COMPACT}
       />
     </div>
   );

@@ -5,6 +5,8 @@ import {
   LAYOUT_HANDOFF_OPTIONS,
 } from "@/lib/scan-display";
 
+import { SCAN_TILE_SELECTED, SCAN_TILE_UNSELECTED } from "./scan-styles";
+
 interface LayoutHandoffPickerProps {
   value: LayoutHandoffProfile;
   onChange: (profile: LayoutHandoffProfile) => void;
@@ -21,10 +23,10 @@ export function LayoutHandoffPicker({
 
   return (
     <fieldset className="space-y-3" disabled={disabled}>
-      <legend className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+      <legend className="text-sm font-medium text-slate-900">
         How will this design be built?
       </legend>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-slate-600">
         This adjusts how strictly we check for auto-layout — pick what matches
         your file, not your job title.
       </p>
@@ -34,10 +36,8 @@ export function LayoutHandoffPicker({
           return (
             <label
               key={option.id}
-              className={`cursor-pointer rounded-lg border px-3 py-3 transition ${
-                selected
-                  ? "border-zinc-900 bg-zinc-50 ring-2 ring-zinc-200 dark:border-zinc-100 dark:bg-zinc-900 dark:ring-zinc-700"
-                  : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
+              className={`cursor-pointer rounded-xl border px-3 py-3 transition ${
+                selected ? SCAN_TILE_SELECTED : SCAN_TILE_UNSELECTED
               } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
             >
               <input
@@ -48,10 +48,10 @@ export function LayoutHandoffPicker({
                 onChange={() => onChange(option.id)}
                 className="sr-only"
               />
-              <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-50">
+              <span className="block text-sm font-medium text-slate-900">
                 {option.label}
               </span>
-              <span className="mt-1 block text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <span className="mt-1 block text-xs leading-relaxed text-slate-600">
                 {option.description}
               </span>
             </label>
@@ -59,8 +59,8 @@ export function LayoutHandoffPicker({
         })}
       </div>
       {activeHint && (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">
+        <p className="text-xs text-slate-500">
+          <span className="font-medium text-slate-700">
             {getLayoutHandoffLabel(value)}:
           </span>{" "}
           {activeHint}

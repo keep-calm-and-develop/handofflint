@@ -9,7 +9,7 @@ export function FindingsEmptyState({
 }: FindingsEmptyStateProps) {
   if (auditsSkipped) {
     return (
-      <p className="text-zinc-600 dark:text-zinc-400">
+      <p className="text-slate-600">
         No audit results — connect Figma to run checks.
       </p>
     );
@@ -17,12 +17,12 @@ export function FindingsEmptyState({
 
   if (auditStatusLabel?.includes("could not be parsed")) {
     return (
-      <p className="text-amber-700 dark:text-amber-400">{auditStatusLabel}</p>
+      <p className="text-amber-700">{auditStatusLabel}</p>
     );
   }
 
   return (
-    <p className="text-zinc-600 dark:text-zinc-400">
+    <p className="text-slate-600">
       No naming issues under current rules (primitives inside named components,
       groups, and frames are allowed).
     </p>

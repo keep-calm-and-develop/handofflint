@@ -28,7 +28,16 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className={`${geistSans.className} min-h-full flex flex-col font-sans antialiased`}>
+      <head>
+        <link
+          rel="icon"
+          type="image/svg+xml"
+          href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 14' fill='none'%3E%3Ccircle cx='7' cy='7' r='7' fill='%23ff7237' /%3E%3Ccircle cx='17' cy='7' r='7' fill='%23874fff' /%3E%3Ccircle cx='27' cy='7' r='7' fill='%230d99ff' /%3E%3Ccircle cx='37' cy='7' r='7' fill='%2324cb71' /%3E%3C/svg%3E"
+        />
+      </head>
+      <body
+        className={`${geistSans.className} min-h-full flex flex-col font-sans antialiased`}
+      >
         {children}
       </body>
     </html>

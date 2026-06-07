@@ -4,6 +4,8 @@ import {
   getExportQualityLabel,
 } from "@/lib/scan-display";
 
+import { SCAN_TILE_SELECTED, SCAN_TILE_UNSELECTED } from "./scan-styles";
+
 interface ExportQualityPickerProps {
   value: ExportQuality;
   onChange: (quality: ExportQuality) => void;
@@ -20,10 +22,10 @@ export function ExportQualityPicker({
 
   return (
     <fieldset className="space-y-3" disabled={disabled}>
-      <legend className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+      <legend className="text-sm font-medium text-slate-900">
         Image export sharpness
       </legend>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-slate-600">
         PNG and JPG exports without enough scale look blurry on modern screens.
         Pick the minimum quality your project requires.
       </p>
@@ -33,10 +35,8 @@ export function ExportQualityPicker({
           return (
             <label
               key={option.id}
-              className={`cursor-pointer rounded-lg border px-3 py-3 transition ${
-                selected
-                  ? "border-zinc-900 bg-zinc-50 ring-2 ring-zinc-200 dark:border-zinc-100 dark:bg-zinc-900 dark:ring-zinc-700"
-                  : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-700"
+              className={`cursor-pointer rounded-xl border px-3 py-3 transition ${
+                selected ? SCAN_TILE_SELECTED : SCAN_TILE_UNSELECTED
               } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
             >
               <input
@@ -47,10 +47,10 @@ export function ExportQualityPicker({
                 onChange={() => onChange(option.id)}
                 className="sr-only"
               />
-              <span className="block text-sm font-medium text-zinc-900 dark:text-zinc-50">
+              <span className="block text-sm font-medium text-slate-900">
                 {option.label}
               </span>
-              <span className="mt-1 block text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <span className="mt-1 block text-xs leading-relaxed text-slate-600">
                 {option.description}
               </span>
             </label>
@@ -58,8 +58,8 @@ export function ExportQualityPicker({
         })}
       </div>
       {activeHint && (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">
+        <p className="text-xs text-slate-500">
+          <span className="font-medium text-slate-700">
             {getExportQualityLabel(value)}:
           </span>{" "}
           {activeHint}
