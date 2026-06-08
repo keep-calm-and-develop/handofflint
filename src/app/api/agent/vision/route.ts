@@ -143,7 +143,7 @@ export async function POST(request: Request) {
   });
 
   // Validate cache exists
-  const treeMap = getTreeFromCache(fileKey);
+  const treeMap = await getTreeFromCache(fileKey);
   if (!treeMap) {
     return NextResponse.json<AgentErrorResponse>(
       { error: "Cache miss — run /api/agent/init first" },

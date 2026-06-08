@@ -118,25 +118,25 @@ describe("node registry (indexFigmaTreeNodes / getIndexedNode / getTreeFromCache
     ],
   };
 
-  it("indexes a single FigmaNode root and retrieves by nodeId", () => {
-    indexFigmaTreeNodes("file-x", frame);
+  it("indexes a single FigmaNode root and retrieves by nodeId", async () => {
+    await indexFigmaTreeNodes("file-x", frame);
 
-    expect(getIndexedNode("file-x", "1:1")).toBe(frame);
-    expect(getIndexedNode("file-x", "1:2")).toBe(frame.children![0]);
-    expect(getIndexedNode("file-x", "1:3")).toBe(frame.children![1]);
+    expect(await getIndexedNode("file-x", "1:1")).toBe(frame);
+    expect(await getIndexedNode("file-x", "1:2")).toBe(frame.children![0]);
+    expect(await getIndexedNode("file-x", "1:3")).toBe(frame.children![1]);
   });
 
-  it("returns null for unknown file or node", () => {
-    indexFigmaTreeNodes("file-x", frame);
+  it("returns null for unknown file or node", async () => {
+    await indexFigmaTreeNodes("file-x", frame);
 
-    expect(getIndexedNode("file-x", "99:99")).toBeNull();
-    expect(getIndexedNode("unknown-file", "1:1")).toBeNull();
+    expect(await getIndexedNode("file-x", "99:99")).toBeNull();
+    expect(await getIndexedNode("unknown-file", "1:1")).toBeNull();
   });
 
-  it("getTreeFromCache returns the full flat map for an indexed file", () => {
-    indexFigmaTreeNodes("file-x", frame);
+  it("getTreeFromCache returns the full flat map for an indexed file", async () => {
+    await indexFigmaTreeNodes("file-x", frame);
 
-    const map = getTreeFromCache("file-x");
+    const map = await getTreeFromCache("file-x");
     expect(map).not.toBeNull();
     expect(map!.size).toBe(3);
     expect(map!.get("1:1")).toBe(frame);
@@ -144,11 +144,11 @@ describe("node registry (indexFigmaTreeNodes / getIndexedNode / getTreeFromCache
     expect(map!.get("1:3")).toBe(frame.children![1]);
   });
 
-  it("getTreeFromCache returns null for a file not yet indexed", () => {
-    expect(getTreeFromCache("never-indexed")).toBeNull();
+  it("getTreeFromCache returns null for a file not yet indexed", async () => {
+    expect(await getTreeFromCache("never-indexed")).toBeNull();
   });
 
-  it("indexes a full Figma file API response (document wrapper)", () => {
+  it("indexes a full Figma file API response (document wrapper)", async () => {
     const apiResponse = {
       document: {
         id: "0:0",
@@ -160,14 +160,14 @@ describe("node registry (indexFigmaTreeNodes / getIndexedNode / getTreeFromCache
       version: "v1",
     };
 
-    indexFigmaTreeNodes("file-y", apiResponse);
+    await indexFigmaTreeNodes("file-y", apiResponse);
 
-    expect(getIndexedNode("file-y", "0:0")).not.toBeNull();
-    expect(getIndexedNode("file-y", "1:1")).toBe(frame);
-    expect(getIndexedNode("file-y", "1:2")).toBe(frame.children![0]);
+    expect(await getIndexedNode("file-y", "0:0")).not.toBeNull();
+    expect(await getIndexedNode("file-y", "1:1")).toBe(frame);
+    expect(await getIndexedNode("file-y", "1:2")).toBe(frame.children![0]);
   });
 
-  it("indexes a file-nodes API response (nodes wrapper)", () => {
+  it("indexes a file-nodes API response (nodes wrapper)", async () => {
     const nodesResponse = {
       nodes: {
         "1:1": {
@@ -176,43 +176,43 @@ describe("node registry (indexFigmaTreeNodes / getIndexedNode / getTreeFromCache
       },
     };
 
-    indexFigmaTreeNodes("file-z", nodesResponse);
+    await indexFigmaTreeNodes("file-z", nodesResponse);
 
-    expect(getIndexedNode("file-z", "1:1")).toBe(frame);
-    expect(getIndexedNode("file-z", "1:3")).toBe(frame.children![1]);
+    expect(await getIndexedNode("file-z", "1:1")).toBe(frame);
+    expect(await getIndexedNode("file-z", "1:3")).toBe(frame.children![1]);
   });
 
-  it("clearFigmaTreeCache clears the node registry", () => {
-    indexFigmaTreeNodes("file-x", frame);
-    expect(getTreeFromCache("file-x")).not.toBeNull();
+  it("clearFigmaTreeCache clears the node registry", async () => {
+    await indexFigmaTreeNodes("file-x", frame);
+    expect(await getTreeFromCache("file-x")).not.toBeNull();
 
     clearFigmaTreeCache();
 
-    expect(getTreeFromCache("file-x")).toBeNull();
-    expect(getIndexedNode("file-x", "1:1")).toBeNull();
+    expect(await getTreeFromCache("file-x")).toBeNull();
+    expect(await getIndexedNode("file-x", "1:1")).toBeNull();
   });
 
-  it("handles null/undefined rootTreeData gracefully", () => {
-    indexFigmaTreeNodes("file-x", null);
-    indexFigmaTreeNodes("file-x", undefined);
+  it("handles null/undefined rootTreeData gracefully", async () => {
+    await indexFigmaTreeNodes("file-x", null);
+    await indexFigmaTreeNodes("file-x", undefined);
 
-    expect(getTreeFromCache("file-x")).toBeNull();
+    expect(await getTreeFromCache("file-x")).toBeNull();
   });
 
-  it("keeps separate maps per fileKey", () => {
+  it("keeps separate maps per fileKey", async () => {
     const otherFrame: FigmaNode = {
       id: "2:1",
       name: "Other",
       type: "FRAME",
     };
 
-    indexFigmaTreeNodes("file-a", frame);
-    indexFigmaTreeNodes("file-b", otherFrame);
+    await indexFigmaTreeNodes("file-a", frame);
+    await indexFigmaTreeNodes("file-b", otherFrame);
 
-    expect(getTreeFromCache("file-a")!.size).toBe(3);
-    expect(getTreeFromCache("file-b")!.size).toBe(1);
-    expect(getIndexedNode("file-a", "2:1")).toBeNull();
-    expect(getIndexedNode("file-b", "1:1")).toBeNull();
+    expect((await getTreeFromCache("file-a"))!.size).toBe(3);
+    expect((await getTreeFromCache("file-b"))!.size).toBe(1);
+    expect(await getIndexedNode("file-a", "2:1")).toBeNull();
+    expect(await getIndexedNode("file-b", "1:1")).toBeNull();
   });
 });
 
@@ -231,17 +231,17 @@ describe("getRootNodesFromCache", () => {
     ],
   };
 
-  it("returns root nodes for a single FigmaNode root", () => {
-    indexFigmaTreeNodes("file-x", frame);
+  it("returns root nodes for a single FigmaNode root", async () => {
+    await indexFigmaTreeNodes("file-x", frame);
 
-    const roots = getRootNodesFromCache("file-x");
+    const roots = await getRootNodesFromCache("file-x");
     expect(roots).not.toBeNull();
     expect(roots).toHaveLength(1);
     expect(roots![0]).toBe(frame);
     expect(roots![0].children).toHaveLength(2);
   });
 
-  it("returns root nodes for a document wrapper response", () => {
+  it("returns root nodes for a document wrapper response", async () => {
     const apiResponse = {
       document: {
         id: "0:0",
@@ -252,36 +252,36 @@ describe("getRootNodesFromCache", () => {
       version: "v1",
     };
 
-    indexFigmaTreeNodes("file-y", apiResponse);
+    await indexFigmaTreeNodes("file-y", apiResponse);
 
-    const roots = getRootNodesFromCache("file-y");
+    const roots = await getRootNodesFromCache("file-y");
     expect(roots).not.toBeNull();
     expect(roots).toHaveLength(1);
     expect(roots![0].id).toBe("0:0");
     expect(roots![0].type).toBe("DOCUMENT");
   });
 
-  it("returns root nodes for a file-nodes API response", () => {
+  it("returns root nodes for a file-nodes API response", async () => {
     const nodesResponse = {
       nodes: { "1:1": { document: frame } },
     };
 
-    indexFigmaTreeNodes("file-z", nodesResponse);
+    await indexFigmaTreeNodes("file-z", nodesResponse);
 
-    const roots = getRootNodesFromCache("file-z");
+    const roots = await getRootNodesFromCache("file-z");
     expect(roots).not.toBeNull();
     expect(roots).toHaveLength(1);
     expect(roots![0]).toBe(frame);
   });
 
-  it("returns null for a file not yet indexed", () => {
-    expect(getRootNodesFromCache("unknown")).toBeNull();
+  it("returns null for a file not yet indexed", async () => {
+    expect(await getRootNodesFromCache("unknown")).toBeNull();
   });
 
-  it("returns null after cache is cleared", () => {
-    indexFigmaTreeNodes("file-x", frame);
+  it("returns null after cache is cleared", async () => {
+    await indexFigmaTreeNodes("file-x", frame);
     clearFigmaTreeCache();
 
-    expect(getRootNodesFromCache("file-x")).toBeNull();
+    expect(await getRootNodesFromCache("file-x")).toBeNull();
   });
 });

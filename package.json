@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.80",
+    "@upstash/redis": "^1.38.0",
     "ai": "^6.0.196",
     "lucide-react": "^1.17.0",
     "nanoid": "3.3.12",

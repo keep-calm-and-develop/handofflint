@@ -1,6 +1,7 @@
 import { isFigmaApiMockEnabled } from "@/lib/figma/mock-enabled";
 import type { FigmaNode } from "@/lib/figma/node";
 import { extractFigmaDocuments, isFigmaNode } from "@/lib/figma/tree";
+import { Redis } from "@upstash/redis";
 
 export interface FigmaTreeCacheEntry {
   fileKey: string;
@@ -16,8 +17,88 @@ const DEFAULT_MAX_ENTRIES = 50;
 
 const store = new Map<string, FigmaTreeCacheEntry>();
 
-const nodeRegistry = new Map<string, Map<string, FigmaNode>>();
-const rootNodeIds = new Map<string, string[]>();
+const FIGMA_ROOTS_KEY = (fileKey: string) => `figma:roots:${fileKey}`;
+const FIGMA_FLAT_KEY = (fileKey: string) => `figma:flat:${fileKey}`;
+
+interface NodeCacheBackend {
+  get<T>(key: string): Promise<T | null>;
+  set(key: string, value: unknown, options: { ex: number }): Promise<void>;
+  del(...keys: string[]): Promise<void>;
+}
+
+/** In-memory backend for vitest and environments without Upstash credentials. */
+class MemoryNodeCache implements NodeCacheBackend {
+  private entries = new Map<string, { value: unknown; expiresAt: number }>();
+
+  async get<T>(key: string): Promise<T | null> {
+    const entry = this.entries.get(key);
+    if (!entry) {
+      return null;
+    }
+    if (Date.now() > entry.expiresAt) {
+      this.entries.delete(key);
+      return null;
+    }
+    return entry.value as T;
+  }
+
+  async set(
+    key: string,
+    value: unknown,
+    options: { ex: number },
+  ): Promise<void> {
+    this.entries.set(key, {
+      value,
+      expiresAt: Date.now() + options.ex * 1000,
+    });
+  }
+
+  async del(...keys: string[]): Promise<void> {
+    for (const key of keys) {
+      this.entries.delete(key);
+    }
+  }
+
+  clear(): void {
+    this.entries.clear();
+  }
+}
+
+function hasUpstashCredentials(): boolean {
+  return Boolean(
+    process.env.UPSTASH_REDIS_REST_URL?.trim() &&
+    process.env.UPSTASH_REDIS_REST_TOKEN?.trim(),
+  );
+}
+
+function createNodeCacheBackend(): NodeCacheBackend {
+  // In-memory only for vitest or when Upstash is not configured.
+  // FIGMA_API_MOCK does not affect this — mock only swaps the Figma API source.
+  if (process.env.VITEST === "true" || !hasUpstashCredentials()) {
+    return new MemoryNodeCache();
+  }
+
+  const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL!,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    // @upstash/redis passes `keepalive` to fetch by default; Next.js patched
+    // fetch rejects that option on non-GET requests (TypeError: keepalive).
+    keepAlive: false,
+  });
+
+  return {
+    get: (key) => redis.get(key),
+    set: async (key, value, options) => {
+      await redis.set(key, value, options);
+    },
+    del: async (...keys) => {
+      await redis.del(...keys);
+    },
+  };
+}
+
+const nodeCache = createNodeCacheBackend();
+const memoryNodeCache = nodeCache instanceof MemoryNodeCache ? nodeCache : null;
 
 function logStore(event: string, details?: Record<string, unknown>): void {
   console.log("[figma-tree-cache]", event, details ?? "");
@@ -54,6 +135,10 @@ function parsePositiveInt(raw: string | undefined, fallback: number): number {
 
 function getCacheTtlMs(): number {
   return parsePositiveInt(process.env.FIGMA_CACHE_TTL_MS, DEFAULT_TTL_MS);
+}
+
+function getNodeCacheTtlSeconds(): number {
+  return Math.max(1, Math.ceil(getCacheTtlMs() / 1000));
 }
 
 function getCacheMaxEntries(): number {
@@ -136,30 +221,19 @@ export function peekFigmaTreeCache(key: string): FigmaTreeCacheEntry | null {
   return store.get(key) ?? null;
 }
 
-/** Clears in-memory cache (for tests). */
+/** Clears API tree cache and indexed node cache (for tests). */
 export function clearFigmaTreeCache(): void {
   store.clear();
-  nodeRegistry.clear();
-  rootNodeIds.clear();
+  memoryNodeCache?.clear();
 }
 
-function getOrCreateFileMap(fileKey: string): Map<string, FigmaNode> {
-  let fileMap = nodeRegistry.get(fileKey);
-  if (!fileMap) {
-    fileMap = new Map<string, FigmaNode>();
-    nodeRegistry.set(fileKey, fileMap);
-  }
-  return fileMap;
-}
-
-/**
- * Recursively walks a nested Figma tree to index every node by its ID.
- */
-function flattenAndIndexNode(fileKey: string, node: FigmaNode): void {
-  getOrCreateFileMap(fileKey).set(node.id, node);
-
+function flattenIntoMap(
+  node: FigmaNode,
+  flatMap: Record<string, FigmaNode>,
+): void {
+  flatMap[node.id] = node;
   for (const child of node.children ?? []) {
-    flattenAndIndexNode(fileKey, child);
+    flattenIntoMap(child, flatMap);
   }
 }
 
@@ -168,62 +242,63 @@ function flattenAndIndexNode(fileKey: string, node: FigmaNode): void {
  * Accepts raw Figma API payloads (`unknown`), a document wrapper with
  * `children`, or a single {@link FigmaNode} root.
  */
-export function indexFigmaTreeNodes(
+export async function indexFigmaTreeNodes(
   fileKey: string,
   rootTreeData: unknown,
-): void {
+): Promise<void> {
   if (rootTreeData == null) {
     return;
   }
 
-  const roots: string[] = [];
+  const roots: FigmaNode[] = [];
+  const flatMap: Record<string, FigmaNode> = {};
 
   const documents = extractFigmaDocuments(rootTreeData);
   if (documents.length > 0) {
     for (const doc of documents) {
-      flattenAndIndexNode(fileKey, doc);
-      roots.push(doc.id);
+      flattenIntoMap(doc, flatMap);
+      roots.push(doc);
     }
-    rootNodeIds.set(fileKey, roots);
-    return;
-  }
-
-  if (typeof rootTreeData !== "object") {
-    return;
-  }
-
-  if (isFigmaNode(rootTreeData)) {
-    flattenAndIndexNode(fileKey, rootTreeData);
-    roots.push(rootTreeData.id);
-    rootNodeIds.set(fileKey, roots);
-    return;
-  }
-
-  // Non-FigmaNode object with a children array (e.g. a raw document wrapper
-  // without id/name/type that just holds page subtrees).
-  const record = rootTreeData as Record<string, unknown>;
-  if (Array.isArray(record.children)) {
-    for (const child of record.children) {
-      if (isFigmaNode(child)) {
-        flattenAndIndexNode(fileKey, child);
-        roots.push(child.id);
+  } else if (typeof rootTreeData === "object") {
+    if (isFigmaNode(rootTreeData)) {
+      flattenIntoMap(rootTreeData, flatMap);
+      roots.push(rootTreeData);
+    } else {
+      const record = rootTreeData as Record<string, unknown>;
+      if (Array.isArray(record.children)) {
+        for (const child of record.children) {
+          if (isFigmaNode(child)) {
+            flattenIntoMap(child, flatMap);
+            roots.push(child);
+          }
+        }
       }
     }
   }
 
-  if (roots.length > 0) {
-    rootNodeIds.set(fileKey, roots);
+  if (roots.length === 0) {
+    return;
   }
+
+  const ttl = { ex: getNodeCacheTtlSeconds() };
+  await nodeCache.set(FIGMA_ROOTS_KEY(fileKey), roots, ttl);
+  await nodeCache.set(FIGMA_FLAT_KEY(fileKey), flatMap, ttl);
 }
 
 /**
  * Retrieves the full flat node map for a file. Returns null if the file
  * has not been indexed yet.
  */
-export function getTreeFromCache(
+export async function getTreeFromCache(
   fileKey: string,
-): Map<string, FigmaNode> | null {
-  return nodeRegistry.get(fileKey) ?? null;
+): Promise<Map<string, FigmaNode> | null> {
+  const flatMap = await nodeCache.get<Record<string, FigmaNode>>(
+    FIGMA_FLAT_KEY(fileKey),
+  );
+  if (!flatMap) {
+    return null;
+  }
+  return new Map(Object.entries(flatMap));
 }
 
 /**
@@ -231,25 +306,22 @@ export function getTreeFromCache(
  * their full child trees. Ready for direct use with `runAllAudits`.
  * Returns null if the file has not been indexed.
  */
-export function getRootNodesFromCache(fileKey: string): FigmaNode[] | null {
-  const ids = rootNodeIds.get(fileKey);
-  if (!ids || ids.length === 0) {
-    return null;
-  }
-  const fileMap = nodeRegistry.get(fileKey);
-  if (!fileMap) {
-    return null;
-  }
-  const roots = ids.map((id) => fileMap.get(id)).filter((n): n is FigmaNode => n != null);
-  return roots.length > 0 ? roots : null;
+export async function getRootNodesFromCache(
+  fileKey: string,
+): Promise<FigmaNode[] | null> {
+  const roots = await nodeCache.get<FigmaNode[]>(FIGMA_ROOTS_KEY(fileKey));
+  return roots && roots.length > 0 ? roots : null;
 }
 
 /**
  * Instant O(1) property extraction function for your ReAct tool.
  */
-export function getIndexedNode(
+export async function getIndexedNode(
   fileKey: string,
   nodeId: string,
-): FigmaNode | null {
-  return nodeRegistry.get(fileKey)?.get(nodeId) ?? null;
+): Promise<FigmaNode | null> {
+  const flatMap = await nodeCache.get<Record<string, FigmaNode>>(
+    FIGMA_FLAT_KEY(fileKey),
+  );
+  return flatMap?.[nodeId] ?? null;
 }

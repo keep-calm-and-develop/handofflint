@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const roots = getRootNodesFromCache(fileKey);
+  const roots = await getRootNodesFromCache(fileKey);
   if (!roots) {
     return NextResponse.json<AgentErrorResponse>(
       { error: "Cache miss — run /api/agent/init first" },
@@ -75,9 +75,7 @@ export async function POST(request: Request) {
       : undefined;
 
   const rawExportQuality =
-    typeof record.exportQuality === "number"
-      ? record.exportQuality
-      : undefined;
+    typeof record.exportQuality === "number" ? record.exportQuality : undefined;
   const exportQuality: ExportQuality =
     rawExportQuality !== undefined &&
     EXPORT_QUALITY_VALUES.includes(rawExportQuality as ExportQuality)

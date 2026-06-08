@@ -93,11 +93,11 @@ describe("POST /api/agent/init", () => {
   });
 
   it("populates the node registry cache after successful init", async () => {
-    expect(getTreeFromCache("abc123")).toBeNull();
+    expect(await getTreeFromCache("abc123")).toBeNull();
 
     await POST(jsonRequest({ url: VALID_FIGMA_URL }));
 
-    const cached = getTreeFromCache("abc123");
+    const cached = await getTreeFromCache("abc123");
     expect(cached).not.toBeNull();
     expect(cached!.size).toBeGreaterThan(0);
   });

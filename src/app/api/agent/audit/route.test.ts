@@ -38,8 +38,8 @@ const frame: FigmaNode = {
   ],
 };
 
-function primeCache(fileKey = "test-file") {
-  indexFigmaTreeNodes(fileKey, frame);
+async function primeCache(fileKey = "test-file") {
+  await indexFigmaTreeNodes(fileKey, frame);
 }
 
 describe("POST /api/agent/audit", () => {
@@ -85,7 +85,7 @@ describe("POST /api/agent/audit", () => {
   // ── Happy path ─────────────────────────────────────────────────────
 
   it("runs audits and returns readinessScore + findings for cached file", async () => {
-    primeCache("test-file");
+    await primeCache("test-file");
 
     const res = await POST(jsonRequest({ fileKey: "test-file" }));
     const json = await res.json();
@@ -99,7 +99,7 @@ describe("POST /api/agent/audit", () => {
   });
 
   it("uses default layoutHandoffProfile when not specified", async () => {
-    primeCache("test-file");
+    await primeCache("test-file");
 
     const res = await POST(jsonRequest({ fileKey: "test-file" }));
     const json = await res.json();
@@ -108,7 +108,7 @@ describe("POST /api/agent/audit", () => {
   });
 
   it("accepts a custom layoutHandoffProfile", async () => {
-    primeCache("test-file");
+    await primeCache("test-file");
 
     const res = await POST(
       jsonRequest({
@@ -123,7 +123,7 @@ describe("POST /api/agent/audit", () => {
   });
 
   it("falls back to defaults for invalid optional params", async () => {
-    primeCache("test-file");
+    await primeCache("test-file");
 
     const res = await POST(
       jsonRequest({
@@ -141,7 +141,7 @@ describe("POST /api/agent/audit", () => {
   });
 
   it("findings are sorted by severity (critical first)", async () => {
-    primeCache("test-file");
+    await primeCache("test-file");
 
     const res = await POST(jsonRequest({ fileKey: "test-file" }));
     const json = await res.json();

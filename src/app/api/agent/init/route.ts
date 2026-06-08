@@ -69,9 +69,9 @@ export async function POST(request: Request) {
       );
     }
 
-    indexFigmaTreeNodes(parsed.fileKey, result.data);
+    await indexFigmaTreeNodes(parsed.fileKey, result.data);
 
-    const indexed = getTreeFromCache(parsed.fileKey);
+    const indexed = await getTreeFromCache(parsed.fileKey);
     const nodesIndexed = indexed?.size ?? 0;
 
     if (nodesIndexed === 0) {

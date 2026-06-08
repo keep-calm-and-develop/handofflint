@@ -52,13 +52,13 @@ export function toShallowInspectProperties(
   return shallowProps;
 }
 
-export function executeInspectNode(
+export async function executeInspectNode(
   fileKey: string,
   input: InspectNodeInput,
-): InspectNodeOutput {
+): Promise<InspectNodeOutput> {
   const { nodeId } = input;
 
-  const node = getIndexedNode(fileKey, nodeId);
+  const node = await getIndexedNode(fileKey, nodeId);
 
   if (!node) {
     return {
