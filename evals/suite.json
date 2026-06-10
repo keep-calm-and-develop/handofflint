@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "runsPerCase": 10,
+  "cases": [
+    "vaxin-1-4",
+    "vaxin-20-0",
+    "bittersweet-9-153"
+  ],
+  "caseStatus": {
+    "vaxin-1-4": {
+      "runsCompleted": 0,
+      "locked": false,
+      "lockedAt": null
+    },
+    "vaxin-20-0": {
+      "runsCompleted": 0,
+      "locked": false,
+      "lockedAt": null
+    },
+    "bittersweet-9-153": {
+      "runsCompleted": 0,
+      "locked": false,
+      "lockedAt": null
+    }
+  }
+}

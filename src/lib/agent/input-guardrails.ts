@@ -129,6 +129,20 @@ export function validateDesignManualUrl(raw: string): GuardrailResult {
   return { ok: true };
 }
 
+/** Local golden images served from public/ during offline vision eval capture. */
+export function isEvalGoldenImageUrl(url: URL): boolean {
+  if (process.env.EVAL_ALLOW_LOCAL_IMAGES !== "true") {
+    return false;
+  }
+
+  const host = url.hostname.toLowerCase();
+  if (host !== "localhost" && host !== "127.0.0.1") {
+    return false;
+  }
+
+  return /^\/evals\/golden\/[a-z0-9-]+\/image\.png$/i.test(url.pathname);
+}
+
 export function validateVisionImageUrl(raw: string): GuardrailResult {
   const url = parseHttpUrl(raw);
   if (!url) {
@@ -136,6 +150,10 @@ export function validateVisionImageUrl(raw: string): GuardrailResult {
       ok: false,
       reason: "imageUrl must be a valid http(s) URL",
     };
+  }
+
+  if (isEvalGoldenImageUrl(url)) {
+    return { ok: true };
   }
 
   if (isBlockedFetchHost(url.hostname)) {

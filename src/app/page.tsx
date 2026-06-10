@@ -32,6 +32,11 @@ const ARCHITECTURE_DEEP_DIVES = [
     label: "Cross-Modal Guardrails",
     hint: "Vision vs structure",
   },
+  {
+    href: "/evals",
+    label: "Vision Evals",
+    hint: "Golden dataset pass rates",
+  },
 ] as const;
 
 export default function LandingPage() {

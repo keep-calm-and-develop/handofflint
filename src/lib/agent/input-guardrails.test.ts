@@ -73,6 +73,19 @@ describe("validateVisionImageUrl", () => {
       expect(result.reason).toContain("Figma CDN");
     }
   });
+
+  it("accepts localhost golden images when EVAL_ALLOW_LOCAL_IMAGES is set", () => {
+    const previous = process.env.EVAL_ALLOW_LOCAL_IMAGES;
+    process.env.EVAL_ALLOW_LOCAL_IMAGES = "true";
+
+    expect(
+      validateVisionImageUrl(
+        "http://127.0.0.1:3000/evals/golden/vaxin-1-4/image.png",
+      ).ok,
+    ).toBe(true);
+
+    process.env.EVAL_ALLOW_LOCAL_IMAGES = previous;
+  });
 });
 
 describe("validateFileKey and validateFigmaNodeId", () => {

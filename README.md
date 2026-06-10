@@ -24,6 +24,7 @@ Each major pipeline stage has a dedicated walkthrough page on the live site:
 | [/inspect-node](https://handofflint.vercel.app/inspect-node) | `inspect_node` tool — O(1) flat-index lookup with shallow property stripping |
 | [/rag](https://handofflint.vercel.app/rag)                   | `search_guides` tool — zero-cost keyword RAG over layout guideline markdown  |
 | [/guardrails](https://handofflint.vercel.app/guardrails)     | Guardrails — input validation before the agent runs, output checks after     |
+| [/evals](https://handofflint.vercel.app/evals)               | Vision evals — golden dataset, offline pass rates, committed run replay      |
 
 
 ## Figma setup
@@ -85,6 +86,31 @@ The agentic pipeline is orchestrated across three endpoints:
 - `POST /api/agent/vision` — ReAct vision loop with `inspect_node` and `search_guides` tools
 
 Legacy single-shot scanning is available at `POST /api/scan`.
+
+## Vision agent evals (offline)
+
+Three mobile-app golden frames live under `evals/golden/`. Capture runs **one case at a time** (up to 10 runs each) so you do not exhaust API quotas in a single batch.
+
+```bash
+pnpm eval:setup
+# Add to .env: EVAL_ALLOW_LOCAL_IMAGES=true
+pnpm dev
+
+# Case 1 — one run at a time
+pnpm eval:capture --case vaxin-1-4 --run 1
+# …through run 10, then review and lock:
+pnpm eval:lock --case vaxin-1-4 --write
+
+# Case 2 only after case 1 is locked
+pnpm eval:capture --case vaxin-20-0 --run 1
+
+pnpm eval:status
+pnpm eval:test   # replays committed results — no live Gemini in CI
+```
+
+Expected findings are drafted from captured runs (`pnpm eval:lock`) and human-reviewed before `--write`. CI asserts locked cases meet an ≥80% pass rate on committed `evals/results/` outputs.
+
+**Security note:** Production should move from personal access tokens to Figma OAuth for team files and tighter PII scope — PATs are acceptable for this POC.
 
 ## Tech stack
 

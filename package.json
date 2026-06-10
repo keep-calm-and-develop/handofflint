@@ -8,7 +8,13 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "fetch-figma": "tsx scripts/fetch-figma-raw.ts",
+    "eval:setup": "tsx scripts/eval-setup.ts",
+    "eval:capture": "tsx scripts/eval-capture.ts",
+    "eval:lock": "tsx scripts/eval-lock.ts",
+    "eval:status": "tsx scripts/eval-status.ts",
+    "eval:test": "vitest run evals/vision-eval.test.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.80",
@@ -30,6 +36,7 @@
     "eslint-config-next": "16.2.6",
     "msw": "^2.14.6",
     "tailwindcss": "^4",
+    "tsx": "^4.20.3",
     "typescript": "^5",
     "vitest": "^3.2.4"
   },
