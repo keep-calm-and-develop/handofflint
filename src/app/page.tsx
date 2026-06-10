@@ -210,8 +210,8 @@ export default function LandingPage() {
                 and target{" "}
                 <code className="bg-slate-200 px-1 py-0.5 rounded">nodeId</code>
                 . Rather than re-fetching deeply nested trees across subsequent
-                requests, it builds a flat index Map on the server for O(1)
-                properties lookup.
+                requests, it flattens nodes into Upstash Redis for O(1) property
+                lookup across wizard steps and serverless instances.
               </p>
             </div>
 
@@ -519,13 +519,13 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900 text-xs sm:text-sm">
-                    State Persistence Singletons
+                    Redis Flat Index
                   </h4>
                   <p className="text-slate-500 text-xs mt-0.5">
-                    Implements an in-memory database representation mapping tree
-                    caches server-side. Keeps state lookup processes fully
-                    transactional across wizard dashboard actions without
-                    database dependencies.
+                    Persists flattened Figma node maps in Upstash Redis
+                    (figma:flat:fileKey) so init, audit, and vision routes share
+                    state across serverless invocations. Falls back to
+                    in-process memory when Redis credentials are unset.
                   </p>
                 </div>
               </div>

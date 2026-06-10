@@ -127,7 +127,7 @@ export function InspectNodePresentation({ data }: InspectNodePresentationProps) 
             <StatCard
               label="Cache lookup"
               value="O(1)"
-              hint="Map by nodeId"
+              hint="Redis figma:flat:{fileKey}"
             />
           </div>
           <h2 className="text-xl font-bold text-slate-900 mb-6">
@@ -249,9 +249,9 @@ export function InspectNodePresentation({ data }: InspectNodePresentationProps) 
               screen tree each turn.
             </li>
             <li className="rounded-lg border border-slate-200 bg-white p-4">
-              <strong className="text-slate-900 block mb-1">Shared cache</strong>
-              Same flat index powers deterministic linters (step 2) and vision
-              tools (step 3).
+              <strong className="text-slate-900 block mb-1">Shared Redis index</strong>
+              Same flat index in Upstash Redis powers deterministic linters (step
+              2) and vision tools (step 3).
             </li>
           </ul>
           <p className="mt-6 text-sm text-slate-500">

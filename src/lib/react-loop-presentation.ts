@@ -56,7 +56,7 @@ const TURN_NARRATION: Record<number, { title: string; agentThought: string; deta
     title: "Inspect pincode component",
     agentThought:
       "Pincode input boxes look horizontally cramped. Verify the parent component’s bounding box from cache.",
-    detail: "Node 2:28 from example.json — real child subtrees stay in cache, not sent to the model.",
+    detail: "Node 2:28 from example.json — real child subtrees stay in Redis, not sent to the model.",
   },
   4: {
     title: "Search spacing rules",

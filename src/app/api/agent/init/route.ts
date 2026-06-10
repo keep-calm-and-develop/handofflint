@@ -11,8 +11,8 @@ import type { AgentErrorResponse, AgentInitResponse } from "@/lib/types";
  * POST /api/agent/init
  *
  * Wizard Step 1 — Ingestion. Accepts a raw Figma URL, parses it,
- * fetches the tree from the Figma API, and primes the server-side
- * flat-index cache for downstream agent endpoints.
+ * fetches the tree from the Figma API, and primes the Redis flat-index
+ * cache (Upstash) for downstream agent endpoints.
  */
 export async function POST(request: Request) {
   let body: unknown;

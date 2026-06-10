@@ -94,8 +94,9 @@ export function buildInspectNodePresentationData(): InspectNodePresentationData 
       },
       {
         step: 2,
-        title: "Flatten into Map",
-        detail: "indexFigmaTreeNodes() stores every node at nodeRegistry.get(fileKey).set(id, node).",
+        title: "Flatten into Redis",
+        detail:
+          "indexFigmaTreeNodes() writes figma:flat:{fileKey} to Upstash Redis (in-memory fallback in dev/tests).",
       },
       {
         step: 3,

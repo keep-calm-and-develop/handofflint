@@ -4,15 +4,15 @@ description: >-
   Implement HandOffLint agentic POC backend and frontend tasks from the build
   checklist in handofflint-agentic-poc-spec.md. Use when the user asks to
   implement any Task (1–11) from the agentic architecture spec, mentions
-  /api/agent endpoints, wizard pipeline, ReAct vision agent, cache memory
-  manager, or references the POC build checklist.
+  /api/agent endpoints, wizard pipeline, ReAct vision agent, Redis flat index
+  cache, or references the POC build checklist.
 ---
 
 # HandOffLint Agentic POC Implementation
 
 ## Context
 
-Read `handofflint-agentic-poc-spec.md` at the project root for the full architecture spec before starting any task. The spec defines a wizard pipeline with three API routes (`init`, `audit`, `vision`) backed by a server-side flat-index cache and a ReAct vision agent.
+Read `handofflint-agentic-poc-spec.md` at the project root for the full architecture spec before starting any task. The spec defines a wizard pipeline with three API routes (`init`, `audit`, `vision`) backed by a Redis flat-index cache (Upstash, with in-memory fallback) and a ReAct vision agent.
 
 ## Task Progress Tracker
 
@@ -20,7 +20,7 @@ Track completed tasks here. **After completing any task, update this section** s
 
 ```
 Build Checklist Progress:
-- [x] Task 1: Cache Memory Manager (src/lib/figma/cache.ts) — COMPLETED
+- [x] Task 1: Flat Index Cache — Redis (src/lib/figma/cache.ts) — COMPLETED
 - [x] Task 2: Endpoint 1 — Ingestion POST /api/agent/init — COMPLETED (src/app/api/agent/init/route.ts)
 - [x] Task 3: Endpoint 2 — Structural Linters POST /api/agent/audit — COMPLETED (src/app/api/agent/audit/route.ts)
 - [x] Task 4: ReAct Agent Tool Registration — COMPLETED (inspect-node.ts + search-guidelines.ts)
@@ -37,7 +37,7 @@ Build Checklist Progress:
 
 | File | Purpose |
 |------|---------|
-| `src/lib/figma/cache.ts` | Global singleton cache: `indexFigmaTreeNodes(fileKey, data)`, `getTreeFromCache(fileKey)`, `getIndexedNode(fileKey, nodeId)`, `getRootNodesFromCache(fileKey)` |
+| `src/lib/figma/cache.ts` | Redis flat-index cache (Upstash): `indexFigmaTreeNodes(fileKey, data)`, `getTreeFromCache(fileKey)`, `getIndexedNode(fileKey, nodeId)`, `getRootNodesFromCache(fileKey)`. In-memory fallback when `UPSTASH_REDIS_*` unset or in Vitest. |
 | `src/lib/figma/client.ts` | `fetchFigmaTree(fileKey, nodeId)` — fetches from Figma API with cache-aware logic |
 | `src/lib/figma/url.ts` | `parseFigmaUrl(url)` — extracts `fileKey` and `nodeId` from Figma URLs |
 | `src/lib/figma/fetch.ts` | `figmaFetch()`, `parseFigmaResponse()`, `FigmaApiError` class |

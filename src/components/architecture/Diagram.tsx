@@ -447,7 +447,7 @@ export function SystemArchitectureFlowDiagram() {
             </Link>
           </div>
 
-          {/* Flat Index Cache Database Symbol */}
+          {/* Flat Index Cache — Upstash Redis */}
           <div
             className="bg-white border p-2.5 rounded-lg flex items-center justify-between shadow-sm"
             style={{ borderColor: `${colors.green}50` }}
@@ -469,7 +469,7 @@ export function SystemArchitectureFlowDiagram() {
                   Flat Index
                 </span>
                 <span className="text-[11px] font-bold text-slate-800">
-                  Cache Memory
+                  Redis (Upstash)
                 </span>
               </div>
             </div>

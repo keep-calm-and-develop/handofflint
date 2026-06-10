@@ -2,7 +2,7 @@
 
 # HandOffLint (AI-Codegen Guardrail Profile) — Agentic POC Specification
 
-> **Updated:** June 6, 2026. This specification pivots the project from a single-turn linear validation pipeline into a **multi-step agentic architecture**. The backend maintains Figma tree memory across HTTP requests via a server-side flat index cache. A ReAct vision agent (Gemini 2.5 Flash) inspects the rendered frame, calls local tools to verify node properties and search layout guidelines, and returns a structured JSON payload to the wizard dashboard. Phases 0 and 1 (deterministic audits, Figma client, base UI) are already completed and verified.
+> **Updated:** June 10, 2026. This specification pivots the project from a single-turn linear validation pipeline into a **multi-step agentic architecture**. The backend maintains Figma tree memory across HTTP requests via a **Redis-backed flat index cache** (Upstash). A ReAct vision agent (Gemini 2.5 Flash) inspects the rendered frame, calls local tools to verify node properties and search layout guidelines, and returns a structured JSON payload to the wizard dashboard. Phases 0 and 1 (deterministic audits, Figma client, base UI) are already completed and verified.
 
 ---
 
@@ -22,7 +22,7 @@ HandOffLint lets a developer or design lead paste a Figma URL to clean, audit, a
 
 ## 3. Why Now
 
-Frontier vision models like Gemini 2.5 Flash support reliable multi-step tool calling via the Vercel AI SDK (`generateText` + `maxSteps`). A server-side flat node index gives the agent O(1) property lookup without re-fetching the full Figma tree on every tool call — making a lightweight ReAct loop feasible within free-tier rate limits. Local tool execution (cache lookup, markdown RAG) runs at $0 cost per turn, keeping the investigation loop cheap even across 3–5 steps.
+Frontier vision models like Gemini 2.5 Flash support reliable multi-step tool calling via the Vercel AI SDK (`generateText` + `maxSteps`). A Redis-backed flat node index gives the agent O(1) property lookup without re-fetching the full Figma tree on every tool call — and survives serverless cold starts across wizard steps. Local tool execution (Redis lookup, markdown RAG) runs at $0 marginal cost per turn, keeping the investigation loop cheap even across 3–5 steps.
 
 ---
 
@@ -35,7 +35,7 @@ User opens Wizard Dashboard (Next.js split-panel UI)
    ↓
 [STEP 1: INGESTION]
 POST /api/agent/init  { url }
-   → parseFigmaUrl → fetchFigmaTree → saveTreeToCache (flat Map<nodeId, FigmaNode>)
+   → parseFigmaUrl → fetchFigmaTree → indexFigmaTreeNodes (flat index → Redis)
    → returns { fileKey, nodeId, success }
    ↓
 [STEP 2: STRUCTURAL LINTERS]
@@ -52,7 +52,7 @@ Left panel: Readiness Score + findings table
 Right panel: Agent investigation results + codegen suggestions
 ```
 
-**Server-side state:** A global in-memory `Map<fileKey, Map<nodeId, FigmaNode>>` persists the flattened Figma tree across wizard steps. No database required for POC.
+**Server-side state:** The flat node index is stored in **Upstash Redis** (`figma:flat:{fileKey}` for O(1) lookups, `figma:roots:{fileKey}` for audit roots), keyed by `fileKey` with a configurable TTL (`FIGMA_CACHE_TTL_MS`). This survives serverless cold starts and concurrent requests. Vitest and local dev without Upstash credentials fall back to an in-process memory backend with the same API.
 
 ### 4b. Vision Agent User Flow (`POST /api/agent/vision`)
 
@@ -94,7 +94,7 @@ Frontend hits POST /api/agent/vision
 
 - **Deterministic Baseline (DONE):** 8 automated TypeScript structural checks + weighted Readiness Score computing.
 - **Figma Image Fetching (DONE):** Integrated `fetchFigmaImages` client via the Figma Image API (`GET /v1/images`).
-- **Server Tree Cache:** Global singleton flat-index cache keyed by `fileKey` for cross-request node lookup.
+- **Server Tree Cache:** Redis-backed flat-index cache (Upstash) keyed by `fileKey` for cross-request node lookup; in-memory fallback when credentials are absent.
 - **Three API Routes:** `POST /api/agent/init`, `POST /api/agent/audit`, `POST /api/agent/vision`.
 - **ReAct Agent Tools:** `inspect_node_properties` (cache lookup, child-array stripping) and `search_layout_guidelines` (single-file GitHub markdown RAG with keyword ranking).
 - **Multi-Turn Vision Loop:** Vercel AI SDK `streamText` with `stopWhen: stepCountIs(5)`, tools bound in config, streamed via `toUIMessageStreamResponse()` for real-time chunked delivery.
@@ -103,7 +103,7 @@ Frontend hits POST /api/agent/vision
 
 ### Explicitly Out of Scope
 
-- Persistent database or Redis cache (in-memory only for POC).
+- Persistent relational database, user accounts, or scan history.
 - OAuth / user accounts / scan history.
 - Expensive multi-model critic or evaluator workflows.
 - Figma plugin or MCP server integration.
@@ -113,7 +113,7 @@ Frontend hits POST /api/agent/vision
 ## 6. Tech Stack
 
 - **Core Audits & Logic:** Pure TypeScript inside Next.js App Router API routes.
-- **Tree Cache:** Global in-memory `Map` with tree-flattening helper (`src/lib/figma/cache.ts`).
+- **Tree Cache:** Upstash Redis flat index with tree-flattening helper and in-memory fallback (`src/lib/figma/cache.ts`). Requires `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in production.
 - **Vision Agent:** Vercel AI SDK `streamText` + `google/gemini-2.5-flash`, `stopWhen: stepCountIs(5)`, streamed chunked response via `toUIMessageStreamResponse()`.
 - **Agent Tools:** AI SDK tool wrappers in `src/lib/agent/tools/`.
 - **Single-File RAG:** GitHub raw CDN fetch → paragraph chunking → keyword intersection scoring → top-3 retrieval (`src/lib/agent/tools/search-guidelines.ts`).
@@ -125,7 +125,7 @@ Frontend hits POST /api/agent/vision
 ## 7. Eval Plan
 
 1. **Deterministic Stability (Vitest):** Mock Figma JSON payloads through the 8 audits must output identical findings and scores on every run.
-2. **Cache Round-Trip:** `init` → `audit` → `vision` sequential calls must share the same `fileKey` index without re-fetching from Figma.
+2. **Cache Round-Trip:** `init` → `audit` → `vision` sequential calls must share the same `fileKey` Redis index (`figma:flat:{fileKey}`) without re-fetching from Figma.
 3. **Cache Miss Guard:** `audit` and `vision` routes must return 400 when `fileKey` is absent from cache.
 4. **Tool Groundedness:** Every `inspect_node_properties` call must resolve a real `nodeId` from the flat index; no hallucinated IDs.
 5. **ReAct Turn Sequence:** Agent must follow the expected pattern — visual observation → inspect tool → RAG tool → structured synthesis — within `stepCountIs(5)`.
@@ -151,14 +151,15 @@ Frontend hits POST /api/agent/vision
 
 _Goal: Split the monolithic scan route into three cache-aware endpoints and register the ReAct agent tools._
 
-#### Task 1: The Cache Memory Manager
+#### Task 1: The Flat Index Cache (Redis)
 
-_Create a global cache utility to save, flat-index, and retrieve parsed Figma trees on the server._
+_Create a cache utility to flat-index and retrieve parsed Figma trees across wizard HTTP requests._
 
-- [ ] **1.1** Create `src/lib/figma/cache.ts`.
-- [ ] **1.2** Declare a global singleton `Map` instance to hold tree nodes indexed by `fileKey`.
-- [ ] **1.3** Write a tree-flattening helper function that walks a deeply nested Figma node structure and builds a flat `Map<string, FigmaNode>` for O(1) property lookup by `nodeId`.
-- [ ] **1.4** Export two core functions: `saveTreeToCache(fileKey, rawData)` (which flattens and caches the nodes) and `getTreeFromCache(fileKey)` (which retrieves the map index).
+- [x] **1.1** Create `src/lib/figma/cache.ts`.
+- [x] **1.2** Back the flat index with **Upstash Redis** (`@upstash/redis`). Keys: `figma:flat:{fileKey}` (node map) and `figma:roots:{fileKey}` (root nodes for audits). TTL derived from `FIGMA_CACHE_TTL_MS`.
+- [x] **1.3** Provide an in-memory `NodeCacheBackend` fallback for Vitest and local dev when `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` are unset.
+- [x] **1.4** Write a tree-flattening helper that walks nested Figma nodes and builds a flat `Record<nodeId, FigmaNode>` for O(1) lookup.
+- [x] **1.5** Export core functions: `indexFigmaTreeNodes(fileKey, rawData)`, `getTreeFromCache(fileKey)`, `getIndexedNode(fileKey, nodeId)`, and `getRootNodesFromCache(fileKey)`.
 
 #### Task 2: Endpoint 1 — Ingestion (`POST /api/agent/init`)
 
@@ -167,7 +168,7 @@ _This route takes the user's raw Figma URL, parses it, and primes the server cac
 - [ ] **2.1** Create `src/app/api/agent/init/route.ts`.
 - [ ] **2.2** Extract the incoming `url` parameter from the request JSON body.
 - [ ] **2.3** Call the existing `parseFigmaUrl(url)` utility to isolate the `fileKey` and `nodeId`.
-- [ ] **2.4** Invoke `fetchFigmaTree(fileKey)` to pull the data from Figma (or mock files) and run `saveTreeToCache` to populate the flat index.
+- [ ] **2.4** Invoke `fetchFigmaTree(fileKey)` to pull the data from Figma (or mock files) and run `indexFigmaTreeNodes` to populate the Redis flat index.
 - [ ] **2.5** Return a 200 OK JSON object containing `fileKey`, `nodeId`, and a success validation boolean.
 
 #### Task 3: Endpoint 2 — Structural Linters (`POST /api/agent/audit`)

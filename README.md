@@ -65,6 +65,8 @@ cp .env.example .env.local
 |---|---|---|
 | `FIGMA_ACCESS_TOKEN` | Yes (for live Figma) | Personal access token from the steps above |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Yes (for vision agent) | [Google AI Studio](https://aistudio.google.com/apikey) key for Gemini 2.5 Flash |
+| `UPSTASH_REDIS_REST_URL` | Yes (production) | [Upstash Redis](https://upstash.com/) REST URL for the flat node index shared across wizard steps |
+| `UPSTASH_REDIS_REST_TOKEN` | Yes (production) | Upstash REST token paired with `UPSTASH_REDIS_REST_URL` |
 
 Open [http://localhost:3000](http://localhost:3000) for the landing page, or [http://localhost:3000/agent](http://localhost:3000/agent) for the wizard. On the deployed site and in the agent UI you can also paste credentials per session instead of using `.env.local`.
 
@@ -81,6 +83,7 @@ Legacy single-shot scanning is available at `POST /api/scan`.
 ## Tech stack
 
 - **Next.js** (App Router) — server routes and wizard UI
+- **Upstash Redis** — flat Figma node index (`figma:flat:{fileKey}`) across wizard steps
 - **Vercel AI SDK** + **Gemini 2.5 Flash** — multi-turn vision agent
 - **Tailwind CSS** — UI
 - **TypeScript** — deterministic audit rules and tool implementations
