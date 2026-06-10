@@ -3,7 +3,12 @@ import {
   GOOGLE_GENERATIVE_AI_API_KEY_HEADER,
   type AgentCredentials,
 } from "@/lib/agent-credentials";
-import { isAbsoluteHttpUrl } from "@/lib/agent/validate-url";
+import {
+  humanizeAgentError,
+  validateAgentAuditInput,
+  validateAgentInitInput,
+  validateAgentVisionInput,
+} from "@/lib/agent/client-validation";
 import type {
   AgentAuditResponse,
   AgentErrorResponse,
@@ -41,7 +46,7 @@ async function readAgentErrorMessage(
   try {
     const data = (await response.json()) as Partial<AgentErrorResponse>;
     if (typeof data.error === "string" && data.error.trim()) {
-      return data.error;
+      return humanizeAgentError(data.error);
     }
   } catch {
     // Ignore JSON parse errors and fall through to the fallback message.
@@ -92,6 +97,11 @@ export async function postAgentInit(
   url: string,
   credentials: AgentCredentials,
 ): Promise<AgentInitResponse> {
+  const validation = validateAgentInitInput(url);
+  if (!validation.ok) {
+    throw new AgentApiError(validation.reason);
+  }
+
   return postAgentJson<AgentInitResponse>(
     "/api/agent/init",
     { url },
@@ -105,6 +115,11 @@ export async function postAgentAudit(
   layoutProfile: VisionLayoutProfile,
   credentials: AgentCredentials,
 ): Promise<AgentAuditResponse> {
+  const validation = validateAgentAuditInput(fileKey);
+  if (!validation.ok) {
+    throw new AgentApiError(validation.reason);
+  }
+
   return postAgentJson<AgentAuditResponse>(
     "/api/agent/audit",
     {
@@ -127,16 +142,9 @@ export async function postAgentVision(
   credentials: AgentCredentials,
   options?: { signal?: AbortSignal },
 ): Promise<Response> {
-  if (!isAbsoluteHttpUrl(body.imageUrl)) {
-    throw new AgentApiError(
-      "imageUrl must be an absolute http(s) URL before calling the vision API",
-    );
-  }
-
-  if (!isAbsoluteHttpUrl(body.designManualUrl)) {
-    throw new AgentApiError(
-      "designManualUrl must be an absolute http(s) URL before calling the vision API",
-    );
+  const validation = validateAgentVisionInput(body);
+  if (!validation.ok) {
+    throw new AgentApiError(validation.reason);
   }
 
   const response = await fetch("/api/agent/vision", {

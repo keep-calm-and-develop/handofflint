@@ -4,9 +4,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { DEFAULT_DESIGN_MANUAL_URL } from "@/lib/agent/constants";
 import {
-  isAbsoluteHttpUrl,
-  resolveVisionImageUrl,
-} from "@/lib/agent/validate-url";
+  humanizeAgentError,
+  validateAgentAuditInput,
+  validateAgentInitInput,
+  validateAgentVisionInput,
+} from "@/lib/agent/client-validation";
+import { resolveVisionImageUrl } from "@/lib/agent/validate-url";
 import {
   consumeVisionStreamChunks,
   countAgentTurnsWithTools,
@@ -65,6 +68,7 @@ export interface UseAgentWizardReturn {
   auditLoading: boolean;
   visionLoading: boolean;
   error: string | null;
+  clearError: () => void;
   submitInit: () => Promise<boolean>;
   submitAudit: (layoutProfile: VisionLayoutProfile) => Promise<boolean>;
   launchVision: () => Promise<boolean>;
@@ -99,6 +103,12 @@ export function useAgentWizard(): UseAgentWizardReturn {
   const [visionLoading, setVisionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const clearError = useCallback(() => setError(null), []);
+
+  const reportError = useCallback((message: string) => {
+    setError(humanizeAgentError(message));
+  }, []);
+
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -121,8 +131,9 @@ export function useAgentWizard(): UseAgentWizardReturn {
     }
 
     const trimmedUrl = figmaUrl.trim();
-    if (!trimmedUrl) {
-      setError("Missing Figma URL");
+    const initCheck = validateAgentInitInput(trimmedUrl);
+    if (!initCheck.ok) {
+      reportError(initCheck.reason);
       return false;
     }
 
@@ -152,12 +163,12 @@ export function useAgentWizard(): UseAgentWizardReturn {
       setWizardStep(2);
       return true;
     } catch (err) {
-      setError(err instanceof AgentApiError ? err.message : NETWORK_ERROR);
+      reportError(err instanceof AgentApiError ? err.message : NETWORK_ERROR);
       return false;
     } finally {
       setInitLoading(false);
     }
-  }, [figmaUrl]);
+  }, [figmaUrl, reportError]);
 
   const submitAudit = useCallback(
     async (profile: VisionLayoutProfile) => {
@@ -167,8 +178,9 @@ export function useAgentWizard(): UseAgentWizardReturn {
         return false;
       }
 
-      if (!fileKey.trim()) {
-        setError("Missing fileKey — run ingestion first");
+      const auditCheck = validateAgentAuditInput(fileKey);
+      if (!auditCheck.ok) {
+        reportError(auditCheck.reason);
         return false;
       }
 
@@ -183,13 +195,13 @@ export function useAgentWizard(): UseAgentWizardReturn {
         setActiveNodeId(result.findings[0]?.nodeId ?? nodeId);
         return true;
       } catch (err) {
-        setError(err instanceof AgentApiError ? err.message : NETWORK_ERROR);
+        reportError(err instanceof AgentApiError ? err.message : NETWORK_ERROR);
         return false;
       } finally {
         setAuditLoading(false);
       }
     },
-    [fileKey, nodeId],
+    [fileKey, nodeId, reportError],
   );
 
   const launchVision = useCallback(async () => {
@@ -199,27 +211,17 @@ export function useAgentWizard(): UseAgentWizardReturn {
       return false;
     }
 
-    if (!fileKey.trim()) {
-      setError("Missing fileKey — run ingestion first");
-      return false;
-    }
-
-    if (!nodeId?.trim()) {
-      setError("Missing nodeId — run ingestion first");
-      return false;
-    }
-
     const manualUrl = designManualUrl.trim() || DEFAULT_DESIGN_MANUAL_URL;
-    if (!isAbsoluteHttpUrl(manualUrl)) {
-      setError("Design manual URL must be an absolute http(s) link.");
-      return false;
-    }
+    const resolvedImageUrl = resolveVisionImageUrl(imageUrl ?? "") ?? "";
 
-    const resolvedImageUrl = resolveVisionImageUrl(imageUrl ?? "");
-    if (!resolvedImageUrl) {
-      setError(
-        "Frame image missing. Re-run ingestion so fetchFigmaImages can render the target node.",
-      );
+    const visionCheck = validateAgentVisionInput({
+      fileKey,
+      nodeId,
+      imageUrl: resolvedImageUrl,
+      designManualUrl: manualUrl,
+    });
+    if (!visionCheck.ok) {
+      reportError(visionCheck.reason);
       return false;
     }
 
@@ -229,8 +231,6 @@ export function useAgentWizard(): UseAgentWizardReturn {
 
     setVisionLoading(true);
     setError(null);
-    setWizardStep(4);
-    setVisionResults(null);
     resetVisionState();
 
     let streamState: VisionStreamParseResult = {
@@ -264,6 +264,9 @@ export function useAgentWizard(): UseAgentWizardReturn {
         credentials,
         { signal: controller.signal },
       );
+
+      setWizardStep(4);
+      setVisionResults(null);
 
       const body = response.body;
       if (!body) {
@@ -312,11 +315,12 @@ export function useAgentWizard(): UseAgentWizardReturn {
 
       const message =
         err instanceof AgentApiError ? err.message : NETWORK_ERROR;
-      setError(message);
+      reportError(message);
+      const friendlyMessage = humanizeAgentError(message);
       setVisionActivity((prev) => ({
         ...prev,
         phase: "error",
-        error: message,
+        error: friendlyMessage,
       }));
 
       setVisionResults({
@@ -337,6 +341,7 @@ export function useAgentWizard(): UseAgentWizardReturn {
     layoutProfile,
     nodeId,
     resetVisionState,
+    reportError,
   ]);
 
   const hasFrameImage = useMemo(
@@ -382,6 +387,7 @@ export function useAgentWizard(): UseAgentWizardReturn {
     auditLoading,
     visionLoading,
     error,
+    clearError,
     submitInit,
     submitAudit,
     launchVision,

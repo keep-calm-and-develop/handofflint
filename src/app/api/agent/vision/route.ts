@@ -2,6 +2,13 @@ import { NextResponse } from "next/server";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { streamText, stepCountIs } from "ai";
 
+import {
+  validateAndFetchDesignManual,
+  validateDesignManualUrl,
+  validateFigmaNodeId,
+  validateFileKey,
+  validateVisionImageUrl,
+} from "@/lib/agent/input-guardrails";
 import { extractRequestCredentials } from "@/lib/agent/request-credentials";
 import { getTreeFromCache } from "@/lib/figma/cache";
 import { makeInspectNodeTool } from "@/lib/agent/tools/inspect-node";
@@ -108,26 +115,56 @@ export async function POST(request: Request) {
       designManualUrl?: string;
     };
 
-  if (!fileKey?.trim()) {
+  const fileKeyCheck = validateFileKey(fileKey ?? "");
+  if (!fileKeyCheck.ok) {
     return NextResponse.json<AgentErrorResponse>(
-      { error: "Missing fileKey" },
+      { error: fileKeyCheck.reason },
       { status: 400 },
     );
   }
 
-  if (!nodeId?.trim()) {
+  const nodeIdCheck = validateFigmaNodeId(nodeId ?? "");
+  if (!nodeIdCheck.ok) {
     return NextResponse.json<AgentErrorResponse>(
-      { error: "Missing nodeId" },
+      { error: nodeIdCheck.reason },
       { status: 400 },
     );
   }
 
-  if (!imageUrl?.trim()) {
+  const imageUrlCheck = validateVisionImageUrl(imageUrl ?? "");
+  if (!imageUrlCheck.ok) {
     return NextResponse.json<AgentErrorResponse>(
-      { error: "Missing imageUrl" },
+      { error: imageUrlCheck.reason },
       { status: 400 },
     );
   }
+
+  const trimmedManualUrl = designManualUrl?.trim() ?? "";
+  let vettedDesignManualUrl: string | undefined;
+
+  if (trimmedManualUrl) {
+    const manualUrlCheck = validateDesignManualUrl(trimmedManualUrl);
+    if (!manualUrlCheck.ok) {
+      return NextResponse.json<AgentErrorResponse>(
+        { error: manualUrlCheck.reason },
+        { status: 400 },
+      );
+    }
+
+    const manualContent = await validateAndFetchDesignManual(trimmedManualUrl);
+    if (!manualContent.ok) {
+      return NextResponse.json<AgentErrorResponse>(
+        { error: manualContent.reason },
+        { status: 400 },
+      );
+    }
+
+    vettedDesignManualUrl = manualContent.url;
+  }
+
+  const resolvedFileKey = fileKey!.trim();
+  const resolvedNodeId = nodeId!.trim();
+  const resolvedImageUrl = imageUrl!.trim();
 
   const { googleGenerativeAiApiKey } = extractRequestCredentials(request);
 
@@ -143,7 +180,7 @@ export async function POST(request: Request) {
   });
 
   // Validate cache exists
-  const treeMap = await getTreeFromCache(fileKey);
+  const treeMap = await getTreeFromCache(resolvedFileKey);
   if (!treeMap) {
     return NextResponse.json<AgentErrorResponse>(
       { error: "Cache miss — run /api/agent/init first" },
@@ -164,21 +201,20 @@ export async function POST(request: Request) {
       : "dashboard";
 
   log("stream_start", {
-    fileKey,
-    nodeId,
-    imageUrl,
+    fileKey: resolvedFileKey,
+    nodeId: resolvedNodeId,
+    imageUrl: resolvedImageUrl,
     layoutProfile: resolvedProfile,
-    designManualUrl: designManualUrl ?? null,
+    designManualUrl: vettedDesignManualUrl ?? null,
     maxSteps: MAX_STEPS,
   });
 
-  // Build user message with screenshot and optional design manual hint
-  const manualNote = designManualUrl?.trim()
-    ? `\n\nUse this design manual URL when calling search_layout_guidelines: ${designManualUrl.trim()}`
+  const manualNote = vettedDesignManualUrl
+    ? "\n\nA vetted design manual is available — use search_layout_guidelines when you need documented layout rules."
     : "";
 
   const userPrompt =
-    `Analyze this UI frame screenshot. The target node is "${nodeId}" within file "${fileKey}". ` +
+    `Analyze this UI frame screenshot. The target node is "${resolvedNodeId}" within file "${resolvedFileKey}". ` +
     `This is a ${resolvedProfile} layout.\n\n` +
     `### CRITICAL: Available Valid Sub-Node IDs on this screen:\n${nodeListIndex}\n\n` +
     `Investigate every perceptual design flaw visible: CTA button hierarchy, typography inconsistencies, ` +
@@ -192,8 +228,12 @@ export async function POST(request: Request) {
     model: google("gemini-2.5-flash"),
     stopWhen: stepCountIs(MAX_STEPS),
     tools: {
-      inspect_node_properties: makeInspectNodeTool(fileKey),
-      search_layout_guidelines: makeSearchGuidelinesTool(),
+      inspect_node_properties: makeInspectNodeTool(resolvedFileKey),
+      search_layout_guidelines: makeSearchGuidelinesTool(
+        vettedDesignManualUrl
+          ? { pinnedDesignManualUrl: vettedDesignManualUrl }
+          : undefined,
+      ),
     },
     system: buildSystemPrompt(resolvedProfile),
     messages: [
@@ -201,7 +241,7 @@ export async function POST(request: Request) {
         role: "user",
         content: [
           { type: "text", text: userPrompt },
-          { type: "image", image: new URL(imageUrl) },
+          { type: "image", image: new URL(resolvedImageUrl) },
         ],
       },
     ],

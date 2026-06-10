@@ -1,6 +1,13 @@
 import { tool } from "ai";
 import { z } from "zod";
 
+import {
+  sanitizeMarkdownForRag,
+  validateDesignManualUrl,
+  validateMarkdownContent,
+  validateRagQuery,
+} from "@/lib/agent/input-guardrails";
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -72,7 +79,12 @@ export type SearchGuidelinesOutput = z.infer<typeof SearchGuidelinesOutputSchema
 export async function fetchMarkdownContent(url: string): Promise<string> {
   log("fetch_start", { url });
 
-  const response = await fetch(url);
+  const urlCheck = validateDesignManualUrl(url);
+  if (!urlCheck.ok) {
+    throw new Error(urlCheck.reason);
+  }
+
+  const response = await fetch(url.trim());
 
   if (!response.ok) {
     throw new Error(
@@ -81,8 +93,17 @@ export async function fetchMarkdownContent(url: string): Promise<string> {
   }
 
   const text = await response.text();
-  log("fetch_complete", { url, bytes: text.length });
-  return text;
+  const contentCheck = validateMarkdownContent(
+    text,
+    response.headers?.get("content-type") ?? null,
+  );
+  if (!contentCheck.ok) {
+    throw new Error(contentCheck.reason);
+  }
+
+  const sanitized = sanitizeMarkdownForRag(text);
+  log("fetch_complete", { url, bytes: sanitized.length });
+  return sanitized;
 }
 
 // ---------------------------------------------------------------------------
@@ -211,10 +232,37 @@ export function retrieveTopChunks(
 // Full execution pipeline
 // ---------------------------------------------------------------------------
 
+export interface SearchGuidelinesOptions {
+  /** When set, the tool ignores model-supplied URLs and uses this vetted URL. */
+  pinnedDesignManualUrl?: string;
+}
+
 export async function executeSearchGuidelines(
   input: SearchGuidelinesInput,
+  options?: SearchGuidelinesOptions,
 ): Promise<SearchGuidelinesOutput> {
-  const { query, designManualUrl } = input;
+  const queryCheck = validateRagQuery(input.query);
+  if (!queryCheck.ok) {
+    return {
+      status: "no_matches",
+      query: input.query,
+      message: queryCheck.reason,
+    };
+  }
+
+  const designManualUrl =
+    options?.pinnedDesignManualUrl?.trim() || input.designManualUrl;
+
+  const urlCheck = validateDesignManualUrl(designManualUrl);
+  if (!urlCheck.ok) {
+    return {
+      status: "fetch_error",
+      url: designManualUrl,
+      message: urlCheck.reason,
+    };
+  }
+
+  const { query } = input;
 
   log("pipeline_start", { query, designManualUrl });
 
@@ -265,15 +313,29 @@ export async function executeSearchGuidelines(
 // Tool factory
 // ---------------------------------------------------------------------------
 
-export function makeSearchGuidelinesTool() {
+const searchGuidelinesQueryOnlySchema = z.object({
+  query: searchGuidelinesInputSchema.shape.query,
+});
+
+export function makeSearchGuidelinesTool(options?: SearchGuidelinesOptions) {
+  const pinnedUrl = options?.pinnedDesignManualUrl?.trim();
+
   return tool({
     description:
       "Search a remote markdown design manual for layout guidelines relevant to the query. " +
       "Fetches the file, chunks it by paragraph, ranks paragraphs by keyword overlap, " +
       "and returns the top 3 most relevant sections. Use this to ground layout recommendations " +
       "in documented best practices rather than hallucinating advice.",
-    inputSchema: searchGuidelinesInputSchema,
+    inputSchema: pinnedUrl
+      ? searchGuidelinesQueryOnlySchema
+      : searchGuidelinesInputSchema,
     outputSchema: SearchGuidelinesOutputSchema,
-    execute: async (input) => executeSearchGuidelines(input),
+    execute: async (input) =>
+      executeSearchGuidelines(
+        pinnedUrl
+          ? { query: input.query, designManualUrl: pinnedUrl }
+          : (input as SearchGuidelinesInput),
+        { pinnedDesignManualUrl: pinnedUrl },
+      ),
   });
 }

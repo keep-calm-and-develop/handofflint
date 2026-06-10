@@ -152,6 +152,7 @@ export function AgentWizardDashboard() {
 
   const {
     wizardStep,
+    setWizardStep,
     fileKey,
     nodeId,
     imageUrl,
@@ -169,12 +170,18 @@ export function AgentWizardDashboard() {
     auditLoading,
     visionLoading,
     error,
+    clearError,
     submitInit,
     submitAudit,
     launchVision,
     overlappingNodeIds,
     hasFrameImage,
   } = useAgentWizard();
+
+  const pipelineBusy = initLoading || auditLoading || visionLoading;
+  const visionFailed =
+    Boolean(error) || visionResults?.status === "error";
+  const showRetryOnStream = wizardStep === 4 && visionFailed && !visionLoading;
 
   const overlapCount = overlappingNodeIds.length;
   const auditViewModel = useAgentAuditResult(scanData);
@@ -276,11 +283,22 @@ export function AgentWizardDashboard() {
 
       <section className="min-h-0 h-full overflow-y-auto overscroll-y-contain bg-[#f0f7ff] px-6 pt-6 pb-12">
         <div className="space-y-6 pb-2">
-          <WizardStepIndicator currentStep={wizardStep} />
+          <WizardStepIndicator
+            currentStep={wizardStep}
+            busy={pipelineBusy}
+            onStepSelect={(step) => {
+              clearError();
+              setWizardStep(step);
+            }}
+          />
 
           {error && (
             <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
+              <p>{error}</p>
+              <p className="mt-2 text-xs text-red-600/90">
+                Update the field below or tap an earlier stage to fix your
+                inputs, then try again.
+              </p>
             </div>
           )}
 
@@ -305,7 +323,10 @@ export function AgentWizardDashboard() {
                     type="url"
                     required
                     value={figmaUrl}
-                    onChange={(e) => setFigmaUrl(e.target.value)}
+                    onChange={(e) => {
+                      clearError();
+                      setFigmaUrl(e.target.value);
+                    }}
                     placeholder="https://www.figma.com/design/…"
                     className={INPUT}
                   />
@@ -324,8 +345,35 @@ export function AgentWizardDashboard() {
                     Choose a layout profile for the deterministic audit.
                   </p>
                   <p className="mt-1 text-xs text-zinc-400">
-                    Current fileKey: {fileKey || "pending"}
+                    Figma file key: {fileKey || "pending"}
                   </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label
+                    htmlFor="agent-figma-url-edit"
+                    className="text-sm font-medium text-zinc-700"
+                  >
+                    Figma URL
+                  </label>
+                  <input
+                    id="agent-figma-url-edit"
+                    type="url"
+                    value={figmaUrl}
+                    onChange={(e) => {
+                      clearError();
+                      setFigmaUrl(e.target.value);
+                    }}
+                    className={INPUT}
+                  />
+                  <button
+                    type="button"
+                    disabled={initLoading}
+                    onClick={() => void submitInit()}
+                    className="text-xs font-semibold text-figma-blue hover:underline disabled:opacity-50"
+                  >
+                    Re-run ingestion with updated URL
+                  </button>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -381,7 +429,10 @@ export function AgentWizardDashboard() {
                     id="agent-design-manual-url"
                     type="url"
                     value={designManualUrl}
-                    onChange={(e) => setDesignManualUrl(e.target.value)}
+                    onChange={(e) => {
+                      clearError();
+                      setDesignManualUrl(e.target.value);
+                    }}
                     className={INPUT}
                   />
                 </div>
@@ -436,10 +487,17 @@ export function AgentWizardDashboard() {
                   <input
                     id="agent-design-manual-url-stream"
                     type="url"
-                    readOnly
                     value={designManualUrl}
-                    className={`${INPUT} bg-zinc-50 text-zinc-500 read-only:cursor-default`}
+                    onChange={(e) => {
+                      clearError();
+                      setDesignManualUrl(e.target.value);
+                    }}
+                    className={INPUT}
                   />
+                  <p className="text-xs text-zinc-500">
+                    Must be a public .md link — PDFs and other file types are
+                    rejected before the agent runs.
+                  </p>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-3">
@@ -467,6 +525,17 @@ export function AgentWizardDashboard() {
                   loading={visionLoading}
                   fileKey={fileKey}
                 />
+
+                {showRetryOnStream && (
+                  <button
+                    type="button"
+                    disabled={!hasFrameImage}
+                    onClick={() => void launchVision()}
+                    className={CTA}
+                  >
+                    Retry Vision Agent Investigation
+                  </button>
+                )}
 
                 {visionResults && (
                   <div className={`${CARD} text-sm text-zinc-600`}>

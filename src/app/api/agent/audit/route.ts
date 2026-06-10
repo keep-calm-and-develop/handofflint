@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { validateFileKey } from "@/lib/agent/input-guardrails";
 import { parseContrastLevel } from "@/lib/audit/contrast-level";
 import { parseLayoutHandoffProfile } from "@/lib/audit/layout-profile";
 import { runAllAudits } from "@/lib/audit/run-audits";
@@ -46,9 +47,10 @@ export async function POST(request: Request) {
   const fileKey =
     typeof record.fileKey === "string" ? record.fileKey.trim() : "";
 
-  if (!fileKey) {
+  const fileKeyCheck = validateFileKey(fileKey);
+  if (!fileKeyCheck.ok) {
     return NextResponse.json<AgentErrorResponse>(
-      { error: "Missing fileKey" },
+      { error: fileKeyCheck.reason },
       { status: 400 },
     );
   }

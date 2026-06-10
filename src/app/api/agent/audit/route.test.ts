@@ -38,7 +38,9 @@ const frame: FigmaNode = {
   ],
 };
 
-async function primeCache(fileKey = "test-file") {
+const TEST_FILE_KEY = "testfilekey";
+
+async function primeCache(fileKey = TEST_FILE_KEY) {
   await indexFigmaTreeNodes(fileKey, frame);
 }
 
@@ -74,8 +76,14 @@ describe("POST /api/agent/audit", () => {
 
   // ── Cache miss ─────────────────────────────────────────────────────
 
+  it("returns 400 for malformed fileKey", async () => {
+    const res = await POST(jsonRequest({ fileKey: "bad-key-with-hyphens" }));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "Invalid fileKey format" });
+  });
+
   it("returns 400 cache miss when fileKey not in cache", async () => {
-    const res = await POST(jsonRequest({ fileKey: "unknown-file" }));
+    const res = await POST(jsonRequest({ fileKey: "unknownfilekey" }));
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Cache miss — run /api/agent/init first",
@@ -85,9 +93,9 @@ describe("POST /api/agent/audit", () => {
   // ── Happy path ─────────────────────────────────────────────────────
 
   it("runs audits and returns readinessScore + findings for cached file", async () => {
-    await primeCache("test-file");
+    await primeCache(TEST_FILE_KEY);
 
-    const res = await POST(jsonRequest({ fileKey: "test-file" }));
+    const res = await POST(jsonRequest({ fileKey: TEST_FILE_KEY }));
     const json = await res.json();
 
     expect(res.status).toBe(200);
@@ -99,20 +107,20 @@ describe("POST /api/agent/audit", () => {
   });
 
   it("uses default layoutHandoffProfile when not specified", async () => {
-    await primeCache("test-file");
+    await primeCache(TEST_FILE_KEY);
 
-    const res = await POST(jsonRequest({ fileKey: "test-file" }));
+    const res = await POST(jsonRequest({ fileKey: TEST_FILE_KEY }));
     const json = await res.json();
 
     expect(json.layoutHandoffProfile).toBe("separate-screens");
   });
 
   it("accepts a custom layoutHandoffProfile", async () => {
-    await primeCache("test-file");
+    await primeCache(TEST_FILE_KEY);
 
     const res = await POST(
       jsonRequest({
-        fileKey: "test-file",
+        fileKey: TEST_FILE_KEY,
         layoutHandoffProfile: "flexible-layout",
       }),
     );
@@ -123,11 +131,11 @@ describe("POST /api/agent/audit", () => {
   });
 
   it("falls back to defaults for invalid optional params", async () => {
-    await primeCache("test-file");
+    await primeCache(TEST_FILE_KEY);
 
     const res = await POST(
       jsonRequest({
-        fileKey: "test-file",
+        fileKey: TEST_FILE_KEY,
         layoutHandoffProfile: "invalid-value",
         contrastLevel: "nope",
         gridBase: 999,
@@ -141,9 +149,9 @@ describe("POST /api/agent/audit", () => {
   });
 
   it("findings are sorted by severity (critical first)", async () => {
-    await primeCache("test-file");
+    await primeCache(TEST_FILE_KEY);
 
-    const res = await POST(jsonRequest({ fileKey: "test-file" }));
+    const res = await POST(jsonRequest({ fileKey: TEST_FILE_KEY }));
     const json = await res.json();
 
     if (json.findings.length >= 2) {

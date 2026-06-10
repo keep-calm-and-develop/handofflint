@@ -81,10 +81,37 @@ Frontend hits POST /api/agent/vision
 
 **Registered tools:**
 
-| Tool | Cost | What it does |
-| --- | --- | --- |
-| `inspect_node_properties` | $0 | Looks up `nodeId` in server cache; returns layout properties with child arrays stripped |
-| `search_layout_guidelines` | $0 | Fetches a GitHub raw markdown file, chunks by paragraph, ranks by keyword intersection, returns top 3 matches |
+| Tool                       | Cost | What it does                                                                                                  |
+| -------------------------- | ---- | ------------------------------------------------------------------------------------------------------------- |
+| `inspect_node_properties`  | $0   | Looks up `nodeId` in server cache; returns layout properties with child arrays stripped                       |
+| `search_layout_guidelines` | $0   | Fetches a GitHub raw markdown file, chunks by paragraph, ranks by keyword intersection, returns top 3 matches |
+
+### 4c. Guardrails (Input + Output)
+
+HandOffLint uses **deterministic TypeScript checks** — no second LLM call — at two points in the pipeline.
+
+**Before the agent runs (input checks — `/api/agent/*`)**
+
+User-supplied values are validated in `src/lib/agent/input-guardrails.ts` before Gemini or RAG executes:
+
+| Input                | What we check                                                                                                               | Why                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Design manual URL    | Must be `http(s)`, path ends in `.md`, not localhost/private IP; file is fetched and scanned                                | Stops SSRF and poisoned guideline docs from reaching RAG |
+| Manual file content  | Max 512 KB; reject HTML pages; scan for hijack phrases (e.g. “ignore previous instructions”); strip bad lines before search | Keeps RAG context trustworthy                            |
+| Frame screenshot URL | Must be Figma CDN (`*.amazonaws.com`, `figma.com`)                                                                          | Agent only sees the rendered frame we expect             |
+| `fileKey` / `nodeId` | Alphanumeric file key; node ID must match `digits:digits`                                                                   | Rejects malformed IDs early                              |
+| RAG search query     | Max 500 chars; same hijack-phrase scan                                                                                      | Blocks instruction injection via tool arguments          |
+
+When the wizard supplies a design manual URL, it is **vetted once** on `POST /api/agent/vision` and **pinned** into `search_layout_guidelines` so the model cannot swap URLs mid-investigation.
+
+**After the agent runs (output checks — `/api/scan` today)**
+
+Vision enrichments pass through `src/lib/agent/guardrails.ts`:
+
+1. **Groundedness** — drop findings that cite a `nodeId` not in the flat index (ghost layers).
+2. **Cross-modal** — drop claims contradicted by structural JSON (e.g. “clipping” on an Auto Layout frame; typography on hidden text).
+
+Output checks on the agent wizard stream (`/api/agent/vision`) are planned; input checks are live on all agent routes.
 
 ---
 
@@ -100,6 +127,8 @@ Frontend hits POST /api/agent/vision
 - **Multi-Turn Vision Loop:** Vercel AI SDK `streamText` with `stopWhen: stepCountIs(5)`, tools bound in config, streamed via `toUIMessageStreamResponse()` for real-time chunked delivery.
 - **Wizard UI State Machine:** 4-step client workflow (URL → profile → launch → results) with split-panel dashboard.
 - **Layout Density Profiles:** `"dashboard"` and `"landing"` profile strings passed to audit math boundaries.
+- **Input Guardrails:** URL, ID, and content validation on `/api/agent/*` before the ReAct loop; design manual pinning for RAG.
+- **Output Guardrails:** Groundedness + cross-modal filters on `/api/scan` vision enrichments (agent stream wiring planned).
 
 ### Explicitly Out of Scope
 
@@ -132,6 +161,9 @@ Frontend hits POST /api/agent/vision
 6. **Structured Output Validity:** Final vision response must parse against the Zod schema with no missing required fields.
 7. **Latency Target:** Full wizard pipeline (init + audit + vision) completes in under 30 seconds for a single-frame target.
 8. **Rate Limit Safety:** ReAct loop stays within `stepCountIs(5)` and Google AI Studio free-tier allowance (15 RPM).
+9. **Input Guardrail Rejection:** Malformed IDs, non-markdown manual URLs, private-host fetches, and hijack phrases in manual content or RAG queries return **400** before streaming starts.
+10. **Manual URL Pinning:** When `designManualUrl` is supplied, tool calls cannot redirect RAG to a different URL than the vetted one.
+11. **Output Groundedness:** Every kept vision enrichment on `/api/scan` must cite a `nodeId` present in the flat index.
 
 ---
 
@@ -208,6 +240,18 @@ _This route boots the autonomous vision loop and streams every step back to the 
 - [x] **5.4** Inject the custom design system persona system prompt with the user's `layoutProfile` dynamically interpolated to alter investigative priorities per screen context (dashboard, landing-page, mobile-app, ai-chat, e-commerce, form-heavy).
 - [x] **5.5** Bind `inspect_node_properties` and `search_layout_guidelines` tools to the model call configuration.
 - [x] **5.6** Return `result.toUIMessageStreamResponse()` — instantly sends HTTP 200 with `Transfer-Encoding: chunked`, keeping the connection open so every step of the multi-turn loop is piped to the client the moment it occurs.
+
+#### Task 5b: Input Guardrails (`src/lib/agent/input-guardrails.ts`)
+
+_Validate user-supplied wizard inputs before Gemini or RAG runs._
+
+- [x] **5b.1** Create `src/lib/agent/input-guardrails.ts` with shared validators: design manual URL, markdown content, vision image URL, file key, node ID, RAG query.
+- [x] **5b.2** Block SSRF targets (localhost, private IPs, metadata endpoints) on any fetch URL.
+- [x] **5b.3** Require design manual paths to end in `.md` / `.markdown`; reject HTML responses and content containing common hijack phrases.
+- [x] **5b.4** Restrict `imageUrl` to Figma CDN host suffixes.
+- [x] **5b.5** Wire validators into `POST /api/agent/vision` (pre-stream), `POST /api/agent/audit` (file key), and `search_layout_guidelines` (fetch + query).
+- [x] **5b.6** Pin the vetted `designManualUrl` from the vision route into the RAG tool so the model cannot supply alternate URLs at tool-call time.
+- [x] **5b.7** Add Vitest coverage in `input-guardrails.test.ts` and update `/guardrails` presentation page with live pass/fail examples.
 
 #### Task 6: Terminal Verification Run
 

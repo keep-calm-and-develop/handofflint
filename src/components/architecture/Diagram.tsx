@@ -430,7 +430,7 @@ export function SystemArchitectureFlowDiagram() {
               href="/guardrails"
               className={`block bg-white border p-3 shadow-sm ${DIAGRAM_LINK}`}
               style={{ borderColor: `${colors.purple}40` }}
-              title="Cross-modal guardrails walkthrough"
+              title="Input and output guardrails walkthrough"
             >
               <span className="text-[8px] font-mono font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">
                 POST

@@ -3,9 +3,9 @@ import { SiteShell } from "@/components/layout/SiteShell";
 import { buildGuardrailsPresentationData } from "@/lib/guardrails-presentation";
 
 export const metadata = {
-  title: "Cross-Modal Guardrails — HandOffLint",
+  title: "Guardrails — HandOffLint",
   description:
-    "How vision findings are vetted against structural Figma JSON before reaching the user.",
+    "How HandOffLint validates user input before the agent runs and double-checks AI findings against real Figma data.",
 };
 
 export default function GuardrailsPage() {
