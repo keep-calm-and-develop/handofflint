@@ -1,0 +1,25 @@
+{
+  "caseId": "bittersweet-9-153",
+  "runIndex": 2,
+  "capturedAt": "2026-06-10T09:19:54.735Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "9:153",
+      "violationCategory": "symmetry_break",
+      "perceptualFlawDescription": "The 'Order Details Modal' exhibits inconsistent corner radii, with rounded corners at the bottom and sharp corners at the top.",
+      "codegenPromptSuggestion": "Apply a consistent border-radius to all four corners of the 'Order Details Modal' or ensure the top corners are rounded if it is intended to be a bottom sheet style modal."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "9:153",
+      "violationCategory": "symmetry_break",
+      "perceptualFlawDescription": "The 'Order Details Modal' exhibits inconsistent corner radii, with rounded corners at the bottom and sharp corners at the top.",
+      "codegenPromptSuggestion": "Apply a consistent border-radius to all four corners of the 'Order Details Modal' or ensure the top corners are rounded if it is intended to be a bottom sheet style modal."
+    }
+  ],
+  "stepsUsed": 2,
+  "toolCallCount": 2,
+  "error": null
+}

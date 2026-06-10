@@ -35,6 +35,8 @@ export const EVAL_CASES: Record<EvalCaseId, EvalCaseMeta> = {
       "https://www.figma.com/design/kvT3qcauDE67CW76Kb56Qw/vaxin?node-id=20-0",
     imagePath: "/evals/golden/vaxin-20-0/image.png",
     nodesSource: "figma-output/kvT3qcauDE67CW76Kb56Qw_2026-06-10T08-28-44-322Z",
+    imageSourceUrl:
+      "https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/d01b4569-0e5b-4dca-b13b-bc1f7ec66b22",
     order: 2,
   },
   "bittersweet-9-153": {
@@ -49,6 +51,8 @@ export const EVAL_CASES: Record<EvalCaseId, EvalCaseMeta> = {
     imagePath: "/evals/golden/bittersweet-9-153/image.png",
     nodesSource:
       "figma-output/Ii83n99A2f6VqzHNerla4d_2026-06-10T08-27-21-282Z",
+    imageSourceUrl:
+      "https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/1153dc24-7b28-4fc2-9cef-29e7ee03d43b",
     order: 3,
   },
 };

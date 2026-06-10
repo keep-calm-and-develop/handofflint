@@ -1,0 +1,37 @@
+{
+  "caseId": "vaxin-20-0",
+  "runIndex": 4,
+  "capturedAt": "2026-06-10T09:08:08.464Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled; it should be 'Hospital'.",
+      "codegenPromptSuggestion": "Change the text content of node '23:24' from 'District General Hostpital' to 'District General Hospital'."
+    },
+    {
+      "nodeId": "23:24",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text 'District General Hostpital' overlaps with the 'Free' tag on the right side of the card.",
+      "codegenPromptSuggestion": "Adjust the horizontal padding or width of the text node '23:24' or the 'Free' tag to prevent overlap, ensuring adequate spacing between elements."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled; it should be 'Hospital'.",
+      "codegenPromptSuggestion": "Change the text content of node '23:24' from 'District General Hostpital' to 'District General Hospital'."
+    },
+    {
+      "nodeId": "23:24",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text 'District General Hostpital' overlaps with the 'Free' tag on the right side of the card.",
+      "codegenPromptSuggestion": "Adjust the horizontal padding or width of the text node '23:24' or the 'Free' tag to prevent overlap, ensuring adequate spacing between elements."
+    }
+  ],
+  "stepsUsed": 4,
+  "toolCallCount": 6,
+  "error": null
+}

@@ -1,9 +1,11 @@
 import { SystemArchitectureFlowDiagram } from "@/components/architecture/Diagram";
 import { FIGMA_COLORS } from "@/components/layout/figma-colors";
 import { SiteShell } from "@/components/layout/SiteShell";
+import { buildEvalsPresentationData } from "@/lib/evals/presentation";
 import {
   AlertTriangle,
   ArrowRight,
+  BarChart3,
   BookOpen,
   Code,
   Cpu,
@@ -40,6 +42,9 @@ const ARCHITECTURE_DEEP_DIVES = [
 ] as const;
 
 export default function LandingPage() {
+  const evalsData = buildEvalsPresentationData();
+  const lockedEvalCases = evalsData.cases.filter((item) => item.status.locked);
+
   return (
     <SiteShell activeNav="home">
       <section
@@ -274,6 +279,181 @@ export default function LandingPage() {
               </div>
             </div>
           </div> */}
+        </div>
+      </section>
+
+      <section
+        id="evals"
+        className="scroll-mt-16 py-8 sm:py-12 border-b border-slate-200 bg-slate-50"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mb-8">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">
+              <BarChart3 className="w-4 h-4" style={{ color: FIGMA_COLORS.green }} />
+              Offline measurement
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Vision Agent Evaluations
+            </h2>
+            <p className="text-slate-600 mt-2 text-sm sm:text-base">
+              A proof-of-concept golden dataset — three mobile-app frames — measures
+              how reliably the ReAct vision agent finds cross-modal defects today.
+              Runs are captured once, human-reviewed, then replayed offline in CI.
+              This is an honesty check on model behavior, not a claim that the
+              vision agent is production-ready at scale.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                Golden cases
+              </div>
+              <div className="mt-1 text-2xl font-bold text-slate-900">
+                {evalsData.cases.length}
+              </div>
+              <p className="mt-1 text-xs text-slate-500">
+                vaxin ×2, Bittersweet modal
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                Runs per case
+              </div>
+              <div className="mt-1 text-2xl font-bold text-slate-900">
+                {evalsData.manifest.runsPerCase}
+              </div>
+              <p className="mt-1 text-xs text-slate-500">
+                Same frame, repeated to surface variance
+              </p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                Overall pass rate
+              </div>
+              <div className="mt-1 text-2xl font-bold text-slate-900">
+                {evalsData.overallPassRate != null
+                  ? `${evalsData.overallPassRate}%`
+                  : "—"}
+              </div>
+              <p className="mt-1 text-xs text-slate-500">
+                Mixed — strong on simple frames, weaker on complex modals
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <div className="space-y-4 text-sm text-slate-600 leading-relaxed">
+              <p>
+                Each case pairs a Figma node tree with a rendered frame image.
+                The capture workflow seeds the flat index, runs the vision agent
+                ten times, applies cross-modal guardrails, and commits JSON
+                results under{" "}
+                <code className="bg-white px-1 py-0.5 rounded text-[11px] border border-slate-200">
+                  evals/results/
+                </code>
+                . Vitest replays those committed outputs — no live Gemini in CI.
+              </p>
+
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-950 text-xs leading-relaxed">
+                <strong className="font-semibold block mb-2 text-amber-900">
+                  What the numbers do not mean
+                </strong>
+                <p>
+                  These evals validate the measurement pipeline and show where the
+                  agent is already useful (clear typos, obvious hierarchy clashes).
+                  They do <strong className="font-semibold">not</strong> mean the
+                  vision model is consistent enough for unattended production use
+                  across arbitrary Figma files.
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs leading-relaxed space-y-3">
+                <h3 className="font-bold text-slate-900 text-sm">
+                  Known limitations today
+                </h3>
+                <ul className="list-disc list-inside space-y-1.5 text-slate-600">
+                  <li>
+                    Only <strong className="font-semibold text-slate-800">3 golden cases</strong>{" "}
+                    and one layout profile (mobile-app) — not representative of all
+                    handoff scenarios.
+                  </li>
+                  <li>
+                    Gemini output is <strong className="font-semibold text-slate-800">non-deterministic</strong>:
+                    the Order Details Modal case reaches just 40% full-match across
+                    10 runs, even when individual findings appear more often.
+                  </li>
+                  <li>
+                    Large or layered frames are harder — the model sometimes
+                    catches layout issues but misses subtle cross-modal text
+                    mismatches, or vice versa.
+                  </li>
+                  <li>
+                    Capture was constrained by API quota; failed runs are excluded
+                    from pass-rate math, which can overstate stability on thin
+                    successful-run samples.
+                  </li>
+                </ul>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs leading-relaxed space-y-3">
+                <h3 className="font-bold text-slate-900 text-sm">
+                  Improvements needed before scale
+                </h3>
+                <ul className="list-disc list-inside space-y-1.5 text-slate-600">
+                  <li>Expand the golden set — more frames, layout profiles, and defect types.</li>
+                  <li>Run consensus voting (e.g. require a finding in ≥6/10 runs) before surfacing it.</li>
+                  <li>Decompose large frames into regions instead of one full-frame vision pass.</li>
+                  <li>Add per-finding confidence scores and explicit “needs human review” states.</li>
+                  <li>Tighten guardrails and recalibrate when the model or prompt changes.</li>
+                </ul>
+              </div>
+
+              <Link
+                href="/evals"
+                className="inline-flex items-center text-sm font-semibold hover:underline"
+                style={{ color: FIGMA_COLORS.green }}
+              >
+                View full eval showcase
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Link>
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                  Locked case pass rates
+                </h3>
+                {lockedEvalCases.map((item) => (
+                  <div
+                    key={item.meta.id}
+                    className="flex items-center justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-900 truncate">
+                        {item.meta.frameName}
+                      </p>
+                      <p className="text-[11px] text-slate-500 truncate">
+                        {item.meta.id}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-sm font-bold text-slate-900">
+                      {item.summary?.passRate != null
+                        ? `${item.summary.passRate}%`
+                        : "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-[11px] text-slate-500 leading-relaxed px-1">
+                Pass rate = share of successful runs that matched all locked
+                expected findings. High scores on simple frames and lower scores
+                on complex modals are both useful signals — they show where the
+                agent is ready to assist and where human review is still required.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

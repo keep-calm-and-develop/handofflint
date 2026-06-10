@@ -1,0 +1,61 @@
+{
+  "caseId": "bittersweet-9-153",
+  "runIndex": 1,
+  "capturedAt": "2026-06-10T09:19:22.523Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "I9:160;2:23",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order number displayed in the modal is '# 13', which does not match the content '# 12' defined in the OrderCard instance for this node.",
+      "codegenPromptSuggestion": "Ensure the order number displayed is dynamically populated and accurately reflects the current order's ID, updating the content for node 'I9:160;2:23' to '# 13'."
+    },
+    {
+      "nodeId": "I9:160;2:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order time displayed in the modal is '3 July, 5:30 PM', which does not match the content '3 July, 3:00 PM' defined in the OrderCard instance for this node.",
+      "codegenPromptSuggestion": "Ensure the order time displayed is dynamically populated and accurately reflects the current order's time, updating the content for node 'I9:160;2:24' to '3 July, 5:30 PM'."
+    },
+    {
+      "nodeId": "9:153",
+      "violationCategory": "symmetry_break",
+      "perceptualFlawDescription": "The 'Mark As Completed' button is right-aligned within the modal, creating a visual imbalance with the left-aligned 'Customer Name' text that it is functionally associated with.",
+      "codegenPromptSuggestion": "Adjust the layout within the modal '9:153' to either center the 'Mark As Completed' button or align it consistently with the left-aligned content for improved visual harmony and functional grouping."
+    },
+    {
+      "nodeId": "9:153",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The header elements, specifically the 'Order Details' title and the close button 'X', have insufficient top padding, making them appear cramped against the top edge of the modal.",
+      "codegenPromptSuggestion": "Increase the top padding of the header section within modal '9:153' to provide adequate clear space around the title and close button, adhering to an 8pt grid system for consistent spacing."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "I9:160;2:23",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order number displayed in the modal is '# 13', which does not match the content '# 12' defined in the OrderCard instance for this node.",
+      "codegenPromptSuggestion": "Ensure the order number displayed is dynamically populated and accurately reflects the current order's ID, updating the content for node 'I9:160;2:23' to '# 13'."
+    },
+    {
+      "nodeId": "I9:160;2:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order time displayed in the modal is '3 July, 5:30 PM', which does not match the content '3 July, 3:00 PM' defined in the OrderCard instance for this node.",
+      "codegenPromptSuggestion": "Ensure the order time displayed is dynamically populated and accurately reflects the current order's time, updating the content for node 'I9:160;2:24' to '3 July, 5:30 PM'."
+    },
+    {
+      "nodeId": "9:153",
+      "violationCategory": "symmetry_break",
+      "perceptualFlawDescription": "The 'Mark As Completed' button is right-aligned within the modal, creating a visual imbalance with the left-aligned 'Customer Name' text that it is functionally associated with.",
+      "codegenPromptSuggestion": "Adjust the layout within the modal '9:153' to either center the 'Mark As Completed' button or align it consistently with the left-aligned content for improved visual harmony and functional grouping."
+    },
+    {
+      "nodeId": "9:153",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The header elements, specifically the 'Order Details' title and the close button 'X', have insufficient top padding, making them appear cramped against the top edge of the modal.",
+      "codegenPromptSuggestion": "Increase the top padding of the header section within modal '9:153' to provide adequate clear space around the title and close button, adhering to an 8pt grid system for consistent spacing."
+    }
+  ],
+  "stepsUsed": 1,
+  "toolCallCount": 1,
+  "error": null
+}

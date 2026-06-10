@@ -1,0 +1,43 @@
+{
+  "caseId": "vaxin-1-4",
+  "runIndex": 5,
+  "capturedAt": "2026-06-10T08:55:14.847Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "1:4",
+      "violationCategory": "hierarchy_clash",
+      "perceptualFlawDescription": "Four secondary action buttons ('PINCODE' and 'District' for specific date and 7 days) use a solid, high-contrast fill, competing visually with the primary 'Search' button.",
+      "codegenPromptSuggestion": "Change the 'PINCODE' and 'District' buttons for 'Get sessions for specific date by' and 'Get sessions for 7 days from specific date by' to outline or text variants to de-emphasize them as secondary actions."
+    },
+    {
+      "nodeId": "2:3",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'availibility' is misspelled as 'availibility' in the description text.",
+      "codegenPromptSuggestion": "Correct the spelling of 'availibility' to 'availability' in the text content for node '2:3'."
+    },
+    {
+      "nodeId": "1:4",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The 'About Vaxin' paragraph contains multiple typos ('acces', 'availibility', 'entierly') and incorrect punctuation ('APIs .').",
+      "codegenPromptSuggestion": "Correct the text in the 'About Vaxin' section: change 'acces' to 'access', 'availibility' to 'availability', 'entierly' to 'entirely', and 'APIs .' to 'APIs.'."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "1:4",
+      "violationCategory": "hierarchy_clash",
+      "perceptualFlawDescription": "Four secondary action buttons ('PINCODE' and 'District' for specific date and 7 days) use a solid, high-contrast fill, competing visually with the primary 'Search' button.",
+      "codegenPromptSuggestion": "Change the 'PINCODE' and 'District' buttons for 'Get sessions for specific date by' and 'Get sessions for 7 days from specific date by' to outline or text variants to de-emphasize them as secondary actions."
+    },
+    {
+      "nodeId": "2:3",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'availibility' is misspelled as 'availibility' in the description text.",
+      "codegenPromptSuggestion": "Correct the spelling of 'availibility' to 'availability' in the text content for node '2:3'."
+    }
+  ],
+  "stepsUsed": 1,
+  "toolCallCount": 2,
+  "error": null
+}

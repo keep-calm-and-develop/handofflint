@@ -1,0 +1,43 @@
+{
+  "caseId": "vaxin-1-4",
+  "runIndex": 6,
+  "capturedAt": "2026-06-10T08:55:46.099Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "1:4",
+      "violationCategory": "hierarchy_clash",
+      "perceptualFlawDescription": "Multiple solid, high-contrast buttons ('PINCODE' and 'District') visually compete with the primary 'Search' button, creating a hierarchy clash by suggesting multiple primary actions on the screen.",
+      "codegenPromptSuggestion": "Change the 'PINCODE' and 'District' buttons to outline or ghost variants with only a border, reserving the solid fill for the primary 'Search' button (node '2:33') to establish clear visual hierarchy."
+    },
+    {
+      "nodeId": "2:3",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'availibility' is misspelled in the text 'This will search vaccine availibility in your pincode area for today.'.",
+      "codegenPromptSuggestion": "Correct the spelling of 'availibility' to 'availability' in the text content of node '2:3'."
+    },
+    {
+      "nodeId": "1:4",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "Multiple typos and grammatical errors exist in the 'About Vaxin' text block: 'acces' should be 'access', 'availibility' should be 'availability', there is an extra space before the period in 'APIs .', and 'entierly' should be 'entirely'.",
+      "codegenPromptSuggestion": "Correct the text content in the 'About Vaxin' section: change 'acces' to 'access', 'availibility' to 'availability', remove the space before the period in 'APIs .', and change 'entierly' to 'entirely'."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "1:4",
+      "violationCategory": "hierarchy_clash",
+      "perceptualFlawDescription": "Multiple solid, high-contrast buttons ('PINCODE' and 'District') visually compete with the primary 'Search' button, creating a hierarchy clash by suggesting multiple primary actions on the screen.",
+      "codegenPromptSuggestion": "Change the 'PINCODE' and 'District' buttons to outline or ghost variants with only a border, reserving the solid fill for the primary 'Search' button (node '2:33') to establish clear visual hierarchy."
+    },
+    {
+      "nodeId": "2:3",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'availibility' is misspelled in the text 'This will search vaccine availibility in your pincode area for today.'.",
+      "codegenPromptSuggestion": "Correct the spelling of 'availibility' to 'availability' in the text content of node '2:3'."
+    }
+  ],
+  "stepsUsed": 2,
+  "toolCallCount": 2,
+  "error": null
+}

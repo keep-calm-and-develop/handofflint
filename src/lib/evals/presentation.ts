@@ -26,11 +26,13 @@ function buildCaseSummary(caseId: (typeof EVAL_CASE_ORDER)[number]): EvalCaseSum
       runsRequired: manifest.runsPerCase,
       locked: status.locked,
       passRate: null,
+      successfulRuns: 0,
       lastCapturedAt: null,
     };
   }
 
-  const assertionRuns = runs.map((run) => ({
+  const successfulRuns = runs.filter((run) => !run.error);
+  const assertionRuns = successfulRuns.map((run) => ({
     pass: expected.length
       ? assertRunAgainstExpected(run.verifiedEnrichments, expected).pass
       : false,
@@ -42,6 +44,7 @@ function buildCaseSummary(caseId: (typeof EVAL_CASE_ORDER)[number]): EvalCaseSum
     runsRequired: manifest.runsPerCase,
     locked: status.locked,
     passRate: status.locked ? computePassRate(assertionRuns) : null,
+    successfulRuns: successfulRuns.length,
     lastCapturedAt: runs.at(-1)?.capturedAt ?? null,
   };
 }
@@ -85,9 +88,9 @@ export function buildEvalsPresentationData(): EvalPresentationData {
           )
         : null,
     methodology:
-      "Golden dataset of three mobile-app frames. Vision runs are captured offline " +
-      "(one case at a time, up to 10 runs each). After human review, expected findings " +
-      "are locked in evals/golden/*/expected.json. CI replays committed run outputs — " +
-      "no live Gemini calls in tests.",
+      "Proof-of-concept golden dataset of three mobile-app frames. Vision runs are " +
+      "captured offline (one case at a time, up to 10 runs each), human-reviewed, and " +
+      "locked in evals/golden/*/expected.json. CI replays committed outputs with no live " +
+      "Gemini calls. Scores measure current repeatability — not production readiness at scale.",
   };
 }

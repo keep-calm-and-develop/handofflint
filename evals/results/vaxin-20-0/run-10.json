@@ -1,0 +1,37 @@
+{
+  "caseId": "vaxin-20-0",
+  "runIndex": 10,
+  "capturedAt": "2026-06-10T09:18:21.376Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled as 'Hostpital' instead of 'Hospital'.",
+      "codegenPromptSuggestion": "Correct the spelling of 'Hostpital' to 'Hospital' in the text content."
+    },
+    {
+      "nodeId": "23:24",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text 'District General Hostpital' is visually clipped on the right side, preventing the full word from being displayed.",
+      "codegenPromptSuggestion": "Increase the width of the text container for 'District General Hostpital' or reduce the font size to ensure the text fits without clipping."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled as 'Hostpital' instead of 'Hospital'.",
+      "codegenPromptSuggestion": "Correct the spelling of 'Hostpital' to 'Hospital' in the text content."
+    },
+    {
+      "nodeId": "23:24",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text 'District General Hostpital' is visually clipped on the right side, preventing the full word from being displayed.",
+      "codegenPromptSuggestion": "Increase the width of the text container for 'District General Hostpital' or reduce the font size to ensure the text fits without clipping."
+    }
+  ],
+  "stepsUsed": 1,
+  "toolCallCount": 1,
+  "error": null
+}

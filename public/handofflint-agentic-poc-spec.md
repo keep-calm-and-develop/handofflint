@@ -146,12 +146,15 @@ Output checks on the agent wizard stream (`/api/agent/vision`) are planned; inpu
 - **Vision Agent:** Vercel AI SDK `streamText` + `google/gemini-2.5-flash`, `stopWhen: stepCountIs(5)`, streamed chunked response via `toUIMessageStreamResponse()`.
 - **Agent Tools:** AI SDK tool wrappers in `src/lib/agent/tools/`.
 - **Single-File RAG:** GitHub raw CDN fetch → paragraph chunking → keyword intersection scoring → top-3 retrieval (`src/lib/agent/tools/search-guidelines.ts`).
-- **Testing:** Vitest for deterministic audit snapshots; manual curl/script verification for endpoint chain.
+- **Testing:** Vitest for deterministic audit snapshots, offline vision eval replay (`evals/vision-eval.test.ts`), and manual curl/script verification for endpoint chain.
+- **Vision Evals:** Golden dataset under `evals/golden/`, committed run outputs under `evals/results/`, showcase at `/evals`, capture scripts (`pnpm eval:capture`, `eval:lock`, `eval:status`).
 - **UI:** Tailwind CSS split-panel wizard dashboard.
 
 ---
 
 ## 7. Eval Plan
+
+### 7a. Pipeline & Infrastructure Evals
 
 1. **Deterministic Stability (Vitest):** Mock Figma JSON payloads through the 8 audits must output identical findings and scores on every run.
 2. **Cache Round-Trip:** `init` → `audit` → `vision` sequential calls must share the same `fileKey` Redis index (`figma:flat:{fileKey}`) without re-fetching from Figma.
@@ -164,6 +167,27 @@ Output checks on the agent wizard stream (`/api/agent/vision`) are planned; inpu
 9. **Input Guardrail Rejection:** Malformed IDs, non-markdown manual URLs, private-host fetches, and hijack phrases in manual content or RAG queries return **400** before streaming starts.
 10. **Manual URL Pinning:** When `designManualUrl` is supplied, tool calls cannot redirect RAG to a different URL than the vetted one.
 11. **Output Groundedness:** Every kept vision enrichment on `/api/scan` must cite a `nodeId` present in the flat index.
+
+### 7b. Vision Agent Golden Dataset (COMPLETED)
+
+Offline eval suite measuring ReAct vision repeatability on known mobile-app frames. Documented at **`/evals`** and replayed in CI via `pnpm eval:test` (no live Gemini in tests).
+
+| Case ID | Frame | Locked findings | Pass rate (successful runs) |
+|---------|-------|-----------------|----------------------------|
+| `vaxin-1-4` | Google Pixel 2 - 1 | `hierarchy_clash @ 1:4`, `typography_anomaly @ 2:3` | 100% (4/4) |
+| `vaxin-20-0` | Google Pixel 2 - 4 | `typography_anomaly @ 23:24` | 90% (9/10) |
+| `bittersweet-9-153` | Order Details Modal | `typography_anomaly @ I9:160;2:23`, `typography_anomaly @ I9:160;2:24` | 40% (4/10) |
+
+**Methodology**
+
+1. `pnpm eval:setup` — copy Figma node trees and golden images into `evals/golden/<case>/`.
+2. `pnpm eval:capture --case <id> --run N` — seed flat index via `POST /api/evals/seed`, run vision agent against Figma S3 render URL, save `rawEnrichments` + `verifiedEnrichments` to `evals/results/<case>/run-NN.json`.
+3. Human review → `pnpm eval:lock --case <id> --write` (or manual `expected.json`) — lock `nodeId` + `violationCategory` golden labels.
+4. `pnpm eval:test` — Vitest replays committed runs; pass rate computed on successful runs only (`!run.error`); default threshold ≥80%, case-specific override where documented (e.g. `bittersweet-9-153` at 40% for complex modal variance).
+
+**Scripts:** `eval:setup`, `eval:capture`, `eval:lock`, `eval:status`, `eval:test` (see `package.json`).
+
+**Site navigation:** Home section `#evals`, header Sections dropdown, footer Architecture Deep Dives, and `/evals` showcase page.
 
 ---
 
@@ -307,6 +331,16 @@ _Connect backend data frames to update visual indicators and telemetry cards aut
 _Run through the complete application chain using a pre-tested layout frame target profile to prepare for the project presentation._
 
 - [ ] **11.1** Trigger the entire pipeline end-to-end. Confirm that the cache transfers context across wizard steps, the ReAct loop completes within `stepCountIs(5)`, and the UI renders the streamed response without page crashes or layout stuttering.
+
+#### Task 12: Vision Agent Golden Dataset & Eval Showcase (COMPLETED)
+
+_Offline vision eval suite for capstone measurement and panel demonstration._
+
+- [x] **12.1** Golden fixtures: three mobile-app cases under `evals/golden/` with `nodes.json`, `expected.json`, and images in `public/evals/golden/`.
+- [x] **12.2** Capture pipeline: `scripts/eval-capture.ts` seeds cache via `/api/evals/seed`, runs vision agent, commits 10 runs per case to `evals/results/`.
+- [x] **12.3** Lock workflow: `scripts/eval-lock.ts` drafts consensus findings; human-verified `expected.json` per case in `evals/suite.json`.
+- [x] **12.4** Offline assertions: `evals/vision-eval.test.ts` replays committed runs (`pnpm eval:test`); pass rates on successful runs only.
+- [x] **12.5** Showcase UI: `/evals` page with case cards, pass rates, and capture workflow; linked from home `#evals`, header Sections nav, and site footer.
 
 ---
 

@@ -1,0 +1,37 @@
+{
+  "caseId": "vaxin-20-0",
+  "runIndex": 1,
+  "capturedAt": "2026-06-10T09:06:39.483Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled; it should be 'Hospital'.",
+      "codegenPromptSuggestion": "Change the text content of the node 'District General Hostpital' to 'District General Hospital'."
+    },
+    {
+      "nodeId": "23:24",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text 'District General Hostpital' is too close to the 'Free' label, causing a visual clipping or lack of proper spacing.",
+      "codegenPromptSuggestion": "Add a right margin of at least 8px to the text element 'District General Hostpital' to provide adequate spacing from the 'Free' label."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled; it should be 'Hospital'.",
+      "codegenPromptSuggestion": "Change the text content of the node 'District General Hostpital' to 'District General Hospital'."
+    },
+    {
+      "nodeId": "23:24",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text 'District General Hostpital' is too close to the 'Free' label, causing a visual clipping or lack of proper spacing.",
+      "codegenPromptSuggestion": "Add a right margin of at least 8px to the text element 'District General Hostpital' to provide adequate spacing from the 'Free' label."
+    }
+  ],
+  "stepsUsed": 2,
+  "toolCallCount": 3,
+  "error": null
+}

@@ -1,0 +1,43 @@
+{
+  "caseId": "vaxin-1-4",
+  "runIndex": 2,
+  "capturedAt": "2026-06-10T08:53:55.744Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "2:3",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'availibility' is misspelled as 'availability' in the explanatory text under 'Quick Search'.",
+      "codegenPromptSuggestion": "Change the text content of node '2:3' from 'This will search vaccine availibility in your pincode area for today.' to 'This will search vaccine availability in your pincode area for today.'."
+    },
+    {
+      "nodeId": "1:4",
+      "violationCategory": "hierarchy_clash",
+      "perceptualFlawDescription": "There are four primary solid black CTA buttons ('PINCODE' and 'District') below the 'Quick Search' section that compete for visual attention, creating a hierarchy clash.",
+      "codegenPromptSuggestion": "Change the 'PINCODE' and 'District' buttons for both 'Get sessions for specific date by' and 'Get sessions for 7 days from specific date by' sections to an outline or ghost button variant to reduce their visual weight and establish a clearer CTA hierarchy."
+    },
+    {
+      "nodeId": "1:4",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "Multiple typos and grammatical issues exist in the 'About Vaxin' section: 'acces' should be 'access', 'availibility' should be 'availability', 'entierly' should be 'entirely', and there is an extra space before the period after 'APIs'.",
+      "codegenPromptSuggestion": "Correct the text content within the 'About Vaxin' section of node '1:4' to 'This app is for a quick access to vaccines availability and uses public government APIs. Please do not depend on this app entirely.'."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "2:3",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'availibility' is misspelled as 'availability' in the explanatory text under 'Quick Search'.",
+      "codegenPromptSuggestion": "Change the text content of node '2:3' from 'This will search vaccine availibility in your pincode area for today.' to 'This will search vaccine availability in your pincode area for today.'."
+    },
+    {
+      "nodeId": "1:4",
+      "violationCategory": "hierarchy_clash",
+      "perceptualFlawDescription": "There are four primary solid black CTA buttons ('PINCODE' and 'District') below the 'Quick Search' section that compete for visual attention, creating a hierarchy clash.",
+      "codegenPromptSuggestion": "Change the 'PINCODE' and 'District' buttons for both 'Get sessions for specific date by' and 'Get sessions for 7 days from specific date by' sections to an outline or ghost button variant to reduce their visual weight and establish a clearer CTA hierarchy."
+    }
+  ],
+  "stepsUsed": 3,
+  "toolCallCount": 3,
+  "error": null
+}

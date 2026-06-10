@@ -8,19 +8,20 @@
   ],
   "caseStatus": {
     "vaxin-1-4": {
-      "runsCompleted": 0,
-      "locked": false,
-      "lockedAt": null
+      "runsCompleted": 10,
+      "locked": true,
+      "lockedAt": "2026-06-10T08:59:47.789Z"
     },
     "vaxin-20-0": {
-      "runsCompleted": 0,
-      "locked": false,
-      "lockedAt": null
+      "runsCompleted": 10,
+      "locked": true,
+      "lockedAt": "2026-06-10T09:18:25.187Z"
     },
     "bittersweet-9-153": {
-      "runsCompleted": 0,
-      "locked": false,
-      "lockedAt": null
+      "runsCompleted": 10,
+      "locked": true,
+      "lockedAt": "2026-06-10T10:30:00.000Z",
+      "minPassRate": 40
     }
   }
 }

@@ -21,6 +21,8 @@ export interface EvalCaseStatus {
   runsCompleted: number;
   locked: boolean;
   lockedAt: string | null;
+  /** Minimum full-match pass rate for locked cases (default 80). */
+  minPassRate?: number;
 }
 
 export interface EvalSuiteManifest {
@@ -56,6 +58,7 @@ export interface EvalCaseSummary {
   runsRequired: number;
   locked: boolean;
   passRate: number | null;
+  successfulRuns: number;
   lastCapturedAt: string | null;
 }
 

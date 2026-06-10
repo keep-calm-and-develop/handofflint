@@ -1,0 +1,37 @@
+{
+  "caseId": "bittersweet-9-153",
+  "runIndex": 6,
+  "capturedAt": "2026-06-10T09:25:20.036Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "I9:160;2:23",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order number text node, identified as '# 12', displays as '# 13' in the screenshot, indicating a content mismatch.",
+      "codegenPromptSuggestion": "Update the text content for the order number node to display '# 13' instead of '# 12'."
+    },
+    {
+      "nodeId": "I9:160;2:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The date and time text node, identified as '3 July, 3:00 PM', displays as '3 July, 5:30 PM' in the screenshot, indicating a content mismatch.",
+      "codegenPromptSuggestion": "Update the text content for the date and time node to display '3 July, 5:30 PM' instead of '3 July, 3:00 PM'."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "I9:160;2:23",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order number text node, identified as '# 12', displays as '# 13' in the screenshot, indicating a content mismatch.",
+      "codegenPromptSuggestion": "Update the text content for the order number node to display '# 13' instead of '# 12'."
+    },
+    {
+      "nodeId": "I9:160;2:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The date and time text node, identified as '3 July, 3:00 PM', displays as '3 July, 5:30 PM' in the screenshot, indicating a content mismatch.",
+      "codegenPromptSuggestion": "Update the text content for the date and time node to display '3 July, 5:30 PM' instead of '3 July, 3:00 PM'."
+    }
+  ],
+  "stepsUsed": 1,
+  "toolCallCount": 3,
+  "error": null
+}

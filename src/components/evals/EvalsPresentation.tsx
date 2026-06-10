@@ -224,6 +224,35 @@ export function EvalsPresentation({ data }: { data: EvalPresentationData }) {
         />
       </div>
 
+      <section className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-950 space-y-3">
+        <h2 className="font-bold text-amber-900">Honest scope — not production-ready at scale</h2>
+        <p className="text-xs sm:text-sm leading-relaxed">
+          These evals prove we can <strong className="font-semibold">measure</strong> vision-agent
+          behavior and show it works well on focused defects (typos, hierarchy clashes).
+          They also expose real variance on complex frames — the Order Details Modal case
+          reaches only 40% full-match. That is expected for a capstone POC, not a failure
+          to document.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs leading-relaxed">
+          <div>
+            <h3 className="font-semibold text-amber-900 mb-1">Known limitations</h3>
+            <ul className="list-disc list-inside space-y-1 text-amber-950/90">
+              <li>3 cases, mobile-app profile only</li>
+              <li>Non-deterministic model — same input, different findings</li>
+              <li>Quota failures excluded from pass-rate denominator</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-semibold text-amber-900 mb-1">Improvements needed</h3>
+            <ul className="list-disc list-inside space-y-1 text-amber-950/90">
+              <li>Larger golden set and layout-profile coverage</li>
+              <li>Consensus voting and per-finding confidence</li>
+              <li>Region-based inspection for large modals</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <section className="rounded-xl border border-slate-200 bg-slate-50 p-5 text-sm text-slate-700 space-y-2">
         <h2 className="font-bold text-slate-900">Capture workflow</h2>
         <ol className="list-decimal list-inside space-y-1 text-xs sm:text-sm">
@@ -252,6 +281,25 @@ export function EvalsPresentation({ data }: { data: EvalPresentationData }) {
           <CaseCard key={item.meta.id} item={item} />
         ))}
       </div>
+
+      <p className="text-sm text-slate-500 border-t border-slate-200 pt-6">
+        Related:{" "}
+        <a href="/guardrails" className="text-figma-blue hover:underline">
+          Cross-modal guardrails
+        </a>
+        {" · "}
+        <a href="/react-loop" className="text-figma-blue hover:underline">
+          ReAct vision loop
+        </a>
+        {" · "}
+        <a href="/#evals" className="text-figma-blue hover:underline">
+          Home overview
+        </a>
+        {" · "}
+        <a href="/agent" className="text-figma-blue hover:underline">
+          Try the agent wizard
+        </a>
+      </p>
     </div>
   );
 }

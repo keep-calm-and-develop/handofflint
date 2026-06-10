@@ -1,0 +1,25 @@
+{
+  "caseId": "vaxin-20-0",
+  "runIndex": 7,
+  "capturedAt": "2026-06-10T09:09:46.025Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled; it should be 'Hospital'.",
+      "codegenPromptSuggestion": "Correct the text content of node '23:24' from 'District General Hostpital' to 'District General Hospital'."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled; it should be 'Hospital'.",
+      "codegenPromptSuggestion": "Correct the text content of node '23:24' from 'District General Hostpital' to 'District General Hospital'."
+    }
+  ],
+  "stepsUsed": 0,
+  "toolCallCount": 0,
+  "error": null
+}

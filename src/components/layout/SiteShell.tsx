@@ -191,6 +191,14 @@ function SiteFooter() {
                   Cross-Modal Guardrails
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/evals"
+                  className="text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Vision Evals
+                </Link>
+              </li>
             </ul>
           </div>
 

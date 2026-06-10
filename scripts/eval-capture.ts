@@ -12,7 +12,8 @@
  *   pnpm eval:capture --case vaxin-1-4          # next incomplete run
  */
 
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
 
 import { DEFAULT_DESIGN_MANUAL_URL } from "../src/lib/agent/constants";
 import {
@@ -40,10 +41,58 @@ import {
   getCaseResultsDir,
   getRunPath,
   loadDotEnv,
+  PROJECT_ROOT,
   readSuiteManifest,
   waitForDevServer,
   writeSuiteManifest,
 } from "./eval-lib";
+
+const QUOTA_EXIT_CODE = 2;
+
+function isQuotaLimitError(message: string | null | undefined): boolean {
+  if (!message) return false;
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("quota exceeded") ||
+    lower.includes("exceeded your current quota") ||
+    lower.includes("rate limit") ||
+    lower.includes("high demand") ||
+    lower.includes("resource_exhausted")
+  );
+}
+
+function exitOnQuotaLimit(message: string | null | undefined): void {
+  if (!isQuotaLimitError(message)) return;
+
+  console.error("\n[quota] Gemini API limit reached.");
+  console.error("Update GOOGLE_GENERATIVE_AI_API_KEY in .env, restart pnpm dev, then resume capture.");
+  process.exit(QUOTA_EXIT_CODE);
+}
+
+function resolveCaptureImageUrl(caseId: EvalCaseId): string {
+  const meta = EVAL_CASES[caseId];
+  if (meta.imageSourceUrl) {
+    return meta.imageSourceUrl;
+  }
+
+  const sourcePath = path.join(
+    PROJECT_ROOT,
+    "evals",
+    "golden",
+    caseId,
+    "image-source.json",
+  );
+  if (existsSync(sourcePath)) {
+    const record = JSON.parse(readFileSync(sourcePath, "utf8")) as { url?: string };
+    if (record.url) {
+      return record.url;
+    }
+  }
+
+  throw new Error(
+    `No public Figma image URL for ${caseId}. Add imageSourceUrl in src/lib/evals/cases.ts`,
+  );
+}
 
 interface CliOptions {
   caseId: EvalCaseId;
@@ -114,8 +163,8 @@ Rules:
 
 Requires:
   pnpm dev
-  EVAL_ALLOW_LOCAL_IMAGES=true
   GOOGLE_GENERATIVE_AI_API_KEY in .env
+  Public Figma S3 image URL per case (imageSourceUrl in cases.ts)
 `);
 }
 
@@ -190,7 +239,7 @@ async function captureVisionRun(
   headers: Record<string, string>,
 ): Promise<VisionStreamParseResult> {
   const meta = EVAL_CASES[caseId];
-  const imageUrl = `${baseUrl}${meta.imagePath}`;
+  const imageUrl = resolveCaptureImageUrl(caseId);
 
   const res = await fetch(`${baseUrl}/api/agent/vision`, {
     method: "POST",
@@ -255,18 +304,9 @@ async function main(): Promise<void> {
   assertCaseUnlocked(options.caseId);
 
   const runIndex = resolveRunIndex(options.caseId, options.runIndex);
-  const imagePath = `public${EVAL_CASES[options.caseId].imagePath}`;
-  if (!existsSync(imagePath)) {
-    console.error(`Missing golden image: ${imagePath}\nRun pnpm eval:setup`);
-    process.exit(1);
-  }
-
-  if (process.env.EVAL_ALLOW_LOCAL_IMAGES !== "true") {
-    console.error("Set EVAL_ALLOW_LOCAL_IMAGES=true in .env for local golden images.");
-    process.exit(1);
-  }
-
   await waitForDevServer(options.baseUrl);
+  const imageUrl = resolveCaptureImageUrl(options.caseId);
+  console.log(`[capture] image=${imageUrl}`);
   const headers = buildHeaders();
 
   console.log(`[capture] case=${options.caseId} run=${runIndex}`);
@@ -296,6 +336,7 @@ async function main(): Promise<void> {
       "utf8",
     );
     console.error(message);
+    exitOnQuotaLimit(message);
     process.exit(1);
   }
 
@@ -335,6 +376,8 @@ async function main(): Promise<void> {
       `  raw=${rawEnrichments.length} verified=${verifiedEnrichments.length} ` +
       `tools=${record.toolCallCount}`,
   );
+
+  exitOnQuotaLimit(record.error);
 
   if (completedRuns.size >= EVAL_RUNS_PER_CASE) {
     console.log(

@@ -1,0 +1,25 @@
+{
+  "caseId": "bittersweet-9-153",
+  "runIndex": 7,
+  "capturedAt": "2026-06-10T09:25:51.992Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "9:153",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The 'Baking' text from the background screen is visually clipping into the top-left corner of the 'Order Details' modal, indicating the modal is not properly obscuring its background content.",
+      "codegenPromptSuggestion": "Ensure the 'Order Details' modal has a proper background mask or z-index to fully obscure any content from the underlying screen."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "9:153",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The 'Baking' text from the background screen is visually clipping into the top-left corner of the 'Order Details' modal, indicating the modal is not properly obscuring its background content.",
+      "codegenPromptSuggestion": "Ensure the 'Order Details' modal has a proper background mask or z-index to fully obscure any content from the underlying screen."
+    }
+  ],
+  "stepsUsed": 1,
+  "toolCallCount": 1,
+  "error": null
+}

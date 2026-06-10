@@ -1,0 +1,43 @@
+{
+  "caseId": "vaxin-1-4",
+  "runIndex": 1,
+  "capturedAt": "2026-06-10T08:53:02.038Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "1:4",
+      "violationCategory": "hierarchy_clash",
+      "perceptualFlawDescription": "The 'PINCODE' and 'District' buttons are styled as high-contrast primary actions, conflicting with the 'Search' button and creating a hierarchy clash for secondary actions.",
+      "codegenPromptSuggestion": "Change all 'PINCODE' and 'District' buttons to an outline or ghost variant to reduce their visual weight and resolve the hierarchy clash."
+    },
+    {
+      "nodeId": "2:3",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'availibility' is misspelled in the quick search description.",
+      "codegenPromptSuggestion": "Correct the spelling of 'availibility' to 'availability' in the text content of node '2:3'."
+    },
+    {
+      "nodeId": "1:4",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The 'About Vaxin' text contains multiple spelling errors ('acces', 'availibility', 'entierly') and an extraneous space before a period.",
+      "codegenPromptSuggestion": "Correct the text within the 'About Vaxin' section to use 'access', 'availability', and 'entirely', and remove the extra space before the period after 'APIs'."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "1:4",
+      "violationCategory": "hierarchy_clash",
+      "perceptualFlawDescription": "The 'PINCODE' and 'District' buttons are styled as high-contrast primary actions, conflicting with the 'Search' button and creating a hierarchy clash for secondary actions.",
+      "codegenPromptSuggestion": "Change all 'PINCODE' and 'District' buttons to an outline or ghost variant to reduce their visual weight and resolve the hierarchy clash."
+    },
+    {
+      "nodeId": "2:3",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'availibility' is misspelled in the quick search description.",
+      "codegenPromptSuggestion": "Correct the spelling of 'availibility' to 'availability' in the text content of node '2:3'."
+    }
+  ],
+  "stepsUsed": 2,
+  "toolCallCount": 2,
+  "error": null
+}

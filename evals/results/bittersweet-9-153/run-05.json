@@ -1,0 +1,37 @@
+{
+  "caseId": "bittersweet-9-153",
+  "runIndex": 5,
+  "capturedAt": "2026-06-10T09:24:54.568Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "9:153",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The 'Order Details Modal' is positioned such that it partially obscures the 'Baking' text of the underlying screen.",
+      "codegenPromptSuggestion": "Adjust the vertical positioning of the 'Order Details Modal' to prevent it from clipping or overlapping with background screen elements."
+    },
+    {
+      "nodeId": "I9:160;2:25",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The 'Product type name' label is bold, which is inconsistent with the 'Properties' label and other related labels that are regular weight, creating an unclear typographic hierarchy.",
+      "codegenPromptSuggestion": "Ensure consistent font weight for all labels of similar hierarchical importance. Either make 'Product type name' regular or make 'Properties' and other related labels bold."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "9:153",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The 'Order Details Modal' is positioned such that it partially obscures the 'Baking' text of the underlying screen.",
+      "codegenPromptSuggestion": "Adjust the vertical positioning of the 'Order Details Modal' to prevent it from clipping or overlapping with background screen elements."
+    },
+    {
+      "nodeId": "I9:160;2:25",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The 'Product type name' label is bold, which is inconsistent with the 'Properties' label and other related labels that are regular weight, creating an unclear typographic hierarchy.",
+      "codegenPromptSuggestion": "Ensure consistent font weight for all labels of similar hierarchical importance. Either make 'Product type name' regular or make 'Properties' and other related labels bold."
+    }
+  ],
+  "stepsUsed": 1,
+  "toolCallCount": 1,
+  "error": null
+}

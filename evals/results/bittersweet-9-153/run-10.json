@@ -1,0 +1,61 @@
+{
+  "caseId": "bittersweet-9-153",
+  "runIndex": 10,
+  "capturedAt": "2026-06-10T09:27:23.871Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "I9:160;2:23",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order number text displays '# 13' in the screenshot, but the node properties specify '# 12'.",
+      "codegenPromptSuggestion": "Update the text content for the order number to '# 13' to match the design."
+    },
+    {
+      "nodeId": "I9:160;2:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order time text displays '3 July, 5:30 PM' in the screenshot, but the node properties specify '3 July, 3:00 PM'.",
+      "codegenPromptSuggestion": "Update the text content for the order time to '3 July, 5:30 PM' to match the design."
+    },
+    {
+      "nodeId": "I9:160;2:26",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text '*special instructions' is present in the node properties but is not visible within the screenshot.",
+      "codegenPromptSuggestion": "Ensure the text '*special instructions' is visible and correctly positioned within the layout, adjusting its coordinates or container properties as needed."
+    },
+    {
+      "nodeId": "I9:160;2:22",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text 'Complete' is present in the node properties but is not visible within the screenshot.",
+      "codegenPromptSuggestion": "Ensure the text 'Complete' is visible and correctly positioned within the layout, adjusting its coordinates or container properties as needed."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "I9:160;2:23",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order number text displays '# 13' in the screenshot, but the node properties specify '# 12'.",
+      "codegenPromptSuggestion": "Update the text content for the order number to '# 13' to match the design."
+    },
+    {
+      "nodeId": "I9:160;2:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order time text displays '3 July, 5:30 PM' in the screenshot, but the node properties specify '3 July, 3:00 PM'.",
+      "codegenPromptSuggestion": "Update the text content for the order time to '3 July, 5:30 PM' to match the design."
+    },
+    {
+      "nodeId": "I9:160;2:26",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text '*special instructions' is present in the node properties but is not visible within the screenshot.",
+      "codegenPromptSuggestion": "Ensure the text '*special instructions' is visible and correctly positioned within the layout, adjusting its coordinates or container properties as needed."
+    },
+    {
+      "nodeId": "I9:160;2:22",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text 'Complete' is present in the node properties but is not visible within the screenshot.",
+      "codegenPromptSuggestion": "Ensure the text 'Complete' is visible and correctly positioned within the layout, adjusting its coordinates or container properties as needed."
+    }
+  ],
+  "stepsUsed": 1,
+  "toolCallCount": 4,
+  "error": null
+}

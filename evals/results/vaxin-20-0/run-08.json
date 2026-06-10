@@ -1,0 +1,43 @@
+{
+  "caseId": "vaxin-20-0",
+  "runIndex": 8,
+  "capturedAt": "2026-06-10T09:15:00.052Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled; it should be 'Hospital'.",
+      "codegenPromptSuggestion": "Change the text content of node '23:24' from 'District General Hostpital' to 'District General Hospital'."
+    },
+    {
+      "nodeId": "23:62",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The slots are listed as 'Afternoon, Forenoon'. 'Forenoon' is an archaic or less common term for 'Morning', and the conventional order would be 'Morning, Afternoon'.",
+      "codegenPromptSuggestion": "Update the text content for slots within the 'Center Card' component to 'Morning, Afternoon' for clearer communication and conventional ordering."
+    },
+    {
+      "nodeId": "23:28",
+      "violationCategory": "symmetry_break",
+      "perceptualFlawDescription": "The '18+' label (using Rectangle 9 as a visual background) and the 'Free' label have inconsistent visual styling regarding fills, borders, and corner radii. The '18+' label has an outlined white box with a top-left corner radius, while the 'Free' label is a solid dark grey box with a visually distinct top-right corner radius. This breaks visual symmetry between peer information labels.",
+      "codegenPromptSuggestion": "Standardize the visual style for the '18+' label (node '23:29' within 'Rectangle 9'/'23:28') and the 'Free' label (within 'Group 8'/'23:49'). Ensure both labels use a consistent visual presentation (e.g., both outlined or both solid filled) and apply a uniform border-radius (e.g., 5px on all corners) for both elements to achieve visual consistency."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled; it should be 'Hospital'.",
+      "codegenPromptSuggestion": "Change the text content of node '23:24' from 'District General Hostpital' to 'District General Hospital'."
+    },
+    {
+      "nodeId": "23:28",
+      "violationCategory": "symmetry_break",
+      "perceptualFlawDescription": "The '18+' label (using Rectangle 9 as a visual background) and the 'Free' label have inconsistent visual styling regarding fills, borders, and corner radii. The '18+' label has an outlined white box with a top-left corner radius, while the 'Free' label is a solid dark grey box with a visually distinct top-right corner radius. This breaks visual symmetry between peer information labels.",
+      "codegenPromptSuggestion": "Standardize the visual style for the '18+' label (node '23:29' within 'Rectangle 9'/'23:28') and the 'Free' label (within 'Group 8'/'23:49'). Ensure both labels use a consistent visual presentation (e.g., both outlined or both solid filled) and apply a uniform border-radius (e.g., 5px on all corners) for both elements to achieve visual consistency."
+    }
+  ],
+  "stepsUsed": 2,
+  "toolCallCount": 3,
+  "error": null
+}

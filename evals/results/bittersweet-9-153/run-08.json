@@ -1,0 +1,18 @@
+{
+  "caseId": "bittersweet-9-153",
+  "runIndex": 8,
+  "capturedAt": "2026-06-10T09:26:19.280Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "9:153",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The label 'Customer Name' is duplicated where the actual customer's name or a distinct placeholder should be, creating a misleading repetition of text content.",
+      "codegenPromptSuggestion": "Replace the second instance of 'Customer Name' text with a dynamic variable for the customer's actual name, or a descriptive placeholder like '[Customer Name Placeholder]'."
+    }
+  ],
+  "verifiedEnrichments": [],
+  "stepsUsed": 0,
+  "toolCallCount": 0,
+  "error": null
+}

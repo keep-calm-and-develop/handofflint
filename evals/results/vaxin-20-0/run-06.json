@@ -1,0 +1,37 @@
+{
+  "caseId": "vaxin-20-0",
+  "runIndex": 6,
+  "capturedAt": "2026-06-10T09:09:32.454Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled; it should be 'Hospital'.",
+      "codegenPromptSuggestion": "Correct the spelling of 'Hostpital' to 'Hospital' for the text with nodeId '23:24'."
+    },
+    {
+      "nodeId": "23:62",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The term 'Forenoon' is an outdated term; 'Morning' is more commonly used in modern UI for time slots.",
+      "codegenPromptSuggestion": "Replace 'Forenoon' with 'Morning' in the slots text within the 'Center Card' component."
+    },
+    {
+      "nodeId": "23:62",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'To' in the time range 'From 9 AM To 6 PM' is unnecessarily capitalized; it should be 'to' for better grammatical flow.",
+      "codegenPromptSuggestion": "Change 'To' to 'to' in the time range display within the 'Center Card' component."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled; it should be 'Hospital'.",
+      "codegenPromptSuggestion": "Correct the spelling of 'Hostpital' to 'Hospital' for the text with nodeId '23:24'."
+    }
+  ],
+  "stepsUsed": 3,
+  "toolCallCount": 3,
+  "error": null
+}

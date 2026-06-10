@@ -395,6 +395,10 @@ export function GuardrailsPresentation({ data }: GuardrailsPresentationProps) {
               ReAct investigation loop
             </a>
             {" · "}
+            <a href="/evals" className="text-figma-blue hover:underline">
+              Vision eval golden dataset
+            </a>
+            {" · "}
             <a href="/agent" className="text-figma-blue hover:underline">
               Try the agent wizard
             </a>

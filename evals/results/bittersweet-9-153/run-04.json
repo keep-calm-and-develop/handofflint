@@ -1,0 +1,37 @@
+{
+  "caseId": "bittersweet-9-153",
+  "runIndex": 4,
+  "capturedAt": "2026-06-10T09:24:21.404Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "9:155",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The 'Baking' text at the top of the screen is visually clipped, indicating it extends beyond its intended display area.",
+      "codegenPromptSuggestion": "Adjust the vertical positioning or padding of the 'Baking' text to ensure it is fully visible within the viewport boundaries."
+    },
+    {
+      "nodeId": "9:153",
+      "violationCategory": "symmetry_break",
+      "perceptualFlawDescription": "The vertical distribution of elements within the 'Order Details Modal' is imbalanced, with excessive empty space in the middle section and compressed content towards the bottom.",
+      "codegenPromptSuggestion": "Implement an auto-layout or Flexbox container for the modal's content to ensure even distribution of vertical space and consistent padding between sections, particularly to balance the empty area below 'Properties' and above 'Customer Name'."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "9:155",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The 'Baking' text at the top of the screen is visually clipped, indicating it extends beyond its intended display area.",
+      "codegenPromptSuggestion": "Adjust the vertical positioning or padding of the 'Baking' text to ensure it is fully visible within the viewport boundaries."
+    },
+    {
+      "nodeId": "9:153",
+      "violationCategory": "symmetry_break",
+      "perceptualFlawDescription": "The vertical distribution of elements within the 'Order Details Modal' is imbalanced, with excessive empty space in the middle section and compressed content towards the bottom.",
+      "codegenPromptSuggestion": "Implement an auto-layout or Flexbox container for the modal's content to ensure even distribution of vertical space and consistent padding between sections, particularly to balance the empty area below 'Properties' and above 'Customer Name'."
+    }
+  ],
+  "stepsUsed": 1,
+  "toolCallCount": 1,
+  "error": null
+}

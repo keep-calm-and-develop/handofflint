@@ -1,0 +1,73 @@
+{
+  "caseId": "bittersweet-9-153",
+  "runIndex": 3,
+  "capturedAt": "2026-06-10T09:23:42.967Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "9:158",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text element 'Layering' is defined in the node tree but is not visible within the screenshot, indicating it is clipped or positioned outside the visible viewport.",
+      "codegenPromptSuggestion": "Adjust the positioning or visibility properties of node 9:158 to ensure 'Layering' is displayed as intended within the visible screen area."
+    },
+    {
+      "nodeId": "I9:160;2:22",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The text content for the button (node ID I9:160;2:22) is 'Complete' in the node data, but the visible UI displays 'Mark As Completed', indicating a mismatch.",
+      "codegenPromptSuggestion": "Update the text content of node I9:160;2:22 to 'Mark As Completed' to accurately reflect the visible UI."
+    },
+    {
+      "nodeId": "I9:160;2:23",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order number text (node ID I9:160;2:23) is '# 12' in the node data, but the visible UI displays '# 13', indicating a content discrepancy.",
+      "codegenPromptSuggestion": "Update the text content of node I9:160;2:23 to '# 13' to match the visible order number."
+    },
+    {
+      "nodeId": "I9:160;2:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The date and time text (node ID I9:160;2:24) is '3 July, 3:00 PM' in the node data, but the visible UI displays '3 July, 5:30 PM', indicating a time mismatch.",
+      "codegenPromptSuggestion": "Update the text content of node I9:160;2:24 to '3 July, 5:30 PM' to correctly display the visible time."
+    },
+    {
+      "nodeId": "I9:160;2:26",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text element '*special instructions' is defined in the node tree but is not visible within the screenshot, indicating it is clipped or positioned outside the visible viewport.",
+      "codegenPromptSuggestion": "Adjust the positioning or visibility properties of node I9:160;2:26 to ensure '*special instructions' is displayed as intended within the visible screen area."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "9:158",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text element 'Layering' is defined in the node tree but is not visible within the screenshot, indicating it is clipped or positioned outside the visible viewport.",
+      "codegenPromptSuggestion": "Adjust the positioning or visibility properties of node 9:158 to ensure 'Layering' is displayed as intended within the visible screen area."
+    },
+    {
+      "nodeId": "I9:160;2:22",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The text content for the button (node ID I9:160;2:22) is 'Complete' in the node data, but the visible UI displays 'Mark As Completed', indicating a mismatch.",
+      "codegenPromptSuggestion": "Update the text content of node I9:160;2:22 to 'Mark As Completed' to accurately reflect the visible UI."
+    },
+    {
+      "nodeId": "I9:160;2:23",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The order number text (node ID I9:160;2:23) is '# 12' in the node data, but the visible UI displays '# 13', indicating a content discrepancy.",
+      "codegenPromptSuggestion": "Update the text content of node I9:160;2:23 to '# 13' to match the visible order number."
+    },
+    {
+      "nodeId": "I9:160;2:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The date and time text (node ID I9:160;2:24) is '3 July, 3:00 PM' in the node data, but the visible UI displays '3 July, 5:30 PM', indicating a time mismatch.",
+      "codegenPromptSuggestion": "Update the text content of node I9:160;2:24 to '3 July, 5:30 PM' to correctly display the visible time."
+    },
+    {
+      "nodeId": "I9:160;2:26",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text element '*special instructions' is defined in the node tree but is not visible within the screenshot, indicating it is clipped or positioned outside the visible viewport.",
+      "codegenPromptSuggestion": "Adjust the positioning or visibility properties of node I9:160;2:26 to ensure '*special instructions' is displayed as intended within the visible screen area."
+    }
+  ],
+  "stepsUsed": 1,
+  "toolCallCount": 5,
+  "error": null
+}

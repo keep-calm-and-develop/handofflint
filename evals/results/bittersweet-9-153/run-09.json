@@ -1,0 +1,37 @@
+{
+  "caseId": "bittersweet-9-153",
+  "runIndex": 9,
+  "capturedAt": "2026-06-10T09:26:59.365Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "I9:160;2:26",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The asterisk prefix on \"*special instructions\" is unconventional and could be misinterpreted as a bullet point or a required field, creating a visual inconsistency.",
+      "codegenPromptSuggestion": "Remove the asterisk from the \"special instructions\" text or format it as a proper list item if it is intended to be one."
+    },
+    {
+      "nodeId": "9:153",
+      "violationCategory": "symmetry_break",
+      "perceptualFlawDescription": "The 'Order Details Modal' has inconsistent corner radii, appearing with sharp top corners and visually rounded bottom corners.",
+      "codegenPromptSuggestion": "Apply a consistent border-radius to all four corners of the 'Order Details Modal' (e.g., all sharp or all rounded with the same radius) to ensure visual symmetry."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "I9:160;2:26",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The asterisk prefix on \"*special instructions\" is unconventional and could be misinterpreted as a bullet point or a required field, creating a visual inconsistency.",
+      "codegenPromptSuggestion": "Remove the asterisk from the \"special instructions\" text or format it as a proper list item if it is intended to be one."
+    },
+    {
+      "nodeId": "9:153",
+      "violationCategory": "symmetry_break",
+      "perceptualFlawDescription": "The 'Order Details Modal' has inconsistent corner radii, appearing with sharp top corners and visually rounded bottom corners.",
+      "codegenPromptSuggestion": "Apply a consistent border-radius to all four corners of the 'Order Details Modal' (e.g., all sharp or all rounded with the same radius) to ensure visual symmetry."
+    }
+  ],
+  "stepsUsed": 2,
+  "toolCallCount": 2,
+  "error": null
+}

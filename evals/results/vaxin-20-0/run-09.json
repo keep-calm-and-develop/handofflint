@@ -1,0 +1,43 @@
+{
+  "caseId": "vaxin-20-0",
+  "runIndex": 9,
+  "capturedAt": "2026-06-10T09:17:51.924Z",
+  "layoutProfile": "mobile-app",
+  "rawEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled as 'Hospital' in the title 'District General Hostpital'.",
+      "codegenPromptSuggestion": "Change the text content of node '23:24' from 'District General Hostpital' to 'District General Hospital'."
+    },
+    {
+      "nodeId": "23:24",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text 'District General Hostpital' appears visually clipped or too close to the 'Free' tag on the right.",
+      "codegenPromptSuggestion": "Increase the horizontal padding or margin between the text 'District General Hospital' and the 'Free' tag to prevent visual clipping."
+    },
+    {
+      "nodeId": "23:49",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The slot times are phrased as 'Afternoon, Forenoon', which is awkward. 'Forenoon' is an uncommon term, and it typically precedes 'Afternoon'.",
+      "codegenPromptSuggestion": "Rephrase the slot times for node '23:49' to a more conventional and clear format, such as 'Morning, Afternoon' or specify exact time ranges if possible."
+    }
+  ],
+  "verifiedEnrichments": [
+    {
+      "nodeId": "23:24",
+      "violationCategory": "typography_anomaly",
+      "perceptualFlawDescription": "The word 'Hostpital' is misspelled as 'Hospital' in the title 'District General Hostpital'.",
+      "codegenPromptSuggestion": "Change the text content of node '23:24' from 'District General Hostpital' to 'District General Hospital'."
+    },
+    {
+      "nodeId": "23:24",
+      "violationCategory": "visual_clipping",
+      "perceptualFlawDescription": "The text 'District General Hostpital' appears visually clipped or too close to the 'Free' tag on the right.",
+      "codegenPromptSuggestion": "Increase the horizontal padding or margin between the text 'District General Hospital' and the 'Free' tag to prevent visual clipping."
+    }
+  ],
+  "stepsUsed": 1,
+  "toolCallCount": 1,
+  "error": null
+}

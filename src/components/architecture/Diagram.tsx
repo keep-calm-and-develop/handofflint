@@ -426,11 +426,9 @@ export function SystemArchitectureFlowDiagram() {
             </div>
 
             {/* Vision Endpoint */}
-            <Link
-              href="/guardrails"
-              className={`block bg-white border p-3 shadow-sm ${DIAGRAM_LINK}`}
+            <div
+              className="bg-white border p-3 shadow-sm"
               style={{ borderColor: `${colors.purple}40` }}
-              title="Input and output guardrails walkthrough"
             >
               <span className="text-[8px] font-mono font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">
                 POST
@@ -441,10 +439,23 @@ export function SystemArchitectureFlowDiagram() {
               <p className="text-[9px] text-slate-500 mt-0.5">
                 Executes streaming multi-turn loop.
               </p>
-              <p className="text-[8px] font-mono text-purple-600 mt-1">
-                → guardrails
+              <p className="text-[8px] font-mono text-purple-600 mt-1 space-x-2">
+                <Link
+                  href="/guardrails"
+                  className={`hover:underline ${DIAGRAM_LINK}`}
+                  title="Cross-modal guardrails walkthrough"
+                >
+                  → guardrails
+                </Link>
+                <Link
+                  href="/evals"
+                  className={`hover:underline ${DIAGRAM_LINK}`}
+                  title="Vision eval golden dataset"
+                >
+                  → evals
+                </Link>
               </p>
-            </Link>
+            </div>
           </div>
 
           {/* Flat Index Cache — Upstash Redis */}

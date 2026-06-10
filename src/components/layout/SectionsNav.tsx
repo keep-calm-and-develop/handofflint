@@ -5,8 +5,9 @@ const SECTION_LINKS = [
   { href: "/#overview", label: "1. Overview" },
   { href: "/#problem", label: "2. Problem Statement" },
   { href: "/#architecture", label: "3. System Architecture" },
-  { href: "/#rules", label: "4. Deterministic Linter Rules" },
-  { href: "/#stack", label: "5. Technology Stack" },
+  { href: "/#evals", label: "4. Vision Evals" },
+  { href: "/#rules", label: "5. Deterministic Linter Rules" },
+  { href: "/#stack", label: "6. Technology Stack" },
 ] as const;
 
 const ARCHITECTURE_DEEP_DIVE_NAV_LINKS = [
@@ -14,6 +15,7 @@ const ARCHITECTURE_DEEP_DIVE_NAV_LINKS = [
   { href: "/inspect-node", label: "inspect_node Tool" },
   { href: "/rag", label: "search_guides RAG" },
   { href: "/guardrails", label: "Cross-Modal Guardrails" },
+  { href: "/evals", label: "Vision Evals" },
 ] as const;
 
 export function SectionsNav() {
