@@ -216,7 +216,7 @@ export function useAgentWizard(): UseAgentWizardReturn {
 
     const visionCheck = validateAgentVisionInput({
       fileKey,
-      nodeId,
+      nodeId: nodeId ?? "",
       imageUrl: resolvedImageUrl,
       designManualUrl: manualUrl,
     });
@@ -256,7 +256,7 @@ export function useAgentWizard(): UseAgentWizardReturn {
       const response = await postAgentVision(
         {
           fileKey,
-          nodeId,
+          nodeId: nodeId ?? "",
           imageUrl: resolvedImageUrl,
           layoutProfile,
           designManualUrl: manualUrl,
