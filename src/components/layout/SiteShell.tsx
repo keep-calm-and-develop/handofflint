@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { FIGMA_COLORS } from "./figma-colors";
 import { GitHubIcon } from "./GitHubIcon";
+import { SectionsNav } from "./SectionsNav";
 import Link from "next/link";
 
 export type SiteNavId = "home" | "linear" | "agent";
@@ -260,6 +261,7 @@ export function SiteShell({
                 );
               })}
             </nav>
+            <SectionsNav />
             {headerExtra}
           </div>
 

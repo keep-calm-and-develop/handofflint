@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   ArrowRight,
   BookOpen,
-  ChevronDown,
   Code,
   Cpu,
   Database,
@@ -35,42 +34,9 @@ const ARCHITECTURE_DEEP_DIVES = [
   },
 ] as const;
 
-const SECTION_LINKS = [
-  { href: "#overview", label: "1. Overview" },
-  { href: "#problem", label: "2. Problem Statement" },
-  { href: "#architecture", label: "3. System Architecture" },
-  { href: "#rules", label: "4. Deterministic Linter Rules" },
-  { href: "#stack", label: "5. Technology Stack" },
-] as const;
-
-function LandingSectionsNav() {
-  return (
-    <details className="relative group max-md:hidden">
-      <summary className="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-        <span>Sections</span>
-        <ChevronDown className="w-3.5 h-3.5 transition-transform group-open:rotate-180" />
-      </summary>
-      <nav
-        aria-label="Page sections"
-        className="absolute left-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg py-1 z-50"
-      >
-        {SECTION_LINKS.map(({ href, label }) => (
-          <a
-            key={href}
-            href={href}
-            className="block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
-          >
-            {label}
-          </a>
-        ))}
-      </nav>
-    </details>
-  );
-}
-
 export default function LandingPage() {
   return (
-    <SiteShell activeNav="home" headerExtra={<LandingSectionsNav />}>
+    <SiteShell activeNav="home">
       <section
         id="overview"
         className="scroll-mt-16 bg-white py-8 sm:py-24 border-b border-slate-200"
